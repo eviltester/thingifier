@@ -4,8 +4,12 @@ import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.defin
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -43,18 +47,25 @@ public class ApiResponseTest {
         Assertions.assertTrue(response.getErrorMessages().contains("oopsy"));
     }
 
+    @ParameterizedTest
+    @MethodSource("acceptQualityValueErrorFormatExamples")
+    public void errorFormatterUsesAcceptQualityValuesForJsonAndXml(
+            final String acceptHeader, final String expectedPrefix) {
+        Assertions.assertTrue(
+                ApiResponseError.asAppropriate(acceptHeader, "oopsy").startsWith(expectedPrefix));
+    }
+
     @Test
-    public void errorFormatterUsesAcceptQualityValuesForJsonAndXml() {
+    public void errorFormatterUsesTextXmlAcceptType() {
+        Assertions.assertTrue(ApiResponseError.asAppropriate("text/xml", "oopsy").startsWith("<"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("genericErrorAcceptHeadersThatFallBackToJson")
+    public void genericErrorFormatterUsesJsonWhenAcceptHeaderIsUnsupportedOrNeedsEntityContext(
+            final String acceptHeader) {
         Assertions.assertTrue(
-                ApiResponseError.asAppropriate("application/json;q=0, application/xml", "oopsy")
-                        .startsWith("<"));
-        Assertions.assertTrue(
-                ApiResponseError.asAppropriate(
-                                "application/xml;q=0.1, application/json;q=0.9", "oopsy")
-                        .startsWith("{"));
-        Assertions.assertTrue(
-                ApiResponseError.asAppropriate("application/problem+json", "oopsy")
-                        .startsWith("{"));
+                ApiResponseError.asAppropriate(acceptHeader, "oopsy").startsWith("{"));
     }
 
     @Test
@@ -166,5 +177,19 @@ public class ApiResponseTest {
         Assertions.assertEquals(true, response.isCollection());
 
         Assertions.assertEquals(0, response.getReturnedInstanceCollection().size());
+    }
+
+    private static Stream<Arguments> acceptQualityValueErrorFormatExamples() {
+        return Stream.of(
+                Arguments.of("application/json;q=0, application/xml", "<"),
+                Arguments.of("application/xml;q=0.1, application/json;q=0.9", "{"));
+    }
+
+    private static Stream<String> genericErrorAcceptHeadersThatFallBackToJson() {
+        return Stream.of(
+                "application/problem+json",
+                "application/vnd.example.todo+xml",
+                "application/*+xml",
+                "application/problem+xml");
     }
 }

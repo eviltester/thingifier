@@ -17,30 +17,15 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 class SwaggerizerSchemaExampleTest {
 
     @Test
-    void collectionResponseSchemasUseJsonWrapperAndXmlWrappedArray() {
-        final Thingifier thingifier = new Thingifier();
-        final EntityDefinition item = thingifier.defineThing("item", "items");
-        item.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT).withExample("21"));
-        item.addField(Field.is("type", FieldType.STRING).withExample("cd"));
-        item.addField(Field.is("isbn13", FieldType.STRING).withExample("123-4-56-789012-3"));
-        item.addField(Field.is("price", FieldType.FLOAT).withExample("97.99"));
-        item.addField(Field.is("numberinstock", FieldType.INTEGER).withExample("0"));
-
-        final ThingifierApiDocumentationDefn apiDefn =
-                new ThingifierApiDocumentationDefn().setThingifier(thingifier);
-
-        final JsonObject document =
-                JsonParser.parseString(new Swaggerizer(apiDefn).asJson()).getAsJsonObject();
+    void jsonCollectionResponseSchemaUsesWrapperObject() {
+        final JsonObject document = schemaExampleDocument();
         final JsonObject schemas =
                 document.getAsJsonObject("components").getAsJsonObject("schemas");
         final JsonObject itemsSchema = schemas.getAsJsonObject("items");
         final JsonObject itemsProperty =
                 itemsSchema.getAsJsonObject("properties").getAsJsonObject("items");
         final JsonObject itemSchema = itemsProperty.getAsJsonObject("items");
-        final JsonObject xmlItemsSchema = responseSchemaFor(document, "/items", "application/xml");
-        final JsonObject xmlItemSchema = xmlItemsSchema.getAsJsonObject("items");
 
-        Assertions.assertFalse(schemas.has("items_xml_collection"));
         Assertions.assertEquals("object", itemsSchema.get("type").getAsString());
         Assertions.assertEquals("array", itemsProperty.get("type").getAsString());
         Assertions.assertEquals("object", itemSchema.get("type").getAsString());
@@ -61,6 +46,17 @@ class SwaggerizerSchemaExampleTest {
                         .getAsJsonObject("schema")
                         .get("$ref")
                         .getAsString());
+    }
+
+    @Test
+    void applicationXmlCollectionResponseSchemaUsesWrappedArray() {
+        final JsonObject document = schemaExampleDocument();
+        final JsonObject schemas =
+                document.getAsJsonObject("components").getAsJsonObject("schemas");
+        final JsonObject xmlItemsSchema = responseSchemaFor(document, "/items", "application/xml");
+        final JsonObject xmlItemSchema = xmlItemsSchema.getAsJsonObject("items");
+
+        Assertions.assertFalse(schemas.has("items_xml_collection"));
         Assertions.assertFalse(xmlItemsSchema.has("$ref"));
 
         Assertions.assertEquals("array", xmlItemsSchema.get("type").getAsString());
@@ -73,6 +69,19 @@ class SwaggerizerSchemaExampleTest {
         Assertions.assertEquals(
                 Set.of("id", "type", "isbn13", "price", "numberinstock"),
                 requiredPropertiesIn(xmlItemSchema, "XML item"));
+    }
+
+    @Test
+    void textXmlCollectionResponseSchemaUsesWrappedArray() {
+        final JsonObject document = schemaExampleDocument();
+        final JsonObject textXmlItemsSchema = responseSchemaFor(document, "/items", "text/xml");
+
+        Assertions.assertFalse(textXmlItemsSchema.has("$ref"));
+        Assertions.assertEquals("array", textXmlItemsSchema.get("type").getAsString());
+        Assertions.assertEquals(
+                "items", textXmlItemsSchema.getAsJsonObject("xml").get("name").getAsString());
+        Assertions.assertTrue(
+                textXmlItemsSchema.getAsJsonObject("xml").get("wrapped").getAsBoolean());
     }
 
     @Test
@@ -103,6 +112,21 @@ class SwaggerizerSchemaExampleTest {
         Assertions.assertFalse(itemXmlSchema.has("$ref"));
         Assertions.assertEquals(
                 "items", itemXmlSchema.getAsJsonObject("xml").get("name").getAsString());
+    }
+
+    private JsonObject schemaExampleDocument() {
+        final Thingifier thingifier = new Thingifier();
+        final EntityDefinition item = thingifier.defineThing("item", "items");
+        item.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT).withExample("21"));
+        item.addField(Field.is("type", FieldType.STRING).withExample("cd"));
+        item.addField(Field.is("isbn13", FieldType.STRING).withExample("123-4-56-789012-3"));
+        item.addField(Field.is("price", FieldType.FLOAT).withExample("97.99"));
+        item.addField(Field.is("numberinstock", FieldType.INTEGER).withExample("0"));
+
+        final ThingifierApiDocumentationDefn apiDefn =
+                new ThingifierApiDocumentationDefn().setThingifier(thingifier);
+
+        return JsonParser.parseString(new Swaggerizer(apiDefn).asJson()).getAsJsonObject();
     }
 
     private JsonObject responseSchemaFor(

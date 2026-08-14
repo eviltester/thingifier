@@ -75,7 +75,7 @@ public class BodyParser {
     public String validBodyBasedOnContentType() {
         final ContentTypeHeaderParser contentTypeParser =
                 new ContentTypeHeaderParser(request.getHeader("content-type"));
-        if (contentTypeParser.isXML()) {
+        if (contentTypeParser.isXML(thingNames)) {
             String validateResultsErrorReport = this.xmlParser.validateXML();
             if (!validateResultsErrorReport.isEmpty()) {
                 return "Invalid XML Payload: " + validateResultsErrorReport;
@@ -122,7 +122,7 @@ public class BodyParser {
         // the same
         final ContentTypeHeaderParser contentTypeParser =
                 new ContentTypeHeaderParser(request.getHeader("content-type"));
-        if (contentTypeParser.isXML()) {
+        if (contentTypeParser.isXML(thingNames)) {
             System.out.println(request.getBody());
             args = this.xmlParser.xmlAsMap();
         } else {

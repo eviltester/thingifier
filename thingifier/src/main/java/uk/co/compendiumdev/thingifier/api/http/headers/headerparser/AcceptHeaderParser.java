@@ -1,9 +1,12 @@
 package uk.co.compendiumdev.thingifier.api.http.headers.headerparser;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class AcceptHeaderParser {
     private final String acceptHeader;
@@ -14,7 +17,12 @@ public class AcceptHeaderParser {
     }
 
     public boolean willAcceptXml() {
-        return willAccept(ACCEPT_TYPE.XML);
+        for (ACCEPT_TYPE type : ACCEPT_TYPE.xmlResponseMediaTypes()) {
+            if (willAccept(type)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean willAcceptJson() {
@@ -50,7 +58,7 @@ public class AcceptHeaderParser {
     }
 
     public boolean hasAskedForXML() {
-        return hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.XML);
+        return hasAskedForXmlResponse();
     }
 
     public boolean hasAskedForJSON() {
@@ -94,13 +102,19 @@ public class AcceptHeaderParser {
     }
 
     public boolean isSupportedHeader() {
+        return isSupportedHeader(List.of());
+    }
+
+    public boolean isSupportedHeader(final Collection<String> xmlEntityNames) {
         if (acceptMediaTypeDefinitionsList.size() == 0) {
             // we are allowed blank or missing accept - that counts as default
             return true;
         }
 
+        final List<String> structuredXmlMediaTypes = structuredXmlMediaTypesFor(xmlEntityNames);
         for (AcceptedMediaRange askedFor : acceptMediaTypeDefinitionsList) {
-            if (askedFor.matchesAnyOf(ACCEPT_TYPE.responseMediaTypes())) {
+            if (askedFor.matchesAnyOf(ACCEPT_TYPE.responseMediaTypes())
+                    || askedFor.matchesAnyOf(structuredXmlMediaTypes)) {
                 return true;
             }
         }
@@ -109,6 +123,7 @@ public class AcceptHeaderParser {
 
     public enum ACCEPT_TYPE {
         XML("application/xml"),
+        TEXT_XML("text/xml"),
         JSON("application/json"),
         CSV("text/csv"),
         TEXT("text/plain"),
@@ -141,12 +156,20 @@ public class AcceptHeaderParser {
             return this != ANYTHING && this != NO_MATCHING_TYPE;
         }
 
+        public boolean rendersAsXml() {
+            return this == XML || this == TEXT_XML;
+        }
+
         public boolean usesComponentSchemaInDocumentation() {
-            return this == JSON || this == XML;
+            return this == JSON || rendersAsXml();
+        }
+
+        public static List<ACCEPT_TYPE> xmlResponseMediaTypes() {
+            return List.of(XML, TEXT_XML);
         }
 
         public static List<ACCEPT_TYPE> responseMediaTypes() {
-            return List.of(JSON, XML, CSV, TEXT, HTML, NDJSON, JSONL, JSON_SEQ, TSV);
+            return List.of(JSON, XML, CSV, TEXT, HTML, NDJSON, JSONL, JSON_SEQ, TSV, TEXT_XML);
         }
     };
 
@@ -193,40 +216,62 @@ public class AcceptHeaderParser {
 
     public ACCEPT_TYPE preferredSupportedType(
             final List<ACCEPT_TYPE> supportedTypes, final ACCEPT_TYPE defaultType) {
+        return preferredSupportedMediaType(supportedTypes, defaultType, List.of()).type();
+    }
+
+    public PreferredMediaType preferredSupportedMediaType(
+            final List<ACCEPT_TYPE> supportedTypes,
+            final ACCEPT_TYPE defaultType,
+            final Collection<String> xmlEntityNames) {
         final List<ACCEPT_TYPE> concreteSupportedTypes = concreteSupportedTypes(supportedTypes);
 
         if (concreteSupportedTypes.isEmpty()) {
-            return ACCEPT_TYPE.NO_MATCHING_TYPE;
+            return PreferredMediaType.noMatch();
         }
 
         if (acceptMediaTypeDefinitionsList.isEmpty()) {
-            return defaultOrFirstSupported(concreteSupportedTypes, defaultType);
+            return PreferredMediaType.forType(
+                    defaultOrFirstSupported(concreteSupportedTypes, defaultType));
         }
 
-        final List<ACCEPT_TYPE> orderedTypes =
-                getSupportedTypesInPreferenceOrder(concreteSupportedTypes);
+        final List<NegotiatedAcceptType> orderedTypes =
+                getNegotiatedTypesInPreferenceOrder(
+                        concreteSupportedTypes, structuredXmlMediaTypesFor(xmlEntityNames));
         if (orderedTypes.isEmpty()) {
-            return ACCEPT_TYPE.NO_MATCHING_TYPE;
+            return PreferredMediaType.noMatch();
         }
 
-        return orderedTypes.get(0);
+        return orderedTypes.get(0).preferredMediaType();
     }
 
     private List<ACCEPT_TYPE> getSupportedTypesInPreferenceOrder(
             final List<ACCEPT_TYPE> candidateTypes) {
-        final List<NegotiatedAcceptType> supportedTypes = new ArrayList<>();
-
-        for (ACCEPT_TYPE type : candidateTypes) {
-            bestMatchFor(type).ifPresent(match -> supportedTypes.add(match.negotiatedType()));
-        }
-
-        supportedTypes.sort(NegotiatedAcceptType.preferenceComparator());
+        final List<NegotiatedAcceptType> supportedTypes =
+                getNegotiatedTypesInPreferenceOrder(candidateTypes, List.of());
 
         final List<ACCEPT_TYPE> responseTypes = new ArrayList<>();
         for (NegotiatedAcceptType supportedType : supportedTypes) {
             responseTypes.add(supportedType.type());
         }
         return responseTypes;
+    }
+
+    private List<NegotiatedAcceptType> getNegotiatedTypesInPreferenceOrder(
+            final List<ACCEPT_TYPE> candidateTypes, final List<String> structuredXmlMediaTypes) {
+        final List<NegotiatedAcceptType> supportedTypes = new ArrayList<>();
+
+        for (ACCEPT_TYPE type : candidateTypes) {
+            bestMatchFor(type).ifPresent(match -> supportedTypes.add(match.negotiatedType()));
+        }
+        if (candidateTypes.contains(ACCEPT_TYPE.XML)) {
+            for (String mediaType : structuredXmlMediaTypes) {
+                bestMatchFor(ACCEPT_TYPE.XML, mediaType)
+                        .ifPresent(match -> supportedTypes.add(match.negotiatedType()));
+            }
+        }
+
+        supportedTypes.sort(NegotiatedAcceptType.preferenceComparator());
+        return supportedTypes;
     }
 
     private List<ACCEPT_TYPE> concreteSupportedTypes(final List<ACCEPT_TYPE> supportedTypes) {
@@ -251,13 +296,18 @@ public class AcceptHeaderParser {
     }
 
     private Optional<AcceptedMediaRangeMatch> bestMatchFor(final ACCEPT_TYPE type) {
+        return bestMatchFor(type, type == null ? "" : type.mediaType());
+    }
+
+    private Optional<AcceptedMediaRangeMatch> bestMatchFor(
+            final ACCEPT_TYPE type, final String mediaType) {
         if (type == null || !type.hasConcreteResponseMediaType()) {
             return Optional.empty();
         }
 
         AcceptedMediaRangeMatch bestMatch = null;
         for (AcceptedMediaRange acceptedType : acceptMediaTypeDefinitionsList) {
-            final Optional<AcceptedMediaRangeMatch> match = acceptedType.match(type);
+            final Optional<AcceptedMediaRangeMatch> match = acceptedType.match(type, mediaType);
             if (match.isEmpty()) {
                 continue;
             }
@@ -275,7 +325,8 @@ public class AcceptHeaderParser {
     }
 
     public boolean hasAPreferenceForXml() {
-        return hasAPreferenceFor(ACCEPT_TYPE.XML);
+        final List<ACCEPT_TYPE> supportedTypes = getSupportedTypesInPreferenceOrder();
+        return !supportedTypes.isEmpty() && supportedTypes.get(0).rendersAsXml();
     }
 
     public boolean hasAPreferenceForJson() {
@@ -334,6 +385,39 @@ public class AcceptHeaderParser {
             }
         }
         return false;
+    }
+
+    public boolean hasAskedForXmlResponse() {
+        return hasAskedForXmlResponse(List.of());
+    }
+
+    public boolean hasAskedForXmlResponse(final Collection<String> xmlEntityNames) {
+        for (ACCEPT_TYPE type : ACCEPT_TYPE.xmlResponseMediaTypes()) {
+            if (bestMatchFor(type).isPresent()) {
+                return true;
+            }
+        }
+        for (String mediaType : structuredXmlMediaTypesFor(xmlEntityNames)) {
+            if (bestMatchFor(ACCEPT_TYPE.XML, mediaType).isPresent()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<String> structuredXmlMediaTypesFor(final Collection<String> xmlEntityNames) {
+        final Set<String> mediaTypes = new LinkedHashSet<>();
+        for (AcceptedMediaRange acceptedType : acceptMediaTypeDefinitionsList) {
+            final ContentTypeHeaderParser parser =
+                    new ContentTypeHeaderParser(acceptedType.mediaRange());
+            if (parser.isStructuredXmlForEntity(xmlEntityNames)) {
+                mediaTypes.add(parser.mediaType());
+            } else if (acceptedType.isStructuredXmlWildcard()) {
+                ContentTypeHeaderParser.defaultStructuredXmlMediaTypeFor(xmlEntityNames)
+                        .ifPresent(mediaTypes::add);
+            }
+        }
+        return new ArrayList<>(mediaTypes);
     }
 
     private static List<String> splitOutsideQuotes(final String value, final char separator) {
@@ -429,29 +513,41 @@ public class AcceptHeaderParser {
             return false;
         }
 
+        boolean matchesAnyOf(final Collection<String> mediaTypes) {
+            for (String mediaType : mediaTypes) {
+                if (match(ACCEPT_TYPE.XML, mediaType).isPresent()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         Optional<AcceptedMediaRangeMatch> match(final ACCEPT_TYPE type) {
-            final int specificity = specificityFor(type);
+            return match(type, type.mediaType());
+        }
+
+        Optional<AcceptedMediaRangeMatch> match(final ACCEPT_TYPE type, final String mediaType) {
+            final int specificity = specificityFor(mediaType);
             if (specificity == AcceptedMediaRangeMatch.NO_MATCH) {
                 return Optional.empty();
             }
             return Optional.of(
-                    new AcceptedMediaRangeMatch(type, qValue, qValueIsValid, order, specificity));
+                    new AcceptedMediaRangeMatch(
+                            type, mediaType, qValue, qValueIsValid, order, specificity));
         }
 
-        private int specificityFor(final ACCEPT_TYPE type) {
-            for (String concreteMediaType : type.mediaTypes()) {
-                if (mediaRange.equals(concreteMediaType)) {
-                    return AcceptedMediaRangeMatch.EXACT_MATCH;
-                }
-                if (isStructuredSuffixWildcardMatch(concreteMediaType)) {
-                    return AcceptedMediaRangeMatch.STRUCTURED_SUFFIX_MATCH;
-                }
-                if (isTypeWildcardMatch(concreteMediaType)) {
-                    return AcceptedMediaRangeMatch.TYPE_WILDCARD_MATCH;
-                }
-                if (isAnythingWildcard()) {
-                    return AcceptedMediaRangeMatch.ANYTHING_MATCH;
-                }
+        private int specificityFor(final String concreteMediaType) {
+            if (mediaRange.equals(concreteMediaType)) {
+                return AcceptedMediaRangeMatch.EXACT_MATCH;
+            }
+            if (isStructuredSuffixWildcardMatch(concreteMediaType)) {
+                return AcceptedMediaRangeMatch.STRUCTURED_SUFFIX_MATCH;
+            }
+            if (isTypeWildcardMatch(concreteMediaType)) {
+                return AcceptedMediaRangeMatch.TYPE_WILDCARD_MATCH;
+            }
+            if (isAnythingWildcard()) {
+                return AcceptedMediaRangeMatch.ANYTHING_MATCH;
             }
             return AcceptedMediaRangeMatch.NO_MATCH;
         }
@@ -491,6 +587,10 @@ public class AcceptHeaderParser {
             return "*/*".equals(mediaRange);
         }
 
+        private boolean isStructuredXmlWildcard() {
+            return "application/*+xml".equals(mediaRange);
+        }
+
         private static String[] mediaRangeParts(final String mediaType) {
             return mediaType.split("/", -1);
         }
@@ -523,6 +623,7 @@ public class AcceptHeaderParser {
         static final int EXACT_MATCH = 3;
 
         private final ACCEPT_TYPE type;
+        private final String mediaType;
         private final double qValue;
         private final boolean qValueIsValid;
         private final int order;
@@ -530,11 +631,13 @@ public class AcceptHeaderParser {
 
         private AcceptedMediaRangeMatch(
                 final ACCEPT_TYPE type,
+                final String mediaType,
                 final double qValue,
                 final boolean qValueIsValid,
                 final int order,
                 final int specificity) {
             this.type = type;
+            this.mediaType = mediaType;
             this.qValue = qValue;
             this.qValueIsValid = qValueIsValid;
             this.order = order;
@@ -556,22 +659,25 @@ public class AcceptHeaderParser {
         }
 
         NegotiatedAcceptType negotiatedType() {
-            return new NegotiatedAcceptType(type, qValue, order, specificity);
+            return new NegotiatedAcceptType(type, mediaType, qValue, order, specificity);
         }
     }
 
     private static final class NegotiatedAcceptType {
         private final ACCEPT_TYPE type;
+        private final String mediaType;
         private final double qValue;
         private final int order;
         private final int specificity;
 
         private NegotiatedAcceptType(
                 final ACCEPT_TYPE type,
+                final String mediaType,
                 final double qValue,
                 final int order,
                 final int specificity) {
             this.type = type;
+            this.mediaType = mediaType;
             this.qValue = qValue;
             this.order = order;
             this.specificity = specificity;
@@ -579,6 +685,10 @@ public class AcceptHeaderParser {
 
         ACCEPT_TYPE type() {
             return type;
+        }
+
+        PreferredMediaType preferredMediaType() {
+            return new PreferredMediaType(type, mediaType);
         }
 
         static Comparator<NegotiatedAcceptType> preferenceComparator() {
@@ -604,6 +714,36 @@ public class AcceptHeaderParser {
 
         private int serverPreference() {
             return ACCEPT_TYPE.responseMediaTypes().indexOf(type);
+        }
+    }
+
+    public static final class PreferredMediaType {
+        private final ACCEPT_TYPE type;
+        private final String mediaType;
+
+        private PreferredMediaType(final ACCEPT_TYPE type, final String mediaType) {
+            this.type = type;
+            this.mediaType = mediaType;
+        }
+
+        static PreferredMediaType forType(final ACCEPT_TYPE type) {
+            return new PreferredMediaType(type, type.mediaType());
+        }
+
+        static PreferredMediaType noMatch() {
+            return new PreferredMediaType(ACCEPT_TYPE.NO_MATCHING_TYPE, "");
+        }
+
+        public ACCEPT_TYPE type() {
+            return type;
+        }
+
+        public String mediaType() {
+            return mediaType;
+        }
+
+        public boolean rendersAsXml() {
+            return type.rendersAsXml();
         }
     }
 }

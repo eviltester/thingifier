@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.http.headers.headervalidator;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.AcceptHeaderParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -8,9 +9,16 @@ import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 
 public class AcceptHeaderValidator {
     private final ThingifierApiConfig apiConfig;
+    private final Collection<String> xmlEntityNames;
 
     public AcceptHeaderValidator(final ThingifierApiConfig apiConfig) {
+        this(apiConfig, List.of());
+    }
+
+    public AcceptHeaderValidator(
+            final ThingifierApiConfig apiConfig, final Collection<String> xmlEntityNames) {
         this.apiConfig = apiConfig;
+        this.xmlEntityNames = xmlEntityNames == null ? List.of() : List.copyOf(xmlEntityNames);
     }
 
     public ApiResponse validate(final String acceptHeader) {
@@ -20,7 +28,7 @@ public class AcceptHeaderValidator {
         int statusAcceptTypeNotSupported = this.apiConfig.statusCodes().acceptTypeNotSupported();
 
         if (this.apiConfig.willApiEnforceAcceptHeaderForResponses()) {
-            if (!accept.isSupportedHeader()) {
+            if (!accept.isSupportedHeader(xmlEntityNames)) {
                 apiResponse =
                         ApiResponse.error(statusAcceptTypeNotSupported, "Unrecognised Accept Type");
             }
@@ -41,15 +49,16 @@ public class AcceptHeaderValidator {
 
     private AcceptHeaderParser.ACCEPT_TYPE preferredAllowedResponseType(
             final AcceptHeaderParser accept) {
-        return accept.preferredSupportedType(allowedResponseTypes(), defaultResponseType());
+        return accept.preferredSupportedMediaType(
+                        allowedResponseTypes(), defaultResponseType(), xmlEntityNames)
+                .type();
     }
 
     private List<AcceptHeaderParser.ACCEPT_TYPE> allowedResponseTypes() {
         final List<AcceptHeaderParser.ACCEPT_TYPE> allowedTypes = new ArrayList<>();
         for (AcceptHeaderParser.ACCEPT_TYPE type :
                 AcceptHeaderParser.ACCEPT_TYPE.responseMediaTypes()) {
-            if (type == AcceptHeaderParser.ACCEPT_TYPE.XML
-                    && !this.apiConfig.willApiAllowXmlForResponses()) {
+            if (type.rendersAsXml() && !this.apiConfig.willApiAllowXmlForResponses()) {
                 continue;
             }
             if (type == AcceptHeaderParser.ACCEPT_TYPE.JSON
@@ -72,7 +81,7 @@ public class AcceptHeaderValidator {
     }
 
     private String unsupportedResponseTypeMessage(final AcceptHeaderParser accept) {
-        if (accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.XML) && !accept.willAcceptJson()) {
+        if (accept.hasAskedForXmlResponse(xmlEntityNames) && !accept.willAcceptJson()) {
             return "XML not supported";
         }
         if (accept.hasAskedFor(AcceptHeaderParser.ACCEPT_TYPE.JSON) && !accept.willAcceptXml()) {

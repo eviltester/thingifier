@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.http;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
@@ -24,6 +25,7 @@ public final class HttpApiResponse {
     private final HttpHeadersBlock apiResponseHeaders;
     private final JsonThing jsonThing;
     private final ThingifierApiConfig apiConfig;
+    private final Collection<String> xmlEntityNames;
 
     private String type;
     private AcceptHeaderParser.ACCEPT_TYPE responseType;
@@ -33,10 +35,20 @@ public final class HttpApiResponse {
             final ApiResponse anApiResponse,
             JsonThing jsonThing,
             ThingifierApiConfig apiConfig) {
+        this(requestHeaders, anApiResponse, jsonThing, apiConfig, List.of());
+    }
+
+    public HttpApiResponse(
+            final HttpHeadersBlock requestHeaders,
+            final ApiResponse anApiResponse,
+            JsonThing jsonThing,
+            ThingifierApiConfig apiConfig,
+            final Collection<String> xmlEntityNames) {
         this.apiResponse = anApiResponse;
         this.apiResponseHeaders = new HttpHeadersBlock();
         this.jsonThing = jsonThing;
         this.apiConfig = apiConfig;
+        this.xmlEntityNames = xmlEntityNames == null ? List.of() : List.copyOf(xmlEntityNames);
         responseType = AcceptHeaderParser.ACCEPT_TYPE.JSON;
 
         HttpHeadersBlock useRequestHeaders =
@@ -55,11 +67,16 @@ public final class HttpApiResponse {
 
         AcceptHeaderParser accept = new AcceptHeaderParser(acceptHeader);
 
-        responseType = accept.preferredSupportedType(allowedResponseTypes(), defaultResponseType());
+        final AcceptHeaderParser.PreferredMediaType preferredMediaType =
+                accept.preferredSupportedMediaType(
+                        allowedResponseTypes(), defaultResponseType(), effectiveXmlEntityNames());
+        responseType = preferredMediaType.type();
         if (responseType == AcceptHeaderParser.ACCEPT_TYPE.NO_MATCHING_TYPE) {
             responseType = defaultResponseType();
+            type = responseType.mediaType();
+        } else {
+            type = preferredMediaType.mediaType();
         }
-        type = responseType.mediaType();
 
         apiResponseHeaders.putAll(originalApiResponseHeaders);
         apiResponseHeaders.put("Content-Type", type);
@@ -73,8 +90,7 @@ public final class HttpApiResponse {
         final List<AcceptHeaderParser.ACCEPT_TYPE> allowedTypes = new ArrayList<>();
         for (AcceptHeaderParser.ACCEPT_TYPE type :
                 AcceptHeaderParser.ACCEPT_TYPE.responseMediaTypes()) {
-            if (type == AcceptHeaderParser.ACCEPT_TYPE.XML
-                    && !this.apiConfig.willApiAllowXmlForResponses()) {
+            if (type.rendersAsXml() && !this.apiConfig.willApiAllowXmlForResponses()) {
                 continue;
             }
             if (type == AcceptHeaderParser.ACCEPT_TYPE.JSON
@@ -84,6 +100,18 @@ public final class HttpApiResponse {
             allowedTypes.add(type);
         }
         return allowedTypes;
+    }
+
+    private Collection<String> effectiveXmlEntityNames() {
+        if (!xmlEntityNames.isEmpty() || apiResponse == null || apiResponse.isErrorResponse()) {
+            return xmlEntityNames;
+        }
+        if (apiResponse.getTypeOfThingReturned() == null) {
+            return xmlEntityNames;
+        }
+        return List.of(
+                apiResponse.getTypeOfThingReturned().getName(),
+                apiResponse.getTypeOfThingReturned().getPlural());
     }
 
     private AcceptHeaderParser.ACCEPT_TYPE defaultResponseType() {
@@ -101,9 +129,11 @@ public final class HttpApiResponse {
             return apiResponse.getBody();
         }
 
+        if (responseType.rendersAsXml()) {
+            return new ApiResponseAsXml(apiResponse, jsonThing).getXml();
+        }
+
         switch (responseType) {
-            case XML:
-                return new ApiResponseAsXml(apiResponse, jsonThing).getXml();
             case CSV:
                 return new ApiResponseAsDelimitedText(apiResponse, ',').getText();
             case TEXT:

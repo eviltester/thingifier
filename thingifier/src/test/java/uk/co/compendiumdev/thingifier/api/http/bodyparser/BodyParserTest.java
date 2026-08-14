@@ -144,6 +144,42 @@ public class BodyParserTest {
     }
 
     @Test
+    public void simpleVendorXmlParseErrorMessage() {
+
+        HttpApiRequest request = new HttpApiRequest("/estimates");
+        request.setHeaders(
+                Map.of("content-type", "application/vnd.example.estimate+xml; charset=utf-8"));
+        request.setBody("<estimate><duration>5</duration>");
+
+        List<String> names = new ArrayList<>();
+
+        names.add("estimate");
+
+        final String validated = new BodyParser(request, names).validBodyBasedOnContentType();
+
+        Assertions.assertEquals(
+                "Invalid XML Payload: Unclosed tag estimate at 32 [character 33 line 1]",
+                validated);
+    }
+
+    @Test
+    public void unsupportedXmlBasedContentTypeIsNotParsedAsXml() {
+
+        HttpApiRequest request = new HttpApiRequest("/estimates");
+        request.setHeaders(Map.of("content-type", "application/problem+xml"));
+        request.setBody("<estimate><duration>5</duration></estimate>");
+
+        List<String> names = new ArrayList<>();
+
+        names.add("estimate");
+
+        final String validated = new BodyParser(request, names).validBodyBasedOnContentType();
+
+        Assertions.assertEquals(
+                "Unknown content Type: API cannot parse application/problem+xml", validated);
+    }
+
+    @Test
     public void simpleUnknownContentParseErrorMessage() {
 
         HttpApiRequest request = new HttpApiRequest("/estimates");
@@ -302,6 +338,38 @@ public class BodyParserTest {
         Assertions.assertEquals("estimate", objects.get(0));
 
         // estimate is a LinkedTreeMap
+    }
+
+    @Test
+    public void embeddedCollectionOfObjectFromVendorXML() {
+
+        HttpApiRequest request = new HttpApiRequest("/estimates");
+        request.addHeader("Content-Type", "application/vnd.example.estimate+xml");
+        request.setBody(
+                "<estimate><duration>5</duration><estimate><todo><guid>1234567890</guid></todo></estimate></estimate>");
+
+        List<String> names = new ArrayList<>();
+
+        names.add("estimate");
+
+        final BodyParser bodyParser = new BodyParser(request, names);
+
+        final Map<String, String> valuesmap = bodyParser.getStringMap();
+
+        Assertions.assertEquals(1, valuesmap.keySet().size());
+        Assertions.assertTrue(valuesmap.keySet().contains("duration"));
+        Assertions.assertEquals("5.0", valuesmap.get("duration"));
+
+        final Map<String, Object> map = bodyParser.getMap();
+
+        Assertions.assertEquals(2, map.keySet().size());
+        Assertions.assertTrue(map.keySet().contains("duration"));
+        Assertions.assertEquals(5.0, map.get("duration"));
+        Assertions.assertTrue(map.keySet().contains("estimate"));
+
+        final List<String> objects = bodyParser.getObjectNames();
+        Assertions.assertEquals(1, objects.size());
+        Assertions.assertEquals("estimate", objects.get(0));
     }
 
     @Test

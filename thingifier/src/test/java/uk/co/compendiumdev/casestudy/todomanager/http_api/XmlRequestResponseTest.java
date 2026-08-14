@@ -1,8 +1,12 @@
 package uk.co.compendiumdev.casestudy.todomanager.http_api;
 
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.co.compendiumdev.casestudy.todomanager.TodoManagerModel;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
@@ -66,6 +70,26 @@ public class XmlRequestResponseTest {
         Assertions.assertEquals(200, response.getStatusCode());
         System.out.println(response.getBody());
 
+        Assertions.assertTrue(response.getBody().startsWith("<todos><todo>"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("xmlCompatibleAcceptHeaders")
+    public void canGetXmlItemsWhenAskedForXmlCompatibleMediaType(
+            final String accept, final String expectedContentType) {
+
+        todoManager
+                .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                .entities()
+                .create(EntityInstanceDraft.forEntity(todo).withField("title", "my title"));
+
+        HttpApiRequest request = new HttpApiRequest("todos");
+        request.getHeaders().put("accept", accept);
+
+        final HttpApiResponse response = new ThingifierHttpApi(todoManager).get(request);
+
+        Assertions.assertEquals(200, response.getStatusCode(), accept);
+        Assertions.assertEquals(expectedContentType, response.getType());
         Assertions.assertTrue(response.getBody().startsWith("<todos><todo>"));
     }
 
@@ -141,6 +165,55 @@ public class XmlRequestResponseTest {
         Assertions.assertTrue(
                 response.getBody().startsWith("<todo><doneStatus>false</doneStatus>"),
                 "Should have returned xml as body: " + response.getBody());
+    }
+
+    @ParameterizedTest
+    @MethodSource("xmlCompatibleContentTypes")
+    public void canPostAndCreateAnItemWithXmlCompatibleContentType(final String contentType) {
+
+        todoManager.apiConfig().setApiToEnforceContentTypeForRequests(true);
+
+        HttpApiRequest request = new HttpApiRequest("todos");
+        request.getHeaders().putAll(HeadersSupport.acceptXml());
+        request.getHeaders().put("content-type", contentType);
+
+        request.setBody("<todo><title>test title</title></todo>");
+
+        final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
+
+        Assertions.assertEquals(201, response.getStatusCode(), contentType);
+        Assertions.assertEquals(
+                1,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
+        Assertions.assertTrue(
+                response.getBody().startsWith("<todo><doneStatus>false</doneStatus>"),
+                "Should have returned xml as body: " + response.getBody());
+    }
+
+    @ParameterizedTest
+    @MethodSource("unsupportedXmlBasedContentTypes")
+    public void unsupportedXmlBasedContentTypeIsRejectedForPosts(final String contentType) {
+
+        todoManager.apiConfig().setApiToEnforceContentTypeForRequests(true);
+
+        HttpApiRequest request = new HttpApiRequest("todos");
+        request.getHeaders().putAll(HeadersSupport.acceptJson());
+        request.getHeaders().put("content-type", contentType);
+        request.setBody("<todo><title>test title</title></todo>");
+
+        final HttpApiResponse response = new ThingifierHttpApi(todoManager).post(request);
+
+        Assertions.assertEquals(415, response.getStatusCode(), contentType);
+        Assertions.assertTrue(response.getBody().contains("Unsupported Content Type"));
+        Assertions.assertEquals(
+                0,
+                todoManager
+                        .getStore(EntityRelModel.DEFAULT_DATABASE_NAME)
+                        .entityQueries()
+                        .count(todo));
     }
 
     @Test
@@ -307,5 +380,28 @@ public class XmlRequestResponseTest {
     private class ErrorMessages {
 
         String[] errorMessages;
+    }
+
+    private static Stream<Arguments> xmlCompatibleAcceptHeaders() {
+        return Stream.of(
+                Arguments.of("text/xml", "text/xml"),
+                Arguments.of(
+                        "application/vnd.example.todo+xml", "application/vnd.example.todo+xml"),
+                Arguments.of("application/*+xml", "application/todo+xml"));
+    }
+
+    private static Stream<String> xmlCompatibleContentTypes() {
+        return Stream.of("text/xml", "application/vnd.example.todo+xml");
+    }
+
+    private static Stream<String> unsupportedXmlBasedContentTypes() {
+        return Stream.of(
+                "application/problem+xml",
+                "application/soap+xml",
+                "application/xhtml+xml",
+                "image/svg+xml",
+                "application/atom+xml",
+                "application/rss+xml",
+                "application/*+xml");
     }
 }

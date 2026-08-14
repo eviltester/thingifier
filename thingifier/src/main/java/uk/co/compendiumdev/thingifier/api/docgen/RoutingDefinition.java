@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.ContentTypeHeaderParser;
 import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -213,7 +214,10 @@ public class RoutingDefinition {
 
     public List<String> getRequestContentTypes() {
         if (requestContentTypes.isEmpty()) {
-            return List.of("application/json", "application/xml");
+            return List.of(
+                    "application/json",
+                    ContentTypeHeaderParser.APPLICATION_XML,
+                    ContentTypeHeaderParser.TEXT_XML);
         }
         return new ArrayList<>(requestContentTypes);
     }
