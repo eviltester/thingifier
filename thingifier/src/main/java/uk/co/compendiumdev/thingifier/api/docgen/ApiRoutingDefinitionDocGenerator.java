@@ -180,7 +180,7 @@ public class ApiRoutingDefinitionDocGenerator {
 
             // TODO: allow configurable 200 for options
             defn.addRouting(
-                    String.format("show all Options for endpoint of %s", pluralUrl),
+                    optionsDocumentationFor(pluralUrl),
                     RoutingVerb.OPTIONS,
                     pluralUrl,
                     RoutingStatus.returnValue(204, "the endpoint verb options"),
@@ -352,7 +352,7 @@ public class ApiRoutingDefinitionDocGenerator {
                                             "Could not find a specific %s", entityDefn.getName())));
 
             defn.addRouting(
-                            String.format("show all Options for endpoint of %s", aUrlWGuid),
+                            optionsDocumentationFor(aUrlWGuid),
                             RoutingVerb.OPTIONS,
                             aUrlWGuid,
                             RoutingStatus.returnValue(204),
@@ -519,7 +519,7 @@ public class ApiRoutingDefinitionDocGenerator {
                                         relationshipGetTargetDescription)));
 
         defn.addRouting(
-                String.format("show all Options for endpoint of %s", aUrl),
+                optionsDocumentationFor(aUrl),
                 RoutingVerb.OPTIONS,
                 aUrl,
                 RoutingStatus.returnValue(200),
@@ -605,7 +605,7 @@ public class ApiRoutingDefinitionDocGenerator {
                                 409, String.format("conflict when deleting the relationship")));
 
         defn.addRouting(
-                String.format("show all Options for endpoint of %s", aUrlDelete),
+                optionsDocumentationFor(aUrlDelete),
                 RoutingVerb.OPTIONS,
                 aUrlDelete,
                 RoutingStatus.returnValue(200),
@@ -636,6 +636,15 @@ public class ApiRoutingDefinitionDocGenerator {
             final RelationshipVectorDefinition relationship) {
         return relationship.getCardinality().hasMaximumLimit()
                 && relationship.getCardinality().maximumLimit() == 1;
+    }
+
+    private String optionsDocumentationFor(final String endpointPath) {
+        return String.format(
+                "show all Options for endpoint of %s", documentedEndpointPath(endpointPath));
+    }
+
+    private String documentedEndpointPath(final String endpointPath) {
+        return endpointPath.replaceAll("/{2,}", "/");
     }
 
     private String relationshipGetReturnPayload(final RelationshipVectorDefinition relationship) {
