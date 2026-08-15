@@ -4,6 +4,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -122,6 +124,20 @@ public class ApiRoutingDefinitionDocGeneratorTest {
         Assertions.assertNotNull(route(definition, RoutingVerb.GET, "api/projects/:id/tasks"));
         Assertions.assertNotNull(
                 route(definition, RoutingVerb.DELETE, "api/projects/:id/tasks/:relatedId"));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "/api/todos, show all Options for endpoint of /api/todos",
+        "/api/todos/:id, show all Options for endpoint of /api/todos/:id"
+    })
+    public void optionsDocumentationNormalisesDuplicateSlashesFromPathPrefix(
+            final String routeUrl, final String documentation) {
+        ApiRoutingDefinition definition =
+                new ApiRoutingDefinitionDocGenerator(model()).generate("//api");
+
+        Assertions.assertEquals(
+                documentation, route(definition, RoutingVerb.OPTIONS, routeUrl).getDocumentation());
     }
 
     private Thingifier model() {
