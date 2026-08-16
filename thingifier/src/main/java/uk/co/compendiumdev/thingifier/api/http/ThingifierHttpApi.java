@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.adapter.hooks.ScopedHook;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.SchemaCatalog;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierSchemaCatalog;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.CollectionRoute;
@@ -17,6 +18,7 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.Relationshi
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.RelationshipInstanceRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
+import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiHookRegistry;
 import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiRequestHook;
 import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiResponseHook;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
@@ -51,6 +53,7 @@ public final class ThingifierHttpApi {
     private final JsonThing jsonThing;
     private List<HttpApiRequestHook> apiRequestHooks;
     private List<HttpApiResponseHook> apiResponseHooks;
+    private final HttpApiHookRegistry apiHookRegistry;
 
     public enum HttpVerb {
         GET,
@@ -74,6 +77,7 @@ public final class ThingifierHttpApi {
             List<HttpApiRequestHook> apiRequestHooks,
             List<HttpApiResponseHook> apiResponseHooks) {
         this.thingifier = aThingifier;
+        this.apiHookRegistry = null;
 
         // request hooks are used to do initial processing and possibly prevent processing
         if (apiRequestHooks == null) {
@@ -89,6 +93,16 @@ public final class ThingifierHttpApi {
             this.apiResponseHooks = apiResponseHooks;
         }
 
+        jsonThing = new JsonThing(thingifier.apiConfig().jsonOutput());
+    }
+
+    public ThingifierHttpApi(
+            final Thingifier aThingifier, final HttpApiHookRegistry apiHookRegistry) {
+        this.thingifier = aThingifier;
+        this.apiRequestHooks = new ArrayList<>();
+        this.apiResponseHooks = new ArrayList<>();
+        this.apiHookRegistry =
+                apiHookRegistry == null ? new HttpApiHookRegistry() : apiHookRegistry;
         jsonThing = new JsonThing(thingifier.apiConfig().jsonOutput());
     }
 
@@ -111,7 +125,7 @@ public final class ThingifierHttpApi {
         }
 
         // any pre-request override processing
-        HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request);
+        HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request, effectiveVerb);
 
         // TODO: consider 'validation' hooks which can be used to override/augment validation
 
@@ -154,7 +168,7 @@ public final class ThingifierHttpApi {
         }
 
         // run any post processing response hooks
-        return runTheHttpApiResponseHooksOn(request, httpResponse);
+        return runTheHttpApiResponseHooksOn(request, httpResponse, effectiveVerb);
     }
 
     private boolean isDisabledByApiSpec(final HttpApiRequest request, final HttpVerb verb) {
@@ -575,7 +589,7 @@ public final class ThingifierHttpApi {
 
     public HttpApiResponse query(final HttpApiRequest request, final String query) {
 
-        HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request);
+        HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request, HttpVerb.GET);
 
         if (httpResponse == null) {
             ApiResponse apiResponse =
@@ -591,11 +605,29 @@ public final class ThingifierHttpApi {
                             xmlEntityNamesFor(request.getPath()));
         }
 
-        return runTheHttpApiResponseHooksOn(request, httpResponse);
+        return runTheHttpApiResponseHooksOn(request, httpResponse, HttpVerb.GET);
     }
 
     private HttpApiResponse runTheHttpApiResponseHooksOn(
-            final HttpApiRequest request, final HttpApiResponse response) {
+            final HttpApiRequest request, final HttpApiResponse response, final HttpVerb verb) {
+        if (apiHookRegistry != null) {
+            final RoutingVerb routingVerb = routingVerbFor(verb);
+            for (ScopedHook<HttpApiResponseHook> scopedHook : apiHookRegistry.responseHooks()) {
+                if (!scopedHook.matches(
+                        request.getPath(),
+                        routingVerb,
+                        thingifier.apiConfig().getApiEndPointPrefix())) {
+                    continue;
+                }
+                HttpApiResponse returnImmediately =
+                        scopedHook.hook().run(request, response, thingifier.apiConfig());
+                if (returnImmediately != null) {
+                    return returnImmediately;
+                }
+            }
+            return response;
+        }
+
         for (HttpApiResponseHook hook : apiResponseHooks) {
             HttpApiResponse returnImmediately = hook.run(request, response, thingifier.apiConfig());
             if (returnImmediately != null) {
@@ -605,7 +637,25 @@ public final class ThingifierHttpApi {
         return response;
     }
 
-    private HttpApiResponse runTheHttpApiRequestHooksOn(final HttpApiRequest request) {
+    private HttpApiResponse runTheHttpApiRequestHooksOn(
+            final HttpApiRequest request, final HttpVerb verb) {
+        if (apiHookRegistry != null) {
+            final RoutingVerb routingVerb = routingVerbFor(verb);
+            for (ScopedHook<HttpApiRequestHook> scopedHook : apiHookRegistry.requestHooks()) {
+                if (!scopedHook.matches(
+                        request.getPath(),
+                        routingVerb,
+                        thingifier.apiConfig().getApiEndPointPrefix())) {
+                    continue;
+                }
+                HttpApiResponse response = scopedHook.hook().run(request, thingifier.apiConfig());
+                if (response != null) {
+                    return response;
+                }
+            }
+            return null;
+        }
+
         for (HttpApiRequestHook hook : apiRequestHooks) {
             HttpApiResponse response = hook.run(request, thingifier.apiConfig());
             if (response != null) {
@@ -613,5 +663,16 @@ public final class ThingifierHttpApi {
             }
         }
         return null;
+    }
+
+    private RoutingVerb routingVerbFor(final HttpVerb verb) {
+        if (verb == null) {
+            return null;
+        }
+        try {
+            return RoutingVerb.valueOf(verb.name());
+        } catch (IllegalArgumentException ignored) {
+            return null;
+        }
     }
 }

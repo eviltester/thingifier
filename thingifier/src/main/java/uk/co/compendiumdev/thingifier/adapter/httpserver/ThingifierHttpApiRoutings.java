@@ -3,8 +3,12 @@ package uk.co.compendiumdev.thingifier.adapter.httpserver;
 import static uk.co.compendiumdev.thingifier.adapter.httpserver.ServerRoutes.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.adapter.hooks.HookScope;
+import uk.co.compendiumdev.thingifier.adapter.hooks.ScopedHook;
+import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiHookRegistry;
 import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiRequestHook;
 import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiResponseHook;
 import uk.co.compendiumdev.thingifier.adapter.httpserver.conversion.HttpServerRequestToInternalHttpRequest;
@@ -13,12 +17,14 @@ import uk.co.compendiumdev.thingifier.adapter.httpserver.conversion.InternalHttp
 import uk.co.compendiumdev.thingifier.adapter.httpserver.messagehooks.HttpRequestResponseHook;
 import uk.co.compendiumdev.thingifier.adapter.httpserver.messagehooks.InternalHttpRequestHook;
 import uk.co.compendiumdev.thingifier.adapter.httpserver.messagehooks.InternalHttpResponseHook;
+import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpMethod;
 import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpRequest;
 import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpResponse;
 import uk.co.compendiumdev.thingifier.adapter.internalhttp.conversion.ThingifierHttpApiBridge;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinitionDocGenerator;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 
@@ -29,10 +35,9 @@ public class ThingifierHttpApiRoutings {
     //    private String urlPath;
     private List<HttpRequestResponseHook> preHttpRequestHooks;
     private List<HttpRequestResponseHook> postHttpResponseHooks;
-    private List<InternalHttpRequestHook> preInternalHttpRequestHooks;
-    private List<InternalHttpResponseHook> postInternalHttpResponseHooks;
-    private List<HttpApiRequestHook> httpApiRequestHooks;
-    private final List<HttpApiResponseHook> httpApiResponseHooks;
+    private List<ScopedHook<InternalHttpRequestHook>> preInternalHttpRequestHooks;
+    private List<ScopedHook<InternalHttpResponseHook>> postInternalHttpResponseHooks;
+    private final HttpApiHookRegistry httpApiHooks;
 
     // todo : we should be able to configure the API routing for authorisation and support logging
 
@@ -49,11 +54,9 @@ public class ThingifierHttpApiRoutings {
         postInternalHttpResponseHooks = new ArrayList<>();
 
         // pre and post api request processing, using internal representations
-        httpApiRequestHooks = new ArrayList<>();
-        httpApiResponseHooks = new ArrayList<>();
+        httpApiHooks = new HttpApiHookRegistry();
 
-        ThingifierHttpApiBridge apiBridge =
-                new ThingifierHttpApiBridge(thingifier, httpApiRequestHooks, httpApiResponseHooks);
+        ThingifierHttpApiBridge apiBridge = new ThingifierHttpApiBridge(thingifier, httpApiHooks);
 
         before(
                 (request, response) -> {
@@ -82,9 +85,14 @@ public class ThingifierHttpApiRoutings {
                     InternalHttpRequest iRequest = internalRequestFrom(request);
                     // now run the HttpApiRequestHook hooks on this iRequest
                     if (preInternalHttpRequestHooks != null) {
-                        for (InternalHttpRequestHook hook : preInternalHttpRequestHooks) {
+                        for (ScopedHook<InternalHttpRequestHook> scopedHook :
+                                preInternalHttpRequestHooks) {
+                            if (!scopedHook.matches(
+                                    iRequest.getPath(), routingVerbFor(iRequest.getVerb()), "")) {
+                                continue;
+                            }
                             // todo: catch exceptions and `halt`
-                            InternalHttpResponse hookResponse = hook.run(iRequest);
+                            InternalHttpResponse hookResponse = scopedHook.hook().run(iRequest);
                             if (hookResponse != null) {
                                 InternalHttpResponseToHttpServer.convert(hookResponse, response);
                                 halt(hookResponse.getStatusCode(), hookResponse.getBody());
@@ -104,9 +112,14 @@ public class ThingifierHttpApiRoutings {
 
                     // now run the HttpApiRequestHook hooks on this iRequest
                     if (postInternalHttpResponseHooks != null) {
-                        for (InternalHttpResponseHook hook : postInternalHttpResponseHooks) {
+                        for (ScopedHook<InternalHttpResponseHook> scopedHook :
+                                postInternalHttpResponseHooks) {
+                            if (!scopedHook.matches(
+                                    iRequest.getPath(), routingVerbFor(iRequest.getVerb()), "")) {
+                                continue;
+                            }
                             // todo: catch exceptions and `halt`
-                            hook.run(iRequest, iResponse);
+                            scopedHook.hook().run(iRequest, iResponse);
                         }
                     }
 
@@ -346,7 +359,23 @@ public class ThingifierHttpApiRoutings {
     */
     public void registerHttpApiRequestHook(final HttpApiRequestHook hook) {
         // pre-request hooks run pre-every-api-request
-        httpApiRequestHooks.add(hook);
+        httpApiHooks.registerRequestHook(hook);
+    }
+
+    public void registerHttpApiRequestHook(final HookScope scope, final HttpApiRequestHook hook) {
+        httpApiHooks.registerRequestHook(scope, hook);
+    }
+
+    public void registerHttpApiRequestHook(
+            final String pathPattern, final HttpApiRequestHook hook) {
+        registerHttpApiRequestHook(HookScope.endpoint(pathPattern), hook);
+    }
+
+    public void registerHttpApiRequestHook(
+            final String pathPattern,
+            final Collection<RoutingVerb> verbs,
+            final HttpApiRequestHook hook) {
+        registerHttpApiRequestHook(HookScope.endpointAndVerbs(pathPattern, verbs), hook);
     }
 
     /*
@@ -355,17 +384,67 @@ public class ThingifierHttpApiRoutings {
     */
     public void registerHttpApiResponseHook(final HttpApiResponseHook hook) {
         // pre-request hooks run pre-every-api-request
-        httpApiResponseHooks.add(hook);
+        httpApiHooks.registerResponseHook(hook);
+    }
+
+    public void registerHttpApiResponseHook(final HookScope scope, final HttpApiResponseHook hook) {
+        httpApiHooks.registerResponseHook(scope, hook);
+    }
+
+    public void registerHttpApiResponseHook(
+            final String pathPattern, final HttpApiResponseHook hook) {
+        registerHttpApiResponseHook(HookScope.endpoint(pathPattern), hook);
+    }
+
+    public void registerHttpApiResponseHook(
+            final String pathPattern,
+            final Collection<RoutingVerb> verbs,
+            final HttpApiResponseHook hook) {
+        registerHttpApiResponseHook(HookScope.endpointAndVerbs(pathPattern, verbs), hook);
     }
 
     public void registerInternalHttpResponseHook(final InternalHttpResponseHook hook) {
         // pre-request hooks run post api processing on an internal http representation
-        postInternalHttpResponseHooks.add(hook);
+        postInternalHttpResponseHooks.add(ScopedHook.any(hook));
+    }
+
+    public void registerInternalHttpResponseHook(
+            final HookScope scope, final InternalHttpResponseHook hook) {
+        postInternalHttpResponseHooks.add(ScopedHook.forScope(scope, hook));
+    }
+
+    public void registerInternalHttpResponseHook(
+            final String pathPattern, final InternalHttpResponseHook hook) {
+        registerInternalHttpResponseHook(HookScope.endpoint(pathPattern), hook);
+    }
+
+    public void registerInternalHttpResponseHook(
+            final String pathPattern,
+            final Collection<RoutingVerb> verbs,
+            final InternalHttpResponseHook hook) {
+        registerInternalHttpResponseHook(HookScope.endpointAndVerbs(pathPattern, verbs), hook);
     }
 
     public void registerInternalHttpRequestHook(final InternalHttpRequestHook hook) {
         // pre-request hooks run pre api routing on an internal http representation
-        preInternalHttpRequestHooks.add(hook);
+        preInternalHttpRequestHooks.add(ScopedHook.any(hook));
+    }
+
+    public void registerInternalHttpRequestHook(
+            final HookScope scope, final InternalHttpRequestHook hook) {
+        preInternalHttpRequestHooks.add(ScopedHook.forScope(scope, hook));
+    }
+
+    public void registerInternalHttpRequestHook(
+            final String pathPattern, final InternalHttpRequestHook hook) {
+        registerInternalHttpRequestHook(HookScope.endpoint(pathPattern), hook);
+    }
+
+    public void registerInternalHttpRequestHook(
+            final String pathPattern,
+            final Collection<RoutingVerb> verbs,
+            final InternalHttpRequestHook hook) {
+        registerInternalHttpRequestHook(HookScope.endpointAndVerbs(pathPattern, verbs), hook);
     }
 
     private InternalHttpRequest internalRequestFrom(final HttpServerRequest request) {
@@ -396,6 +475,17 @@ public class ThingifierHttpApiRoutings {
             response.header(
                     ThingifierHttpApi.ACCEPT_QUERY_HEADER,
                     ThingifierHttpApi.SUPPORTED_QUERY_CONTENT_TYPES);
+        }
+    }
+
+    private RoutingVerb routingVerbFor(final InternalHttpMethod method) {
+        if (method == null) {
+            return null;
+        }
+        try {
+            return RoutingVerb.valueOf(method.name());
+        } catch (IllegalArgumentException ignored) {
+            return null;
         }
     }
 }
