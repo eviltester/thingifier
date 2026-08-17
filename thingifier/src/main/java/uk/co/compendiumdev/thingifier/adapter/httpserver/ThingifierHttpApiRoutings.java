@@ -8,6 +8,13 @@ import java.util.List;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.adapter.hooks.HookScope;
 import uk.co.compendiumdev.thingifier.adapter.hooks.ScopedHook;
+import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.AfterActionHook;
+import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.AfterValidationHook;
+import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.BeforeActionHook;
+import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.BeforeValidationHook;
+import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.BodyParsedHook;
+import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.RouteMatchedHook;
+import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleHookRegistry;
 import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiHookRegistry;
 import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiRequestHook;
 import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiResponseHook;
@@ -38,6 +45,7 @@ public class ThingifierHttpApiRoutings {
     private List<ScopedHook<InternalHttpRequestHook>> preInternalHttpRequestHooks;
     private List<ScopedHook<InternalHttpResponseHook>> postInternalHttpResponseHooks;
     private final HttpApiHookRegistry httpApiHooks;
+    private final ThingifierApiLifecycleHookRegistry lifecycleHooks;
 
     // todo : we should be able to configure the API routing for authorisation and support logging
 
@@ -55,8 +63,11 @@ public class ThingifierHttpApiRoutings {
 
         // pre and post api request processing, using internal representations
         httpApiHooks = new HttpApiHookRegistry();
+        lifecycleHooks = new ThingifierApiLifecycleHookRegistry();
 
-        ThingifierHttpApiBridge apiBridge = new ThingifierHttpApiBridge(thingifier, httpApiHooks);
+        ThingifierHttpApiBridge apiBridge =
+                ThingifierHttpApiBridge.withHookRegistries(
+                        thingifier, httpApiHooks, lifecycleHooks);
 
         before(
                 (request, response) -> {
@@ -144,7 +155,14 @@ public class ThingifierHttpApiRoutings {
             }
             switch (defn.verb()) {
                 case GET:
-                    if (defn.status().isReturnedFromCall()) {
+                    if (!defn.status().isReturnedFromCall()) {
+                        get(
+                                defn.url(),
+                                (request, response) -> {
+                                    applyStaticResponse(defn, response);
+                                    return "";
+                                });
+                    } else {
                         get(
                                 defn.url(),
                                 (request, response) -> {
@@ -169,7 +187,14 @@ public class ThingifierHttpApiRoutings {
                     }
                     break;
                 case POST:
-                    if (defn.status().isReturnedFromCall()) {
+                    if (!defn.status().isReturnedFromCall()) {
+                        post(
+                                defn.url(),
+                                (request, response) -> {
+                                    applyStaticResponse(defn, response);
+                                    return "";
+                                });
+                    } else {
                         post(
                                 defn.url(),
                                 (request, response) -> {
@@ -207,7 +232,14 @@ public class ThingifierHttpApiRoutings {
                 default:
                     break;
                 case HEAD:
-                    if (defn.status().isReturnedFromCall()) {
+                    if (!defn.status().isReturnedFromCall()) {
+                        head(
+                                defn.url(),
+                                (request, response) -> {
+                                    applyStaticResponse(defn, response);
+                                    return "";
+                                });
+                    } else {
                         head(
                                 defn.url(),
                                 (request, response) -> {
@@ -401,6 +433,123 @@ public class ThingifierHttpApiRoutings {
             final Collection<RoutingVerb> verbs,
             final HttpApiResponseHook hook) {
         registerHttpApiResponseHook(HookScope.endpointAndVerbs(pathPattern, verbs), hook);
+    }
+
+    public void registerRouteMatchedHook(final RouteMatchedHook hook) {
+        lifecycleHooks.registerRouteMatchedHook(hook);
+    }
+
+    public void registerRouteMatchedHook(final HookScope scope, final RouteMatchedHook hook) {
+        lifecycleHooks.registerRouteMatchedHook(scope, hook);
+    }
+
+    public void registerRouteMatchedHook(final String pathPattern, final RouteMatchedHook hook) {
+        lifecycleHooks.registerRouteMatchedHook(pathPattern, hook);
+    }
+
+    public void registerRouteMatchedHook(
+            final String pathPattern,
+            final Collection<RoutingVerb> verbs,
+            final RouteMatchedHook hook) {
+        lifecycleHooks.registerRouteMatchedHook(pathPattern, verbs, hook);
+    }
+
+    public void registerBodyParsedHook(final BodyParsedHook hook) {
+        lifecycleHooks.registerBodyParsedHook(hook);
+    }
+
+    public void registerBodyParsedHook(final HookScope scope, final BodyParsedHook hook) {
+        lifecycleHooks.registerBodyParsedHook(scope, hook);
+    }
+
+    public void registerBodyParsedHook(final String pathPattern, final BodyParsedHook hook) {
+        lifecycleHooks.registerBodyParsedHook(pathPattern, hook);
+    }
+
+    public void registerBodyParsedHook(
+            final String pathPattern,
+            final Collection<RoutingVerb> verbs,
+            final BodyParsedHook hook) {
+        lifecycleHooks.registerBodyParsedHook(pathPattern, verbs, hook);
+    }
+
+    public void registerBeforeValidationHook(final BeforeValidationHook hook) {
+        lifecycleHooks.registerBeforeValidationHook(hook);
+    }
+
+    public void registerBeforeValidationHook(
+            final HookScope scope, final BeforeValidationHook hook) {
+        lifecycleHooks.registerBeforeValidationHook(scope, hook);
+    }
+
+    public void registerBeforeValidationHook(
+            final String pathPattern, final BeforeValidationHook hook) {
+        lifecycleHooks.registerBeforeValidationHook(pathPattern, hook);
+    }
+
+    public void registerBeforeValidationHook(
+            final String pathPattern,
+            final Collection<RoutingVerb> verbs,
+            final BeforeValidationHook hook) {
+        lifecycleHooks.registerBeforeValidationHook(pathPattern, verbs, hook);
+    }
+
+    public void registerAfterValidationHook(final AfterValidationHook hook) {
+        lifecycleHooks.registerAfterValidationHook(hook);
+    }
+
+    public void registerAfterValidationHook(final HookScope scope, final AfterValidationHook hook) {
+        lifecycleHooks.registerAfterValidationHook(scope, hook);
+    }
+
+    public void registerAfterValidationHook(
+            final String pathPattern, final AfterValidationHook hook) {
+        lifecycleHooks.registerAfterValidationHook(pathPattern, hook);
+    }
+
+    public void registerAfterValidationHook(
+            final String pathPattern,
+            final Collection<RoutingVerb> verbs,
+            final AfterValidationHook hook) {
+        lifecycleHooks.registerAfterValidationHook(pathPattern, verbs, hook);
+    }
+
+    public void registerBeforeActionHook(final BeforeActionHook hook) {
+        lifecycleHooks.registerBeforeActionHook(hook);
+    }
+
+    public void registerBeforeActionHook(final HookScope scope, final BeforeActionHook hook) {
+        lifecycleHooks.registerBeforeActionHook(scope, hook);
+    }
+
+    public void registerBeforeActionHook(final String pathPattern, final BeforeActionHook hook) {
+        lifecycleHooks.registerBeforeActionHook(pathPattern, hook);
+    }
+
+    public void registerBeforeActionHook(
+            final String pathPattern,
+            final Collection<RoutingVerb> verbs,
+            final BeforeActionHook hook) {
+        lifecycleHooks.registerBeforeActionHook(pathPattern, verbs, hook);
+    }
+
+    public void registerAfterActionHook(final AfterActionHook hook) {
+        lifecycleHooks.registerAfterActionHook(hook);
+    }
+
+    public void registerAfterActionHook(final HookScope scope, final AfterActionHook hook) {
+        lifecycleHooks.registerAfterActionHook(scope, hook);
+    }
+
+    public void registerAfterActionHook(final String pathPattern, final AfterActionHook hook) {
+        lifecycleHooks.registerAfterActionHook(pathPattern, hook);
+    }
+
+    public void registerAfterActionHook(
+            final String pathPattern,
+            final Collection<RoutingVerb> verbs,
+            final AfterActionHook hook) {
+        lifecycleHooks.registerAfterActionHook(pathPattern, verbs, hook);
     }
 
     public void registerInternalHttpResponseHook(final InternalHttpResponseHook hook) {

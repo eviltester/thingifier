@@ -10,7 +10,9 @@ import java.util.List;
 import java.util.Optional;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.adapter.hooks.ScopedHook;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.DefaultThingifierApiRuntime;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.SchemaCatalog;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierApiRuntime;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierSchemaCatalog;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.CollectionRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.InstanceRoute;
@@ -18,9 +20,12 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.Relationshi
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.RelationshipInstanceRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
+import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleContext;
+import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleHookRegistry;
 import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiHookRegistry;
 import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiRequestHook;
 import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiResponseHook;
+import uk.co.compendiumdev.thingifier.api.ThingifierRestAPIHandler;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyField;
@@ -54,6 +59,7 @@ public final class ThingifierHttpApi {
     private List<HttpApiRequestHook> apiRequestHooks;
     private List<HttpApiResponseHook> apiResponseHooks;
     private final HttpApiHookRegistry apiHookRegistry;
+    private final ThingifierApiLifecycleHookRegistry lifecycleHooks;
 
     public enum HttpVerb {
         GET,
@@ -69,15 +75,29 @@ public final class ThingifierHttpApi {
     };
 
     public ThingifierHttpApi(final Thingifier aThingifier) {
-        this(aThingifier, null, null);
+        this(aThingifier, (List<HttpApiRequestHook>) null, (List<HttpApiResponseHook>) null);
     }
 
     public ThingifierHttpApi(
             final Thingifier aThingifier,
             List<HttpApiRequestHook> apiRequestHooks,
             List<HttpApiResponseHook> apiResponseHooks) {
+        this(
+                aThingifier,
+                apiRequestHooks,
+                apiResponseHooks,
+                new ThingifierApiLifecycleHookRegistry());
+    }
+
+    public ThingifierHttpApi(
+            final Thingifier aThingifier,
+            List<HttpApiRequestHook> apiRequestHooks,
+            List<HttpApiResponseHook> apiResponseHooks,
+            final ThingifierApiLifecycleHookRegistry lifecycleHooks) {
         this.thingifier = aThingifier;
         this.apiHookRegistry = null;
+        this.lifecycleHooks =
+                lifecycleHooks == null ? new ThingifierApiLifecycleHookRegistry() : lifecycleHooks;
 
         // request hooks are used to do initial processing and possibly prevent processing
         if (apiRequestHooks == null) {
@@ -98,11 +118,27 @@ public final class ThingifierHttpApi {
 
     public ThingifierHttpApi(
             final Thingifier aThingifier, final HttpApiHookRegistry apiHookRegistry) {
+        this(aThingifier, apiHookRegistry, new ThingifierApiLifecycleHookRegistry());
+    }
+
+    public static ThingifierHttpApi withHookRegistries(
+            final Thingifier aThingifier,
+            final HttpApiHookRegistry apiHookRegistry,
+            final ThingifierApiLifecycleHookRegistry lifecycleHooks) {
+        return new ThingifierHttpApi(aThingifier, apiHookRegistry, lifecycleHooks);
+    }
+
+    private ThingifierHttpApi(
+            final Thingifier aThingifier,
+            final HttpApiHookRegistry apiHookRegistry,
+            final ThingifierApiLifecycleHookRegistry lifecycleHooks) {
         this.thingifier = aThingifier;
         this.apiRequestHooks = new ArrayList<>();
         this.apiResponseHooks = new ArrayList<>();
         this.apiHookRegistry =
                 apiHookRegistry == null ? new HttpApiHookRegistry() : apiHookRegistry;
+        this.lifecycleHooks =
+                lifecycleHooks == null ? new ThingifierApiLifecycleHookRegistry() : lifecycleHooks;
         jsonThing = new JsonThing(thingifier.apiConfig().jsonOutput());
     }
 
@@ -120,14 +156,22 @@ public final class ThingifierHttpApi {
         }
 
         final HttpVerb effectiveVerb = MethodOverrideParser.getEffectiveVerb(request, verb);
-        if (isDisabledByApiSpec(request, effectiveVerb)) {
-            return disabledRouteResponse(request);
-        }
 
         // any pre-request override processing
         HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request, effectiveVerb);
 
-        // TODO: consider 'validation' hooks which can be used to override/augment validation
+        ThingifierApiLifecycleContext lifecycle = null;
+        if (httpResponse == null && supportsLifecycle(effectiveVerb)) {
+            lifecycle = lifecycleContextFor(request, effectiveVerb);
+            lifecycleHooks.runRouteMatchedHooks(lifecycle);
+            if (lifecycle.shouldShortCircuit()) {
+                httpResponse = httpResponseFor(request, effectiveVerb, lifecycle.apiResponse());
+            }
+        }
+
+        if (httpResponse == null && isDisabledByApiSpec(request, effectiveVerb)) {
+            httpResponse = disabledRouteResponse(request);
+        }
 
         // validate request syntax
         if (httpResponse == null) {
@@ -142,8 +186,72 @@ public final class ThingifierHttpApi {
 
         // no httpResponse generated after validation so it is not in error
         if (httpResponse == null) {
-            ApiResponse apiResponse = routeAndProcessRequest(request, effectiveVerb);
+            if (lifecycle != null) {
+                ApiRequestEnvelope parsedEnvelope =
+                        ApiRequestEnvelope.from(
+                                request, effectiveVerb, xmlEntityNamesFor(request.getPath()));
+                lifecycle.applyParsedEnvelope(parsedEnvelope);
+                lifecycleHooks.runBodyParsedHooks(lifecycle);
+                if (lifecycle.shouldShortCircuit()) {
+                    httpResponse = httpResponseFor(request, effectiveVerb, lifecycle.apiResponse());
+                } else {
+                    ApiResponse apiResponse = routeAndProcessRequest(lifecycle);
+                    httpResponse = httpResponseFor(request, effectiveVerb, apiResponse);
+                }
+            } else {
+                ApiResponse apiResponse = routeAndProcessRequest(request, effectiveVerb);
+                httpResponse = httpResponseFor(request, effectiveVerb, apiResponse);
+            }
+        }
 
+        // run any post processing response hooks
+        return runTheHttpApiResponseHooksOn(request, httpResponse, effectiveVerb);
+    }
+
+    private ThingifierApiLifecycleContext lifecycleContextFor(
+            final HttpApiRequest request, final HttpVerb effectiveVerb) {
+        ThingifierApiRuntime runtime = new DefaultThingifierApiRuntime(thingifier);
+        ThingRoute route = new ThingRouteMapper(runtime.schema()).map(request.getPath());
+        return new ThingifierApiLifecycleContext(
+                runtime,
+                request,
+                effectiveVerb,
+                routingVerbFor(effectiveVerb),
+                route,
+                thingifier.apiConfig().getApiEndPointPrefix());
+    }
+
+    private boolean supportsLifecycle(final HttpVerb verb) {
+        switch (verb) {
+            case GET:
+            case HEAD:
+            case QUERY:
+            case DELETE:
+            case POST:
+            case PUT:
+            case PATCH:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private HttpApiResponse httpResponseFor(
+            final HttpApiRequest request,
+            final HttpVerb effectiveVerb,
+            final ApiResponse apiResponse) {
+        HttpApiResponse httpResponse =
+                new HttpApiResponse(
+                        request.getHeaders(),
+                        apiResponse,
+                        jsonThing,
+                        thingifier.apiConfig(),
+                        xmlEntityNamesFor(request.getPath()));
+
+        if (effectiveVerb == HttpVerb.HEAD) {
+            final int bodyLength = httpResponse.getBody().getBytes(StandardCharsets.UTF_8).length;
+            apiResponse.clearBody();
+            apiResponse.setHeader("Content-Length", Integer.toString(bodyLength));
             httpResponse =
                     new HttpApiResponse(
                             request.getHeaders(),
@@ -151,24 +259,8 @@ public final class ThingifierHttpApi {
                             jsonThing,
                             thingifier.apiConfig(),
                             xmlEntityNamesFor(request.getPath()));
-
-            if (effectiveVerb == HttpVerb.HEAD) {
-                final int bodyLength =
-                        httpResponse.getBody().getBytes(StandardCharsets.UTF_8).length;
-                apiResponse.clearBody();
-                apiResponse.setHeader("Content-Length", Integer.toString(bodyLength));
-                httpResponse =
-                        new HttpApiResponse(
-                                request.getHeaders(),
-                                apiResponse,
-                                jsonThing,
-                                thingifier.apiConfig(),
-                                xmlEntityNamesFor(request.getPath()));
-            }
         }
-
-        // run any post processing response hooks
-        return runTheHttpApiResponseHooksOn(request, httpResponse, effectiveVerb);
+        return httpResponse;
     }
 
     private boolean isDisabledByApiSpec(final HttpApiRequest request, final HttpVerb verb) {
@@ -255,6 +347,43 @@ public final class ThingifierHttpApi {
         }
 
         applyResponseEntityView(request, verb, apiResponse);
+        return apiResponse;
+    }
+
+    public ApiResponse routeAndProcessRequest(final ThingifierApiLifecycleContext lifecycle) {
+
+        ApiResponse apiResponse = null;
+        ApiRequestEnvelope envelope = lifecycle.toEnvelope();
+        ThingifierRestAPIHandler api =
+                new ThingifierRestAPIHandler(lifecycle.runtime(), lifecycleHooks);
+
+        switch (lifecycle.effectiveVerb()) {
+            case GET:
+                apiResponse = api.get(envelope, lifecycle);
+                break;
+            case HEAD:
+                apiResponse = api.get(envelope, lifecycle);
+                break;
+            case QUERY:
+                apiResponse = api.query(envelope, lifecycle);
+                break;
+            case DELETE:
+                apiResponse = api.delete(envelope, lifecycle);
+                break;
+            case POST:
+                apiResponse = api.post(envelope, lifecycle);
+                break;
+            case PUT:
+                apiResponse = api.put(envelope, lifecycle);
+                break;
+            case PATCH:
+                apiResponse = api.patch(envelope, lifecycle);
+                break;
+            default:
+                break;
+        }
+
+        applyResponseEntityView(lifecycle.request(), lifecycle.effectiveVerb(), apiResponse);
         return apiResponse;
     }
 

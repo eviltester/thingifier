@@ -3,6 +3,8 @@ package uk.co.compendiumdev.thingifier.api;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.DefaultThingifierApiRuntime;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierApiRuntime;
+import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleContext;
+import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleHookRegistry;
 import uk.co.compendiumdev.thingifier.api.http.ApiRequestEnvelope;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
@@ -26,13 +28,21 @@ public class ThingifierRestAPIHandler {
     }
 
     public ThingifierRestAPIHandler(final ThingifierApiRuntime runtime) {
+        this(runtime, new ThingifierApiLifecycleHookRegistry());
+    }
+
+    public ThingifierRestAPIHandler(
+            final ThingifierApiRuntime runtime,
+            final ThingifierApiLifecycleHookRegistry lifecycleHooks) {
         this.runtime = runtime;
-        this.get = new RestApiGetHandler(runtime);
-        this.delete = new RestApiDeleteHandler(runtime);
-        this.post = new RestApiPostHandler(runtime);
-        this.put = new RestApiPutHandler(runtime);
-        this.patch = new RestApiPatchHandler(runtime);
-        this.query = new RestApiQueryHandler(runtime);
+        ThingifierApiLifecycleHookRegistry hooks =
+                lifecycleHooks == null ? new ThingifierApiLifecycleHookRegistry() : lifecycleHooks;
+        this.get = new RestApiGetHandler(runtime, hooks);
+        this.delete = new RestApiDeleteHandler(runtime, hooks);
+        this.post = new RestApiPostHandler(runtime, hooks);
+        this.put = new RestApiPutHandler(runtime, hooks);
+        this.patch = new RestApiPatchHandler(runtime, hooks);
+        this.query = new RestApiQueryHandler(runtime, hooks);
     }
 
     // TODO: we should be able to accept xml with correct content type
@@ -54,8 +64,14 @@ public class ThingifierRestAPIHandler {
     }
 
     public ApiResponse get(final ApiRequestEnvelope request) {
+        return get(request, null);
+    }
+
+    public ApiResponse get(
+            final ApiRequestEnvelope request, final ThingifierApiLifecycleContext lifecycle) {
         ThingifierRequestContext context = contextFrom(request.headers());
-        return withRepository(get.handle(request.path(), request.queryParams(), context), context);
+        return withRepository(
+                get.handle(request.path(), request.queryParams(), context, lifecycle), context);
     }
 
     public ApiResponse head(
@@ -67,13 +83,24 @@ public class ThingifierRestAPIHandler {
     }
 
     public ApiResponse head(final ApiRequestEnvelope request) {
+        return head(request, null);
+    }
+
+    public ApiResponse head(
+            final ApiRequestEnvelope request, final ThingifierApiLifecycleContext lifecycle) {
         ThingifierRequestContext context = contextFrom(request.headers());
-        final ApiResponse response = get.handle(request.path(), request.queryParams(), context);
+        final ApiResponse response =
+                get.handle(request.path(), request.queryParams(), context, lifecycle);
         response.clearBody();
         return withRepository(response, context);
     }
 
     public ApiResponse query(final ApiRequestEnvelope request) {
+        return query(request, null);
+    }
+
+    public ApiResponse query(
+            final ApiRequestEnvelope request, final ThingifierApiLifecycleContext lifecycle) {
         ThingifierRequestContext context = contextFrom(request.headers());
         return withRepository(
                 query.handle(
@@ -81,7 +108,8 @@ public class ThingifierRestAPIHandler {
                         request.queryParams(),
                         request.queryBodyFormat(),
                         request.body(),
-                        context),
+                        context,
+                        lifecycle),
                 context);
     }
 
@@ -91,8 +119,13 @@ public class ThingifierRestAPIHandler {
     }
 
     public ApiResponse delete(final ApiRequestEnvelope request) {
+        return delete(request, null);
+    }
+
+    public ApiResponse delete(
+            final ApiRequestEnvelope request, final ThingifierApiLifecycleContext lifecycle) {
         ThingifierRequestContext context = contextFrom(request.headers());
-        return withRepository(delete.handle(request.path(), context), context);
+        return withRepository(delete.handle(request.path(), context, lifecycle), context);
     }
 
     public ApiResponse post(final String url, final BodyParser args, HttpHeadersBlock headers) {
@@ -101,8 +134,14 @@ public class ThingifierRestAPIHandler {
     }
 
     public ApiResponse post(final ApiRequestEnvelope request) {
+        return post(request, null);
+    }
+
+    public ApiResponse post(
+            final ApiRequestEnvelope request, final ThingifierApiLifecycleContext lifecycle) {
         ThingifierRequestContext context = contextFrom(request.headers());
-        return post(request.path(), request.bodyFields(), context);
+        return withRepository(
+                post.handle(request.path(), request.bodyFields(), context, lifecycle), context);
     }
 
     public ApiResponse post(
@@ -118,8 +157,14 @@ public class ThingifierRestAPIHandler {
     }
 
     public ApiResponse put(final ApiRequestEnvelope request) {
+        return put(request, null);
+    }
+
+    public ApiResponse put(
+            final ApiRequestEnvelope request, final ThingifierApiLifecycleContext lifecycle) {
         ThingifierRequestContext context = contextFrom(request.headers());
-        return put(request.path(), request.bodyFields(), context);
+        return withRepository(
+                put.handle(request.path(), request.bodyFields(), context, lifecycle), context);
     }
 
     public ApiResponse put(
@@ -140,8 +185,15 @@ public class ThingifierRestAPIHandler {
     }
 
     public ApiResponse patch(final ApiRequestEnvelope request) {
+        return patch(request, null);
+    }
+
+    public ApiResponse patch(
+            final ApiRequestEnvelope request, final ThingifierApiLifecycleContext lifecycle) {
         ThingifierRequestContext context = contextFrom(request.headers());
-        return patch(request.path(), request.body(), request.headers(), context);
+        return withRepository(
+                patch.handle(request.path(), request.body(), request.headers(), context, lifecycle),
+                context);
     }
 
     public ApiResponse patch(

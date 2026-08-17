@@ -32,6 +32,14 @@ final class CreateThingHandler {
     }
 
     ThingCommandResult handle(final CreateThingCommand command) {
+        ThingCommandResult validationResult = validate(command);
+        if (validationResult != null) {
+            return validationResult;
+        }
+        return apply(command);
+    }
+
+    ThingCommandResult validate(final CreateThingCommand command) {
         EntityDefinition entity = definitions.entityNamed(command.getEntityName());
         if (entity == null) {
             return ThingCommandResult.error(
@@ -57,8 +65,20 @@ final class CreateThingHandler {
         if (validationResult != null) {
             return validationResult;
         }
+        return null;
+    }
 
+    ThingCommandResult apply(final CreateThingCommand command) {
+        EntityDefinition entity = definitions.entityNamed(command.getEntityName());
+        if (entity == null) {
+            return ThingCommandResult.error(
+                    ApplicationError.notFound(
+                            String.format("Could not find entity %s", command.getEntityName())));
+        }
         try {
+            List<NamedValue> fieldValues =
+                    validation.normalizedFieldValues(
+                            entity, command.getFieldValues(), command.getBodyFields());
             EntityInstanceDraft draft =
                     drafts.createDraft(entity, command.getRequestedPrimaryKey(), fieldValues);
             return create(

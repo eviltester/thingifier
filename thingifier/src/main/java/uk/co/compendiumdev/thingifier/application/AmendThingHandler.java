@@ -37,6 +37,14 @@ final class AmendThingHandler {
     }
 
     ThingCommandResult handle(final AmendThingCommand command) {
+        ThingCommandResult validationResult = validate(command);
+        if (validationResult != null) {
+            return validationResult;
+        }
+        return apply(command);
+    }
+
+    ThingCommandResult validate(final AmendThingCommand command) {
         EntityDefinition entity = definitions.entityNamed(command.getEntityName());
         ThingCommandResult typeValidation =
                 validation.validateDeclaredFieldTypesIgnoringProtected(
@@ -51,7 +59,17 @@ final class AmendThingHandler {
                     ApplicationError.instanceNotFound(
                             command.getEntityName(), command.getIdentifier()));
         }
+        return null;
+    }
 
+    ThingCommandResult apply(final AmendThingCommand command) {
+        EntityDefinition entity = definitions.entityNamed(command.getEntityName());
+        EntityInstance instance = definitions.resolveInstance(entity, command.getIdentifier());
+        if (instance == null) {
+            return ThingCommandResult.error(
+                    ApplicationError.instanceNotFound(
+                            command.getEntityName(), command.getIdentifier()));
+        }
         try {
             List<NamedValue> fieldValues =
                     validation.normalizedFieldValues(
@@ -72,7 +90,20 @@ final class AmendThingHandler {
     }
 
     ThingCommandResult handle(final ReplaceThingCommand command) {
+        ThingCommandResult validationResult = validate(command);
+        if (validationResult != null) {
+            return validationResult;
+        }
+        return apply(command);
+    }
+
+    ThingCommandResult validate(final ReplaceThingCommand command) {
         EntityDefinition entity = definitions.entityNamed(command.getEntityName());
+        if (entity == null) {
+            return ThingCommandResult.error(
+                    ApplicationError.notFound(
+                            String.format("Could not find entity %s", command.getEntityName())));
+        }
         ThingCommandResult typeValidation =
                 validation.validateDeclaredFieldTypesIgnoringProtected(
                         entity, command.getBodyFields());
@@ -80,6 +111,39 @@ final class AmendThingHandler {
             return typeValidation;
         }
 
+        List<NamedValue> fieldValues =
+                validation.normalizedFieldValues(
+                        entity, command.getFieldValues(), command.getBodyFields());
+        EntityInstance instance = definitions.resolveInstance(entity, command.getIdentifier());
+        if (instance != null) {
+            try {
+                List<NamedValue> replacementValues =
+                        fieldValuesWithIdentifierIfMissing(
+                                entity, command.getIdentifier(), fieldValues);
+                new EntityInstanceDraftBuilder(instance).setFieldValuesFrom(replacementValues);
+                return null;
+            } catch (ThingStoreWriteException e) {
+                throw e;
+            } catch (Exception e) {
+                return ThingCommandResult.error(ApplicationExceptionMessages.messageFrom(e));
+            }
+        }
+
+        ThingCommandResult creationAllowed =
+                validation.validateReplaceCreate(entity, command.getIdentifier(), fieldValues);
+        if (creationAllowed != null) {
+            return creationAllowed;
+        }
+        return null;
+    }
+
+    ThingCommandResult apply(final ReplaceThingCommand command) {
+        EntityDefinition entity = definitions.entityNamed(command.getEntityName());
+        if (entity == null) {
+            return ThingCommandResult.error(
+                    ApplicationError.notFound(
+                            String.format("Could not find entity %s", command.getEntityName())));
+        }
         List<NamedValue> fieldValues =
                 validation.normalizedFieldValues(
                         entity, command.getFieldValues(), command.getBodyFields());
@@ -99,13 +163,6 @@ final class AmendThingHandler {
                 return ThingCommandResult.error(ApplicationExceptionMessages.messageFrom(e));
             }
         }
-
-        ThingCommandResult creationAllowed =
-                validation.validateReplaceCreate(entity, command.getIdentifier(), fieldValues);
-        if (creationAllowed != null) {
-            return creationAllowed;
-        }
-
         try {
             EntityInstanceDraft draft =
                     drafts.createDraft(entity, command.getIdentifier(), fieldValues);

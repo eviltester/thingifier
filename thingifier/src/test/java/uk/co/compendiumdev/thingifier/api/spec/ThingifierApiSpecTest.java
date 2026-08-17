@@ -6,6 +6,8 @@ import static uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle.PA
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinitionDocGenerator;
@@ -14,6 +16,9 @@ import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
+import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
+import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
@@ -22,6 +27,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
 class ThingifierApiSpecTest {
 
@@ -85,6 +91,136 @@ class ThingifierApiSpecTest {
                 new ThingifierHttpApi(thingifier).post(new HttpApiRequest("/api/todos"));
 
         Assertions.assertEquals(404, response.getStatusCode());
+    }
+
+    @Test
+    void pathLevelMethodNotAllowedMarksSelectedRoutesAsStatic405() {
+        final Thingifier thingifier = model();
+        thingifier
+                .apiSpec()
+                .route("/api/todos")
+                .methodNotAllowed(RoutingVerb.POST, RoutingVerb.PUT);
+
+        final ApiRoutingDefinition definition =
+                new ApiRoutingDefinitionDocGenerator(thingifier).generate("/api");
+
+        Assertions.assertEquals(
+                405, route(definition, RoutingVerb.POST, "api/todos").status().value());
+        Assertions.assertEquals(
+                405, route(definition, RoutingVerb.PUT, "api/todos").status().value());
+    }
+
+    @Test
+    void methodNotAllowedDoesNotDisableGeneratedRoute() {
+        final Thingifier thingifier = model();
+        thingifier.apiSpec().route("/api/todos").methodNotAllowed(RoutingVerb.POST);
+
+        final ApiRoutingDefinition definition =
+                new ApiRoutingDefinitionDocGenerator(thingifier).generate("/api");
+        final RoutingDefinition post = route(definition, RoutingVerb.POST, "api/todos");
+
+        Assertions.assertFalse(post.isDisabled());
+        Assertions.assertFalse(post.isHiddenFromDocumentation());
+    }
+
+    @Test
+    void methodNotAllowedRemovesVerbFromOptionsAllowHeader() {
+        final Thingifier thingifier = model();
+        thingifier.apiSpec().route("/api/todos").methodNotAllowed(RoutingVerb.POST);
+
+        final ApiRoutingDefinition definition =
+                new ApiRoutingDefinitionDocGenerator(thingifier).generate("/api");
+
+        Assertions.assertEquals(
+                "OPTIONS, GET, HEAD, QUERY",
+                route(definition, RoutingVerb.OPTIONS, "api/todos").headerValue());
+    }
+
+    @Test
+    void methodNotAllowedReusesExistingVerbRouteRule() {
+        final Thingifier thingifier = model();
+        thingifier.apiSpec().route(RoutingVerb.POST, "/api/todos").secureWithBearerAuth();
+        thingifier.apiSpec().route("/api/todos").methodNotAllowed(RoutingVerb.POST);
+
+        final ApiRoutingDefinition definition =
+                new ApiRoutingDefinitionDocGenerator(thingifier).generate("/api");
+        final RoutingDefinition post = route(definition, RoutingVerb.POST, "api/todos");
+
+        Assertions.assertEquals(405, post.status().value());
+        Assertions.assertTrue(post.isSecuredByBearerAuth());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"/api/todos/{todoId}", "/api/todos/:todoId"})
+    void methodNotAllowedMatchesPathParameterStyles(final String pathPattern) {
+        final Thingifier thingifier = model();
+        thingifier.apiSpec().route(pathPattern).methodNotAllowed(RoutingVerb.POST);
+
+        Assertions.assertTrue(
+                thingifier
+                        .apiSpec()
+                        .isMethodNotAllowed(RoutingVerb.POST, "/api/todos/123", "/api"));
+    }
+
+    @Test
+    void directApiMethodNotAllowedReturns405WithoutMutation() {
+        final Thingifier thingifier = model();
+        thingifier.apiSpec().route("/todos").methodNotAllowed(RoutingVerb.POST);
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"blocked\"}"),
+                                new HttpHeadersBlock());
+
+        Assertions.assertEquals(405, response.getStatusCode());
+        Assertions.assertEquals(
+                "Method Not Allowed", response.getErrorMessages().iterator().next());
+        Assertions.assertEquals(0, todoCount(thingifier));
+    }
+
+    @Test
+    void httpApiMethodNotAllowedReturns405WithoutMutation() {
+        final Thingifier thingifier = model();
+        thingifier.apiConfig().setFrom(new ThingifierApiConfig("/api"));
+        thingifier.apiSpec().route("/api/todos").methodNotAllowed(RoutingVerb.POST);
+
+        final HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .post(jsonRequest("/api/todos", "{\"title\":\"blocked\"}"));
+
+        Assertions.assertEquals(405, response.getStatusCode());
+        Assertions.assertEquals(0, todoCount(thingifier));
+    }
+
+    @Test
+    void methodNotAllowedRejectsEmptyVerbList() {
+        final Thingifier thingifier = model();
+
+        final IllegalArgumentException thrown =
+                Assertions.assertThrows(
+                        IllegalArgumentException.class,
+                        () -> thingifier.apiSpec().route("/api/todos").methodNotAllowed());
+
+        Assertions.assertEquals("methodNotAllowed requires at least one verb", thrown.getMessage());
+    }
+
+    @Test
+    void methodNotAllowedRejectsNullVerbList() {
+        final Thingifier thingifier = model();
+
+        final IllegalArgumentException thrown =
+                Assertions.assertThrows(
+                        IllegalArgumentException.class,
+                        () ->
+                                thingifier
+                                        .apiSpec()
+                                        .route("/api/todos")
+                                        .methodNotAllowed((RoutingVerb[]) null));
+
+        Assertions.assertEquals("methodNotAllowed requires at least one verb", thrown.getMessage());
     }
 
     @Test
@@ -356,6 +492,19 @@ class ThingifierApiSpecTest {
                 .addHeader("Content-Type", contentType)
                 .addHeader("Accept", "application/json")
                 .setBody(null);
+    }
+
+    private BodyParser parser(final Thingifier thingifier, final String body) {
+        return new BodyParser(
+                new HttpApiRequest("/request").setBody(body), thingifier.getThingNames());
+    }
+
+    private int todoCount(final Thingifier thingifier) {
+        return thingifier
+                .api()
+                .get("todos", new QueryFilterParams(), new HttpHeadersBlock())
+                .getReturnedInstanceCollection()
+                .size();
     }
 
     private RoutingDefinition route(

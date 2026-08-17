@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.application;
 
+import java.util.function.Supplier;
 import uk.co.compendiumdev.thingifier.apiconfig.JsonOutputConfig;
 import uk.co.compendiumdev.thingifier.application.command.AmendThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.ConnectExistingRelationshipCommand;
@@ -77,41 +78,100 @@ public final class ThingCommandService {
         return transactionRunner.run(() -> executeInsideTransaction(command));
     }
 
-    private ThingCommandResult executeInsideTransaction(final ThingWriteCommand command) {
+    public ThingCommandResult runInTransaction(final Supplier<ThingCommandResult> operation) {
+        return transactionRunner.run(operation);
+    }
+
+    public ThingCommandResult validate(final ThingWriteCommand command) {
         if (command instanceof CreateThingCommand) {
-            return createHandler.handle((CreateThingCommand) command);
+            return createHandler.validate((CreateThingCommand) command);
         }
 
         if (command instanceof AmendThingCommand) {
-            return amendHandler.handle((AmendThingCommand) command);
+            return amendHandler.validate((AmendThingCommand) command);
         }
 
         if (command instanceof DeleteThingCommand) {
-            return deleteHandler.handle((DeleteThingCommand) command);
+            return deleteHandler.validate((DeleteThingCommand) command);
         }
 
         if (command instanceof PatchThingDocumentCommand) {
-            return patchDocumentHandler.handle((PatchThingDocumentCommand) command);
+            return patchDocumentHandler.validate((PatchThingDocumentCommand) command);
         }
 
         if (command instanceof ReplaceThingCommand) {
-            return amendHandler.handle((ReplaceThingCommand) command);
+            return amendHandler.validate((ReplaceThingCommand) command);
         }
 
         if (command instanceof ConnectExistingRelationshipCommand) {
-            return relationshipHandler.handle((ConnectExistingRelationshipCommand) command);
+            return relationshipHandler.validate((ConnectExistingRelationshipCommand) command);
         }
 
         if (command instanceof CreateAndConnectRelationshipCommand) {
-            return relationshipHandler.handle((CreateAndConnectRelationshipCommand) command);
+            return relationshipHandler.validate((CreateAndConnectRelationshipCommand) command);
         }
 
         if (command instanceof RelateThingCommand) {
-            return relationshipHandler.handle((RelateThingCommand) command);
+            return relationshipHandler.validate((RelateThingCommand) command);
         }
 
         if (command instanceof DisconnectRelationshipCommand) {
-            return relationshipHandler.handle((DisconnectRelationshipCommand) command);
+            return relationshipHandler.validate((DisconnectRelationshipCommand) command);
+        }
+
+        return ThingCommandResult.error(
+                ApplicationError.unsupported(
+                        String.format(
+                                "Unsupported command %s", command.getClass().getSimpleName())));
+    }
+
+    public ThingCommandResult applyValidated(final ThingWriteCommand command) {
+        return applyInsideTransaction(command);
+    }
+
+    private ThingCommandResult executeInsideTransaction(final ThingWriteCommand command) {
+        ThingCommandResult validationResult = validate(command);
+        if (validationResult != null) {
+            return validationResult;
+        }
+        return applyInsideTransaction(command);
+    }
+
+    private ThingCommandResult applyInsideTransaction(final ThingWriteCommand command) {
+        if (command instanceof CreateThingCommand) {
+            return createHandler.apply((CreateThingCommand) command);
+        }
+
+        if (command instanceof AmendThingCommand) {
+            return amendHandler.apply((AmendThingCommand) command);
+        }
+
+        if (command instanceof DeleteThingCommand) {
+            return deleteHandler.apply((DeleteThingCommand) command);
+        }
+
+        if (command instanceof PatchThingDocumentCommand) {
+            return patchDocumentHandler.apply((PatchThingDocumentCommand) command);
+        }
+
+        if (command instanceof ReplaceThingCommand) {
+            return amendHandler.apply((ReplaceThingCommand) command);
+        }
+
+        if (command instanceof ConnectExistingRelationshipCommand) {
+            return relationshipHandler.apply((ConnectExistingRelationshipCommand) command);
+        }
+
+        if (command instanceof CreateAndConnectRelationshipCommand) {
+            return relationshipHandler.apply((CreateAndConnectRelationshipCommand) command);
+        }
+
+        if (command instanceof RelateThingCommand) {
+            return relationshipHandler.apply((RelateThingCommand) command);
+        }
+
+        if (command instanceof DisconnectRelationshipCommand) {
+            return relationshipHandler.apply((DisconnectRelationshipCommand) command);
         }
 
         return ThingCommandResult.error(

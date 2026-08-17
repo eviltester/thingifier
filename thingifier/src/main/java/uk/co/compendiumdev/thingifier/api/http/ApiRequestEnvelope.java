@@ -66,6 +66,24 @@ public final class ApiRequestEnvelope {
                 queryBodyFormat);
     }
 
+    public static ApiRequestEnvelope fromParsed(
+            final ThingifierHttpApi.HttpVerb verb,
+            final String path,
+            final QueryFilterParams queryParams,
+            final HttpHeadersBlock headers,
+            final ApiBodyFields bodyFields,
+            final String body,
+            final QueryBodyFormat queryBodyFormat) {
+        return new ApiRequestEnvelope(
+                verb,
+                path,
+                queryParams == null ? new QueryFilterParams() : queryParams,
+                headers == null ? new HttpHeadersBlock() : headers,
+                bodyFields == null ? ApiBodyFields.empty() : bodyFields,
+                body,
+                queryBodyFormat == null ? QueryBodyFormat.URL_ENCODED : queryBodyFormat);
+    }
+
     private static QueryBodyFormat queryBodyFormatFor(final HttpApiRequest request) {
         final ContentTypeHeaderParser contentType =
                 new ContentTypeHeaderParser(request.getContentTypeHeader());

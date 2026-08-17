@@ -41,6 +41,12 @@ public final class WriteMethodPolicy {
             return invalidConfig;
         }
 
+        ApiResponse configuredMethodNotAllowed =
+                rejectIfMethodNotAllowedByApiSpec(verb, route, bodyFields, context);
+        if (configuredMethodNotAllowed != null) {
+            return configuredMethodNotAllowed;
+        }
+
         if (route instanceof CollectionRoute || route instanceof InstanceRoute) {
             return rejectEntityWriteIfNotAllowed(verb, route, bodyFields, context);
         }
@@ -51,6 +57,17 @@ public final class WriteMethodPolicy {
         }
 
         return null;
+    }
+
+    private ApiResponse rejectIfMethodNotAllowedByApiSpec(
+            final RoutingVerb verb,
+            final ThingRoute route,
+            final ApiBodyFields bodyFields,
+            final ThingifierRequestContext context) {
+        if (!isMethodNotAllowedByApiSpec(verb, route)) {
+            return null;
+        }
+        return methodNotAllowed(allowHeaderFor(route, bodyFields, context));
     }
 
     private ApiResponse rejectEntityWriteIfNotAllowed(
@@ -290,32 +307,112 @@ public final class WriteMethodPolicy {
         List<String> allowed = new ArrayList<>();
         allowed.add("OPTIONS");
         if (route instanceof CollectionRoute) {
-            allowed.add("GET");
-            allowed.add("HEAD");
-            if (entityOperationsFor(RoutingVerb.POST, route)
-                    .contains(EntityWriteOperation.CREATE)) {
+            if (isMethodAllowedByApiSpec(RoutingVerb.GET, route)) {
+                allowed.add("GET");
+            }
+            if (isMethodAllowedByApiSpec(RoutingVerb.HEAD, route)) {
+                allowed.add("HEAD");
+            }
+            if (entityOperationsFor(RoutingVerb.POST, route).contains(EntityWriteOperation.CREATE)
+                    && isMethodAllowedByApiSpec(RoutingVerb.POST, route)) {
                 allowed.add("POST");
             }
             if (isEntityMethodAllowedFor(
                     RoutingVerb.PUT, route, bodyFields, context, blockedVerb, blockedOperation)) {
                 allowed.add("PUT");
             }
-            allowed.add("QUERY");
+            if (isMethodAllowedByApiSpec(RoutingVerb.QUERY, route)) {
+                allowed.add("QUERY");
+            }
         }
         if (route instanceof InstanceRoute) {
-            allowed.add("GET");
-            allowed.add("HEAD");
-            if (entityOperationsFor(RoutingVerb.POST, route)
-                    .contains(EntityWriteOperation.UPDATE)) {
+            if (isMethodAllowedByApiSpec(RoutingVerb.GET, route)) {
+                allowed.add("GET");
+            }
+            if (isMethodAllowedByApiSpec(RoutingVerb.HEAD, route)) {
+                allowed.add("HEAD");
+            }
+            if (entityOperationsFor(RoutingVerb.POST, route).contains(EntityWriteOperation.UPDATE)
+                    && isMethodAllowedByApiSpec(RoutingVerb.POST, route)) {
                 allowed.add("POST");
             }
             if (isEntityMethodAllowedFor(
                     RoutingVerb.PUT, route, bodyFields, context, blockedVerb, blockedOperation)) {
                 allowed.add("PUT");
             }
-            if (!entityPatchUpdateStylesFor(route).isEmpty()) {
+            if (!entityPatchUpdateStylesFor(route).isEmpty()
+                    && isMethodAllowedByApiSpec(RoutingVerb.PATCH, route)) {
                 allowed.add("PATCH");
             }
+            if (isMethodAllowedByApiSpec(RoutingVerb.DELETE, route)) {
+                allowed.add("DELETE");
+            }
+        }
+        return String.join(", ", allowed);
+    }
+
+    private String allowHeaderFor(
+            final ThingRoute route,
+            final ApiBodyFields bodyFields,
+            final ThingifierRequestContext context) {
+        List<String> allowed = new ArrayList<>();
+        allowed.add("OPTIONS");
+        if (route instanceof CollectionRoute) {
+            if (isMethodAllowedByApiSpec(RoutingVerb.GET, route)) {
+                allowed.add("GET");
+            }
+            if (isMethodAllowedByApiSpec(RoutingVerb.HEAD, route)) {
+                allowed.add("HEAD");
+            }
+            if (entityOperationsFor(RoutingVerb.POST, route).contains(EntityWriteOperation.CREATE)
+                    && isMethodAllowedByApiSpec(RoutingVerb.POST, route)) {
+                allowed.add("POST");
+            }
+            if (isEntityMethodAllowedFor(RoutingVerb.PUT, route, bodyFields, context, null, null)) {
+                allowed.add("PUT");
+            }
+            if (isMethodAllowedByApiSpec(RoutingVerb.QUERY, route)) {
+                allowed.add("QUERY");
+            }
+        }
+        if (route instanceof InstanceRoute) {
+            if (isMethodAllowedByApiSpec(RoutingVerb.GET, route)) {
+                allowed.add("GET");
+            }
+            if (isMethodAllowedByApiSpec(RoutingVerb.HEAD, route)) {
+                allowed.add("HEAD");
+            }
+            if (entityOperationsFor(RoutingVerb.POST, route).contains(EntityWriteOperation.UPDATE)
+                    && isMethodAllowedByApiSpec(RoutingVerb.POST, route)) {
+                allowed.add("POST");
+            }
+            if (isEntityMethodAllowedFor(RoutingVerb.PUT, route, bodyFields, context, null, null)) {
+                allowed.add("PUT");
+            }
+            if (!entityPatchUpdateStylesFor(route).isEmpty()
+                    && isMethodAllowedByApiSpec(RoutingVerb.PATCH, route)) {
+                allowed.add("PATCH");
+            }
+            if (isMethodAllowedByApiSpec(RoutingVerb.DELETE, route)) {
+                allowed.add("DELETE");
+            }
+        }
+        if (route instanceof RelationshipCollectionRoute) {
+            if (isMethodAllowedByApiSpec(RoutingVerb.GET, route)) {
+                allowed.add("GET");
+            }
+            if (isMethodAllowedByApiSpec(RoutingVerb.HEAD, route)) {
+                allowed.add("HEAD");
+            }
+            if (isRelationshipMethodAllowedFor(RoutingVerb.POST, route, null, null)) {
+                allowed.add("POST");
+            }
+            if (isMethodAllowedByApiSpec(RoutingVerb.QUERY, route)) {
+                allowed.add("QUERY");
+            }
+        }
+        if (route instanceof RelationshipInstanceRoute
+                && isRelationshipMethodAllowedFor(RoutingVerb.DELETE, route, null, null)) {
             allowed.add("DELETE");
         }
         return String.join(", ", allowed);
@@ -329,6 +426,9 @@ public final class WriteMethodPolicy {
             final RoutingVerb blockedVerb,
             final EntityWriteOperation blockedOperation) {
         if (verb == RoutingVerb.PUT && !canPutRouteUseIdentifier(route)) {
+            return false;
+        }
+        if (!isMethodAllowedByApiSpec(verb, route)) {
             return false;
         }
         EntityWriteOperation operation =
@@ -348,13 +448,19 @@ public final class WriteMethodPolicy {
         List<String> allowed = new ArrayList<>();
         allowed.add("OPTIONS");
         if (route instanceof RelationshipCollectionRoute) {
-            allowed.add("GET");
-            allowed.add("HEAD");
+            if (isMethodAllowedByApiSpec(RoutingVerb.GET, route)) {
+                allowed.add("GET");
+            }
+            if (isMethodAllowedByApiSpec(RoutingVerb.HEAD, route)) {
+                allowed.add("HEAD");
+            }
             if (isRelationshipMethodAllowedFor(
                     RoutingVerb.POST, route, blockedVerb, blockedOperation)) {
                 allowed.add("POST");
             }
-            allowed.add("QUERY");
+            if (isMethodAllowedByApiSpec(RoutingVerb.QUERY, route)) {
+                allowed.add("QUERY");
+            }
         }
         if (route instanceof RelationshipInstanceRoute) {
             if (isRelationshipMethodAllowedFor(
@@ -370,6 +476,9 @@ public final class WriteMethodPolicy {
             final ThingRoute route,
             final RoutingVerb blockedVerb,
             final RelationshipWriteOperation blockedOperation) {
+        if (!isMethodAllowedByApiSpec(verb, route)) {
+            return false;
+        }
         if (verb == RoutingVerb.POST && route instanceof RelationshipCollectionRoute) {
             return !relationshipOperationsFor(verb, route).isEmpty();
         }
@@ -379,5 +488,15 @@ public final class WriteMethodPolicy {
                         ? blockedOperation
                         : relationshipOperationFor(verb, route, ApiBodyFields.empty());
         return operation != null && relationshipOperationsFor(verb, route).contains(operation);
+    }
+
+    private boolean isMethodAllowedByApiSpec(final RoutingVerb verb, final ThingRoute route) {
+        return !isMethodNotAllowedByApiSpec(verb, route);
+    }
+
+    private boolean isMethodNotAllowedByApiSpec(final RoutingVerb verb, final ThingRoute route) {
+        return runtime.apiSpec()
+                .isMethodNotAllowed(
+                        verb, route.originalPath(), runtime.apiConfig().getApiEndPointPrefix());
     }
 }

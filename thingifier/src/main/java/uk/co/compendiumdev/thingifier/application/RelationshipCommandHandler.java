@@ -41,6 +41,14 @@ final class RelationshipCommandHandler {
     }
 
     ThingCommandResult handle(final ConnectExistingRelationshipCommand command) {
+        ThingCommandResult validationResult = validate(command);
+        if (validationResult != null) {
+            return validationResult;
+        }
+        return apply(command);
+    }
+
+    ThingCommandResult validate(final ConnectExistingRelationshipCommand command) {
         EntityDefinition parentEntity = definitions.entityNamed(command.getParentEntityName());
         EntityInstance parent =
                 definitions.resolveInstance(parentEntity, command.getParentIdentifier());
@@ -68,12 +76,41 @@ final class RelationshipCommandHandler {
         if (relationshipError != null) {
             return relationshipError;
         }
+        return null;
+    }
 
+    ThingCommandResult apply(final ConnectExistingRelationshipCommand command) {
+        EntityDefinition parentEntity = definitions.entityNamed(command.getParentEntityName());
+        EntityInstance parent =
+                definitions.resolveInstance(parentEntity, command.getParentIdentifier());
+        if (parent == null) {
+            return parentNotFound(command);
+        }
+
+        RelationshipTargetResolver.RelatedItemResolution related =
+                targets.resolveRelatedItemFromReferenceFields(
+                        parent, command.getRelationshipName(), command.getChildReferenceFields());
+        if (related.error() != null) {
+            return ThingCommandResult.error(related.error());
+        }
+
+        RelationshipVectorDefinition relationshipToUse =
+                parent.getEntity()
+                        .getNamedRelationshipTo(
+                                command.getRelationshipName(), related.instance().getEntity());
         return relationships.connectRelationship(
                 parent, relationshipToUse.getName(), related.instance(), false);
     }
 
     ThingCommandResult handle(final CreateAndConnectRelationshipCommand command) {
+        ThingCommandResult validationResult = validate(command);
+        if (validationResult != null) {
+            return validationResult;
+        }
+        return apply(command);
+    }
+
+    ThingCommandResult validate(final CreateAndConnectRelationshipCommand command) {
         EntityDefinition parentEntity = definitions.entityNamed(command.getParentEntityName());
         EntityInstance parent =
                 definitions.resolveInstance(parentEntity, command.getParentIdentifier());
@@ -96,7 +133,21 @@ final class RelationshipCommandHandler {
         if (validationResult != null) {
             return validationResult;
         }
+        return null;
+    }
 
+    ThingCommandResult apply(final CreateAndConnectRelationshipCommand command) {
+        EntityDefinition parentEntity = definitions.entityNamed(command.getParentEntityName());
+        EntityInstance parent =
+                definitions.resolveInstance(parentEntity, command.getParentIdentifier());
+        if (parent == null) {
+            return parentNotFound(command);
+        }
+
+        EntityDefinition childEntity = definitions.entityNamed(command.getChildEntityName());
+        List<NamedValue> childFieldValues =
+                validation.normalizedFieldValues(
+                        childEntity, command.getChildFieldValues(), command.getChildBodyFields());
         try {
             EntityInstanceDraft childDraft = drafts.createDraft(childEntity, "", childFieldValues);
             ThingCommandResult createResult =
@@ -124,6 +175,14 @@ final class RelationshipCommandHandler {
     }
 
     ThingCommandResult handle(final RelateThingCommand command) {
+        ThingCommandResult validationResult = validate(command);
+        if (validationResult != null) {
+            return validationResult;
+        }
+        return apply(command);
+    }
+
+    ThingCommandResult validate(final RelateThingCommand command) {
         EntityDefinition parentEntity = definitions.entityNamed(command.getParentEntityName());
         if (parentEntity == null) {
             return parentNotFound(command);
@@ -154,6 +213,53 @@ final class RelationshipCommandHandler {
             return typeValidation;
         }
 
+        if (definitions.resolveInstance(parentEntity, command.getParentIdentifier()) == null) {
+            return parentNotFound(command);
+        }
+
+        if (referencesExistingRelatedItem) {
+            ConnectExistingRelationshipCommand connect =
+                    new ConnectExistingRelationshipCommand(
+                            command.getParentEntityName(),
+                            command.getParentIdentifier(),
+                            command.getRelationshipName(),
+                            bodyFieldValues);
+            return validate(connect);
+        }
+
+        CreateAndConnectRelationshipCommand create =
+                new CreateAndConnectRelationshipCommand(
+                        command.getParentEntityName(),
+                        command.getParentIdentifier(),
+                        command.getRelationshipName(),
+                        vector.getTo().getName(),
+                        bodyFieldValues,
+                        command.getBodyFields(),
+                        command.getBodyRelationships());
+        return validate(create);
+    }
+
+    ThingCommandResult apply(final RelateThingCommand command) {
+        EntityDefinition parentEntity = definitions.entityNamed(command.getParentEntityName());
+        if (parentEntity == null) {
+            return parentNotFound(command);
+        }
+
+        RelationshipVectorDefinition vector =
+                targets.firstRelationshipVector(parentEntity, command.getRelationshipName());
+        if (vector == null) {
+            return ThingCommandResult.error(
+                    String.format(
+                            "Could not find a relationship named %s for %s",
+                            command.getRelationshipName(), parentEntity.getName()));
+        }
+
+        List<NamedValue> bodyFieldValues =
+                validation.normalizedFieldValues(
+                        vector.getTo(), command.getBodyFieldValues(), command.getBodyFields());
+        boolean referencesExistingRelatedItem =
+                targets.bodyReferencesExistingRelatedItem(vector.getTo(), bodyFieldValues);
+
         EntityInstance parent =
                 definitions.resolveInstance(parentEntity, command.getParentIdentifier());
         if (parent == null) {
@@ -167,7 +273,7 @@ final class RelationshipCommandHandler {
                             command.getParentIdentifier(),
                             command.getRelationshipName(),
                             bodyFieldValues);
-            return handle(connect);
+            return apply(connect);
         }
 
         CreateAndConnectRelationshipCommand create =
@@ -179,7 +285,7 @@ final class RelationshipCommandHandler {
                         bodyFieldValues,
                         command.getBodyFields(),
                         command.getBodyRelationships());
-        ThingCommandResult result = handle(create);
+        ThingCommandResult result = apply(create);
         if (result.isSuccessful()) {
             return ThingCommandResult.created(result.getInstance());
         }
@@ -187,6 +293,14 @@ final class RelationshipCommandHandler {
     }
 
     ThingCommandResult handle(final DisconnectRelationshipCommand command) {
+        ThingCommandResult validationResult = validate(command);
+        if (validationResult != null) {
+            return validationResult;
+        }
+        return apply(command);
+    }
+
+    ThingCommandResult validate(final DisconnectRelationshipCommand command) {
         EntityDefinition parentEntity = definitions.entityNamed(command.getParentEntityName());
         EntityInstance parent =
                 definitions.resolveInstance(parentEntity, command.getParentIdentifier());
@@ -200,7 +314,23 @@ final class RelationshipCommandHandler {
         if (child == null) {
             return relationshipTargetNotFound(command);
         }
+        return null;
+    }
 
+    ThingCommandResult apply(final DisconnectRelationshipCommand command) {
+        EntityDefinition parentEntity = definitions.entityNamed(command.getParentEntityName());
+        EntityInstance parent =
+                definitions.resolveInstance(parentEntity, command.getParentIdentifier());
+        if (parent == null) {
+            return relationshipSourceNotFound(command);
+        }
+
+        EntityInstance child =
+                targets.relatedInstanceMatchingIdentifier(
+                        parent, command.getRelationshipName(), command.getChildIdentifier());
+        if (child == null) {
+            return relationshipTargetNotFound(command);
+        }
         try {
             store.relationships().removeBetween(parent, child, command.getRelationshipName());
             return ThingCommandResult.success();

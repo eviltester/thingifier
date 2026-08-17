@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.adapter.internalhttp.conversion;
 
 import java.util.List;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleHookRegistry;
 import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiHookRegistry;
 import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiRequestHook;
 import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiResponseHook;
@@ -19,7 +20,7 @@ public final class ThingifierHttpApiBridge {
     private final ThingifierHttpApi thingifierHttpApi;
 
     public ThingifierHttpApiBridge(final Thingifier aThingifier) {
-        this(aThingifier, null, null);
+        this(aThingifier, (List<HttpApiRequestHook>) null, (List<HttpApiResponseHook>) null);
     }
 
     public ThingifierHttpApiBridge(
@@ -33,8 +34,23 @@ public final class ThingifierHttpApiBridge {
 
     public ThingifierHttpApiBridge(
             final Thingifier aThingifier, final HttpApiHookRegistry hookRegistry) {
+        this(aThingifier, hookRegistry, new ThingifierApiLifecycleHookRegistry());
+    }
+
+    public static ThingifierHttpApiBridge withHookRegistries(
+            final Thingifier aThingifier,
+            final HttpApiHookRegistry hookRegistry,
+            final ThingifierApiLifecycleHookRegistry lifecycleHooks) {
+        return new ThingifierHttpApiBridge(aThingifier, hookRegistry, lifecycleHooks);
+    }
+
+    private ThingifierHttpApiBridge(
+            final Thingifier aThingifier,
+            final HttpApiHookRegistry hookRegistry,
+            final ThingifierApiLifecycleHookRegistry lifecycleHooks) {
         this.thingifier = aThingifier;
-        this.thingifierHttpApi = new ThingifierHttpApi(thingifier, hookRegistry);
+        this.thingifierHttpApi =
+                ThingifierHttpApi.withHookRegistries(thingifier, hookRegistry, lifecycleHooks);
     }
 
     public InternalHttpResponse get(final InternalHttpRequest theRequest) {

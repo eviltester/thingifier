@@ -37,6 +37,10 @@ public final class ThingifierApiSpec {
         return route(RoutingVerb.valueOf(verb.trim().toUpperCase()), pathPattern);
     }
 
+    public ThingifierApiPathRule route(final String pathPattern) {
+        return new ThingifierApiPathRule(this, pathPattern);
+    }
+
     public ThingifierApiSpec hideEntityRoutes(final String entityPath) {
         configureEntityRoutes(entityPath, false);
         return this;
@@ -116,6 +120,13 @@ public final class ThingifierApiSpec {
                 .orElse(false);
     }
 
+    public boolean isMethodNotAllowed(
+            final RoutingVerb verb, final String path, final String apiPathPrefix) {
+        return ruleFor(verb, path, apiPathPrefix)
+                .map(ThingifierApiRouteRule::isMethodNotAllowed)
+                .orElse(false);
+    }
+
     public Optional<ThingifierApiRouteRule> ruleFor(
             final String verb, final String path, final String apiPathPrefix) {
         return ruleFor(RoutingVerb.valueOf(verb.trim().toUpperCase()), path, apiPathPrefix);
@@ -130,6 +141,14 @@ public final class ThingifierApiSpec {
                                 ApiRoutePathMatcher.pathsMatch(
                                         rule.pathPattern(), path, apiPathPrefix))
                 .findFirst();
+    }
+
+    ThingifierApiRouteRule routeFor(final RoutingVerb verb, final String pathPattern) {
+        return routeRules.stream()
+                .filter(rule -> rule.verb() == verb)
+                .filter(rule -> samePathPattern(rule.pathPattern(), pathPattern))
+                .findFirst()
+                .orElseGet(() -> route(verb, pathPattern));
     }
 
     public Optional<Set<EntityWriteOperation>> entityWriteOperationsFor(
@@ -297,6 +316,10 @@ public final class ThingifierApiSpec {
             normalized = normalized.substring(0, normalized.length() - 1);
         }
         return normalized;
+    }
+
+    private boolean samePathPattern(final String first, final String second) {
+        return normalize(first).equals(normalize(second));
     }
 
     private static final class EntityWritePolicyRule {

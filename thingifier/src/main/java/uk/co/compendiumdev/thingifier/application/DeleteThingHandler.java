@@ -17,6 +17,14 @@ final class DeleteThingHandler {
     }
 
     ThingCommandResult handle(final DeleteThingCommand command) {
+        ThingCommandResult validationResult = validate(command);
+        if (validationResult != null) {
+            return validationResult;
+        }
+        return apply(command);
+    }
+
+    ThingCommandResult validate(final DeleteThingCommand command) {
         EntityDefinition entity = definitions.entityNamed(command.getEntityName());
         EntityInstance instance = definitions.resolveInstance(entity, command.getIdentifier());
         if (instance == null) {
@@ -24,7 +32,17 @@ final class DeleteThingHandler {
                     ApplicationError.instanceNotFound(
                             command.getEntityName(), command.getIdentifier()));
         }
+        return null;
+    }
 
+    ThingCommandResult apply(final DeleteThingCommand command) {
+        EntityDefinition entity = definitions.entityNamed(command.getEntityName());
+        EntityInstance instance = definitions.resolveInstance(entity, command.getIdentifier());
+        if (instance == null) {
+            return ThingCommandResult.error(
+                    ApplicationError.instanceNotFound(
+                            command.getEntityName(), command.getIdentifier()));
+        }
         try {
             store.entities().delete(instance);
             return ThingCommandResult.success();

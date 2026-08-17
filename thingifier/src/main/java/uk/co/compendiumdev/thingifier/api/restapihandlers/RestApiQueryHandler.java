@@ -11,6 +11,8 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.Relationshi
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.RelationshipInstanceRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
+import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleContext;
+import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleHookRegistry;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.api.http.ApiRequestEnvelope;
@@ -26,9 +28,18 @@ import uk.co.compendiumdev.thingifier.core.query.RepositoryQueryResult;
 public final class RestApiQueryHandler {
 
     private final ThingifierApiRuntime runtime;
+    private final ThingifierApiLifecycleHookRegistry lifecycleHooks;
 
     public RestApiQueryHandler(final ThingifierApiRuntime runtime) {
+        this(runtime, new ThingifierApiLifecycleHookRegistry());
+    }
+
+    public RestApiQueryHandler(
+            final ThingifierApiRuntime runtime,
+            final ThingifierApiLifecycleHookRegistry lifecycleHooks) {
         this.runtime = runtime;
+        this.lifecycleHooks =
+                lifecycleHooks == null ? new ThingifierApiLifecycleHookRegistry() : lifecycleHooks;
     }
 
     public ApiResponse handle(
@@ -45,6 +56,16 @@ public final class RestApiQueryHandler {
             final ApiRequestEnvelope.QueryBodyFormat queryBodyFormat,
             final String queryBody,
             final ThingifierRequestContext context) {
+        return handle(url, queryParams, queryBodyFormat, queryBody, context, null);
+    }
+
+    public ApiResponse handle(
+            final String url,
+            final QueryFilterParams queryParams,
+            final ApiRequestEnvelope.QueryBodyFormat queryBodyFormat,
+            final String queryBody,
+            final ThingifierRequestContext context,
+            final ThingifierApiLifecycleContext lifecycle) {
         ThingReadResultApiMapper apiMapper = new ThingReadResultApiMapper(runtime.apiConfig());
         ThingRoute route = new ThingRouteMapper(runtime.schema()).map(url);
 
@@ -62,12 +83,88 @@ public final class RestApiQueryHandler {
                             404, String.format("Could not find an instance with %s", url)));
         }
 
+        QueryMapping mapping = mapQuery(route, queryParams, queryBodyFormat, queryBody, apiMapper);
+        if (mapping.response != null) {
+            return mapping.response;
+        }
+
+        if (lifecycle == null) {
+            return executeMappedQuery(url, mapping, queryBodyFormat, queryBody, context, apiMapper);
+        }
+
+        lifecycle.useMappedReadQuery(mapping.mapping.getQuery());
+        lifecycleHooks.runBeforeValidationHooks(lifecycle);
+        if (lifecycle.shouldShortCircuit()) {
+            return lifecycle.apiResponse();
+        }
+
+        if (shouldRemapQuery(lifecycle)) {
+            QueryMapping remappedMapping =
+                    mapQuery(
+                            route,
+                            lifecycle.queryParams(),
+                            lifecycle.queryBodyFormat(),
+                            lifecycle.rawBody(),
+                            apiMapper);
+            if (remappedMapping.response != null) {
+                return remappedMapping.response;
+            }
+            lifecycle.useMappedReadQuery(remappedMapping.mapping.getQuery());
+        }
+
+        lifecycleHooks.runAfterValidationHooks(lifecycle);
+        if (lifecycle.shouldShortCircuit()) {
+            return lifecycle.apiResponse();
+        }
+
+        lifecycleHooks.runBeforeActionHooks(lifecycle);
+        if (lifecycle.shouldShortCircuit()) {
+            return lifecycle.apiResponse();
+        }
+
+        RepositoryQueryResult queryResults =
+                runtime.queryService().execute(lifecycle.readQuery(), context.store(), false);
+        lifecycle.replaceReadQueryResult(queryResults);
+
+        ApiResponse response =
+                responseForQuery(
+                        url,
+                        lifecycle.queryBodyFormat(),
+                        lifecycle.rawBody(),
+                        queryResults,
+                        context,
+                        apiMapper);
+        lifecycle.useApiResponse(response);
+        lifecycleHooks.runAfterActionHooks(lifecycle);
+
+        RepositoryQueryResult finalResult =
+                lifecycle.readQueryResult() == null ? queryResults : lifecycle.readQueryResult();
+        if (finalResult != queryResults && !lifecycle.apiResponseWasReplaced()) {
+            lifecycle.useApiResponse(
+                    responseForQuery(
+                            url,
+                            lifecycle.queryBodyFormat(),
+                            lifecycle.rawBody(),
+                            finalResult,
+                            context,
+                            apiMapper));
+        }
+        return lifecycle.apiResponse();
+    }
+
+    private QueryMapping mapQuery(
+            final ThingRoute route,
+            final QueryFilterParams queryParams,
+            final ApiRequestEnvelope.QueryBodyFormat queryBodyFormat,
+            final String queryBody,
+            final ThingReadResultApiMapper apiMapper) {
         QueryFilterParams requestedQueryParams = queryParams;
         if (queryBodyFormat == ApiRequestEnvelope.QueryBodyFormat.STRUCTURED_JSON) {
             StructuredJsonQueryCompiler.Result structuredQuery =
                     StructuredJsonQueryCompiler.compile(queryBody, resultEntityFor(route));
             if (structuredQuery.isError()) {
-                return advertiseQuery(apiMapper.map(structuredQuery.error()));
+                return QueryMapping.response(
+                        advertiseQuery(apiMapper.map(structuredQuery.error())));
             }
             requestedQueryParams = combine(queryParams, structuredQuery.queryParams());
         }
@@ -75,18 +172,37 @@ public final class RestApiQueryHandler {
         EffectiveQueryParams effectiveQueryParams =
                 EffectiveQueryParams.forQuery(runtime.apiConfig(), route, requestedQueryParams);
         if (effectiveQueryParams.isError()) {
-            return apiMapper.map(effectiveQueryParams.error());
+            return QueryMapping.response(apiMapper.map(effectiveQueryParams.error()));
         }
 
         ThingReadRequestMapping mapping =
                 new ThingReadRequestMapper(runtime.schema())
                         .map(route, effectiveQueryParams.queryParams());
         if (mapping.isError()) {
-            return apiMapper.map(mapping.getError());
+            return QueryMapping.response(apiMapper.map(mapping.getError()));
         }
+        return QueryMapping.mapping(mapping);
+    }
 
+    private ApiResponse executeMappedQuery(
+            final String url,
+            final QueryMapping mapping,
+            final ApiRequestEnvelope.QueryBodyFormat queryBodyFormat,
+            final String queryBody,
+            final ThingifierRequestContext context,
+            final ThingReadResultApiMapper apiMapper) {
         RepositoryQueryResult queryResults =
-                runtime.queryService().execute(mapping.getQuery(), context.store(), false);
+                runtime.queryService().execute(mapping.mapping.getQuery(), context.store(), false);
+        return responseForQuery(url, queryBodyFormat, queryBody, queryResults, context, apiMapper);
+    }
+
+    private ApiResponse responseForQuery(
+            final String url,
+            final ApiRequestEnvelope.QueryBodyFormat queryBodyFormat,
+            final String queryBody,
+            final RepositoryQueryResult queryResults,
+            final ThingifierRequestContext context,
+            final ThingReadResultApiMapper apiMapper) {
         ApiResponse response = apiMapper.map(url, queryResults);
         if (response.isErrorResponse()) {
             return advertiseQuery(response);
@@ -100,6 +216,13 @@ public final class RestApiQueryHandler {
         }
 
         return advertiseQuery(response);
+    }
+
+    private boolean shouldRemapQuery(final ThingifierApiLifecycleContext lifecycle) {
+        return (lifecycle.queryParamsWereReplaced()
+                        || lifecycle.rawBodyWasReplaced()
+                        || lifecycle.queryBodyFormatWasReplaced())
+                && !lifecycle.readQueryWasReplaced();
     }
 
     private ApiResponse methodNotAllowed(final String allowHeader) {
@@ -164,5 +287,24 @@ public final class RestApiQueryHandler {
         return response.setHeader(
                 ThingifierHttpApi.ACCEPT_QUERY_HEADER,
                 ThingifierHttpApi.SUPPORTED_QUERY_CONTENT_TYPES);
+    }
+
+    private static final class QueryMapping {
+
+        private final ThingReadRequestMapping mapping;
+        private final ApiResponse response;
+
+        private QueryMapping(final ThingReadRequestMapping mapping, final ApiResponse response) {
+            this.mapping = mapping;
+            this.response = response;
+        }
+
+        private static QueryMapping mapping(final ThingReadRequestMapping mapping) {
+            return new QueryMapping(mapping, null);
+        }
+
+        private static QueryMapping response(final ApiResponse response) {
+            return new QueryMapping(null, response);
+        }
     }
 }

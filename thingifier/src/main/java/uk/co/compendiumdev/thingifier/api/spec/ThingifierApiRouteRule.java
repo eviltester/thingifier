@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation;
@@ -17,6 +18,7 @@ public final class ThingifierApiRouteRule {
     private final String pathPattern;
     private boolean hidden;
     private boolean disabled;
+    private boolean methodNotAllowed;
     private boolean usesBasicAuth;
     private boolean usesBearerAuth;
     private String documentation;
@@ -33,6 +35,7 @@ public final class ThingifierApiRouteRule {
         this.pathPattern = pathPattern == null ? "" : pathPattern;
         this.hidden = false;
         this.disabled = false;
+        this.methodNotAllowed = false;
         this.usesBasicAuth = false;
         this.usesBearerAuth = false;
         this.documentation = null;
@@ -67,12 +70,21 @@ public final class ThingifierApiRouteRule {
         return this;
     }
 
+    public ThingifierApiRouteRule methodNotAllowed() {
+        methodNotAllowed = true;
+        return this;
+    }
+
     public boolean isHidden() {
         return hidden;
     }
 
     public boolean isDisabled() {
         return disabled;
+    }
+
+    public boolean isMethodNotAllowed() {
+        return methodNotAllowed;
     }
 
     public ThingifierApiRouteRule secureWithBasicAuth() {
@@ -192,6 +204,9 @@ public final class ThingifierApiRouteRule {
         }
         if (disabled) {
             route.disable();
+        }
+        if (methodNotAllowed && !disabled) {
+            route.replaceStatus(RoutingStatus.returnValue(405));
         }
         if (usesBasicAuth) {
             route.secureWithBasicAuth();

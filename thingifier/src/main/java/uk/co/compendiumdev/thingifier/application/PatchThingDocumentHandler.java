@@ -37,6 +37,14 @@ final class PatchThingDocumentHandler {
     }
 
     ThingCommandResult handle(final PatchThingDocumentCommand command) {
+        ThingCommandResult validationResult = validate(command);
+        if (validationResult != null) {
+            return validationResult;
+        }
+        return apply(command);
+    }
+
+    ThingCommandResult validate(final PatchThingDocumentCommand command) {
         EntityDefinition entity = definitions.entityNamed(command.getEntityName());
         EntityInstance instance = definitions.resolveInstance(entity, command.getIdentifier());
         if (instance == null) {
@@ -64,7 +72,38 @@ final class PatchThingDocumentHandler {
             return ThingCommandResult.error(ApplicationError.patchResultNotObject());
         }
 
-        return amendHandler.handle(replacementCommand(command, patchedDocument));
+        return amendHandler.validate(replacementCommand(command, patchedDocument));
+    }
+
+    ThingCommandResult apply(final PatchThingDocumentCommand command) {
+        EntityDefinition entity = definitions.entityNamed(command.getEntityName());
+        EntityInstance instance = definitions.resolveInstance(entity, command.getIdentifier());
+        if (instance == null) {
+            return ThingCommandResult.error(
+                    ApplicationError.instanceNotFound(
+                            command.getEntityName(), command.getIdentifier()));
+        }
+
+        JsonNode patchDocument = parsePatchDocument(command);
+        if (patchDocument == null) {
+            return malformedPatch(command);
+        }
+
+        ThingCommandResult shapeValidation = validateDocumentShape(command, patchDocument);
+        if (shapeValidation != null) {
+            return shapeValidation;
+        }
+
+        JsonNode patchedDocument = patchedDocument(command, instance, patchDocument);
+        if (patchedDocument == null) {
+            return ThingCommandResult.error(
+                    ApplicationError.conflict("JSON Patch could not be applied"));
+        }
+        if (!patchedDocument.isObject()) {
+            return ThingCommandResult.error(ApplicationError.patchResultNotObject());
+        }
+
+        return amendHandler.apply(replacementCommand(command, patchedDocument));
     }
 
     private JsonNode parsePatchDocument(final PatchThingDocumentCommand command) {
