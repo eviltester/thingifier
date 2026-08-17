@@ -1,7 +1,6 @@
 package uk.co.compendiumdev.thingifier.api.spec;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -126,7 +125,10 @@ public final class ThingifierApiSpec {
             final RoutingVerb verb, final String path, final String apiPathPrefix) {
         return routeRules.stream()
                 .filter(rule -> rule.verb() == verb)
-                .filter(rule -> pathsMatch(rule.pathPattern(), path, apiPathPrefix))
+                .filter(
+                        rule ->
+                                ApiRoutePathMatcher.pathsMatch(
+                                        rule.pathPattern(), path, apiPathPrefix))
                 .findFirst();
     }
 
@@ -141,7 +143,10 @@ public final class ThingifierApiSpec {
 
         return entityWritePolicyRules.stream()
                 .filter(rule -> rule.verb() == verb)
-                .filter(rule -> pathsMatch(rule.pathPattern(), path, apiPathPrefix))
+                .filter(
+                        rule ->
+                                ApiRoutePathMatcher.pathsMatch(
+                                        rule.pathPattern(), path, apiPathPrefix))
                 .map(EntityWritePolicyRule::operations)
                 .findFirst();
     }
@@ -156,7 +161,10 @@ public final class ThingifierApiSpec {
         }
 
         return entityPatchPolicyRules.stream()
-                .filter(rule -> pathsMatch(rule.pathPattern(), path, apiPathPrefix))
+                .filter(
+                        rule ->
+                                ApiRoutePathMatcher.pathsMatch(
+                                        rule.pathPattern(), path, apiPathPrefix))
                 .map(EntityPatchPolicyRule::updateStyles)
                 .findFirst();
     }
@@ -172,7 +180,10 @@ public final class ThingifierApiSpec {
 
         return relationshipWritePolicyRules.stream()
                 .filter(rule -> rule.verb() == verb)
-                .filter(rule -> pathsMatch(rule.pathPattern(), path, apiPathPrefix))
+                .filter(
+                        rule ->
+                                ApiRoutePathMatcher.pathsMatch(
+                                        rule.pathPattern(), path, apiPathPrefix))
                 .map(RelationshipWritePolicyRule::operations)
                 .findFirst();
     }
@@ -277,34 +288,6 @@ public final class ThingifierApiSpec {
         return Collections.unmodifiableSet(EnumSet.copyOf(selected));
     }
 
-    private boolean pathsMatch(
-            final String rulePath, final String candidatePath, final String apiPathPrefix) {
-        final List<String> ruleSegments = segments(rulePath, apiPathPrefix);
-        final List<String> candidateSegments = segments(candidatePath, apiPathPrefix);
-        if (ruleSegments.size() != candidateSegments.size()) {
-            return false;
-        }
-        for (int index = 0; index < ruleSegments.size(); index++) {
-            final String ruleSegment = ruleSegments.get(index);
-            final String candidateSegment = candidateSegments.get(index);
-            if (isWildcard(ruleSegment) || isWildcard(candidateSegment)) {
-                continue;
-            }
-            if (!ruleSegment.equals(candidateSegment)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private List<String> segments(final String path, final String apiPathPrefix) {
-        final String normalized = removePrefix(normalize(path), normalize(apiPathPrefix));
-        if (normalized.isEmpty()) {
-            return List.of();
-        }
-        return Arrays.stream(normalized.split("/")).map(this::normalizeParameterSegment).toList();
-    }
-
     private String normalize(final String path) {
         String normalized = path == null ? "" : path.trim();
         while (normalized.startsWith("/")) {
@@ -314,33 +297,6 @@ public final class ThingifierApiSpec {
             normalized = normalized.substring(0, normalized.length() - 1);
         }
         return normalized;
-    }
-
-    private String removePrefix(final String path, final String apiPathPrefix) {
-        if (apiPathPrefix == null || apiPathPrefix.isEmpty()) {
-            return path;
-        }
-        if (path.equals(apiPathPrefix)) {
-            return "";
-        }
-        if (path.startsWith(apiPathPrefix + "/")) {
-            return path.substring(apiPathPrefix.length() + 1);
-        }
-        return path;
-    }
-
-    private String normalizeParameterSegment(final String segment) {
-        if (segment.startsWith(":")) {
-            return "*";
-        }
-        if (segment.startsWith("{") && segment.endsWith("}")) {
-            return "*";
-        }
-        return segment;
-    }
-
-    private boolean isWildcard(final String segment) {
-        return "*".equals(segment);
     }
 
     private static final class EntityWritePolicyRule {

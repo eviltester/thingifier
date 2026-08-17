@@ -2,6 +2,7 @@ package uk.co.compendiumdev.thingifier.adapter.internalhttp.conversion;
 
 import java.util.List;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiHookRegistry;
 import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiRequestHook;
 import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiResponseHook;
 import uk.co.compendiumdev.thingifier.adapter.internalhttp.InternalHttpRequest;
@@ -28,6 +29,12 @@ public final class ThingifierHttpApiBridge {
         this.thingifier = aThingifier;
         this.thingifierHttpApi =
                 new ThingifierHttpApi(thingifier, apiRequestHooks, apiResponseHooks);
+    }
+
+    public ThingifierHttpApiBridge(
+            final Thingifier aThingifier, final HttpApiHookRegistry hookRegistry) {
+        this.thingifier = aThingifier;
+        this.thingifierHttpApi = new ThingifierHttpApi(thingifier, hookRegistry);
     }
 
     public InternalHttpResponse get(final InternalHttpRequest theRequest) {
