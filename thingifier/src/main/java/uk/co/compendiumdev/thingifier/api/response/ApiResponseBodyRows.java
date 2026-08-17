@@ -28,7 +28,7 @@ final class ApiResponseBodyRows {
             return names;
         }
 
-        EntityViewDefinition view = apiResponse.getResponseView();
+        EntityViewDefinition view = apiResponse.responseViewFor(entity);
         for (String fieldName : entity.getFieldNames()) {
             if (view != null && !view.isResponseVisible(fieldName)) {
                 continue;

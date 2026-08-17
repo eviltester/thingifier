@@ -59,7 +59,7 @@ public final class ApiResponseAsXml {
                                 thingsToReturn,
                                 apiResponse.getTypeOfThingReturned(),
                                 apiResponse.getRelationshipRepository(),
-                                apiResponse.getResponseView());
+                                apiResponse.responseViewFor(apiResponse.getTypeOfThingReturned()));
             } catch (Exception e) {
                 // TODO: if this happens then the status code is going to be wrong, should probably
                 // throw an exception instead
@@ -71,7 +71,9 @@ public final class ApiResponseAsXml {
             return output;
         } else {
             if (apiResponse.hasReturnedDraft()) {
-                return xmlThing.getSingleObjectXml(apiResponse.getReturnedDraft());
+                return xmlThing.getSingleObjectXml(
+                        apiResponse.getReturnedDraft(),
+                        apiResponse.responseViewFor(apiResponse.getReturnedDraft().getEntity()));
             }
             EntityInstance instance = apiResponse.getReturnedInstance();
 
@@ -81,7 +83,7 @@ public final class ApiResponseAsXml {
                         xmlThing.getSingleObjectXml(
                                 instance,
                                 apiResponse.getRelationshipRepository(),
-                                apiResponse.getResponseView());
+                                apiResponse.responseViewFor(instance.getEntity()));
             } catch (Exception e) {
                 // TODO: if this happens then the status code is going to be wrong
                 output = getErrorMessageXml(e.getMessage());

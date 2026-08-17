@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinition;
@@ -12,16 +13,19 @@ import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation;
 import uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 
 public final class ThingifierApiSpec {
 
     private final List<ThingifierApiRouteRule> routeRules;
+    private final List<ThingifierApiEntityRule> entityRules;
     private final List<EntityWritePolicyRule> entityWritePolicyRules;
     private final List<EntityPatchPolicyRule> entityPatchPolicyRules;
     private final List<RelationshipWritePolicyRule> relationshipWritePolicyRules;
 
     public ThingifierApiSpec() {
         routeRules = new ArrayList<>();
+        entityRules = new ArrayList<>();
         entityWritePolicyRules = new ArrayList<>();
         entityPatchPolicyRules = new ArrayList<>();
         relationshipWritePolicyRules = new ArrayList<>();
@@ -39,6 +43,19 @@ public final class ThingifierApiSpec {
 
     public ThingifierApiPathRule route(final String pathPattern) {
         return new ThingifierApiPathRule(this, pathPattern);
+    }
+
+    public ThingifierApiEntityRule entity(final String entityName) {
+        return entityRules.stream()
+                .filter(rule -> rule.sameEntityName(entityName))
+                .findFirst()
+                .orElseGet(
+                        () -> {
+                            final ThingifierApiEntityRule rule =
+                                    new ThingifierApiEntityRule(entityName);
+                            entityRules.add(rule);
+                            return rule;
+                        });
     }
 
     public ThingifierApiSpec hideEntityRoutes(final String entityPath) {
@@ -103,6 +120,7 @@ public final class ThingifierApiSpec {
         for (RoutingDefinition route : routingDefinition.definitions()) {
             ruleFor(route.verb(), route.url(), apiPathPrefix)
                     .ifPresent(rule -> rule.applyTo(route));
+            applyEntityDefaultsTo(route, routingDefinition);
         }
         routingDefinition.updateOptionsAllowHeaders();
     }
@@ -140,6 +158,56 @@ public final class ThingifierApiSpec {
                         rule ->
                                 ApiRoutePathMatcher.pathsMatch(
                                         rule.pathPattern(), path, apiPathPrefix))
+                .findFirst();
+    }
+
+    public Optional<String> requestEntityViewFor(
+            final RoutingVerb verb,
+            final String path,
+            final String apiPathPrefix,
+            final EntityDefinition entity) {
+        final Optional<String> routeView =
+                ruleFor(verb, path, apiPathPrefix)
+                        .filter(ThingifierApiRouteRule::hasRequestEntityView)
+                        .map(ThingifierApiRouteRule::getRequestEntityView);
+        if (routeView.isPresent()) {
+            return routeView;
+        }
+        return defaultRequestEntityViewFor(entity);
+    }
+
+    public Optional<String> responseEntityViewFor(
+            final RoutingVerb verb,
+            final String path,
+            final String apiPathPrefix,
+            final EntityDefinition entity,
+            final int statusCode) {
+        final Optional<String> routeView =
+                ruleFor(verb, path, apiPathPrefix)
+                        .map(rule -> rule.responseEntityViewFor(statusCode))
+                        .filter(Objects::nonNull);
+        if (routeView.isPresent()) {
+            return routeView;
+        }
+        if (statusCode < 200 || statusCode >= 300) {
+            return Optional.empty();
+        }
+        return defaultResponseEntityViewFor(entity);
+    }
+
+    public Optional<String> defaultRequestEntityViewFor(final EntityDefinition entity) {
+        return entityRules.stream()
+                .filter(rule -> rule.matches(entity))
+                .filter(ThingifierApiEntityRule::hasDefaultRequestView)
+                .map(ThingifierApiEntityRule::defaultRequestView)
+                .findFirst();
+    }
+
+    public Optional<String> defaultResponseEntityViewFor(final EntityDefinition entity) {
+        return entityRules.stream()
+                .filter(rule -> rule.matches(entity))
+                .filter(ThingifierApiEntityRule::hasDefaultResponseView)
+                .map(ThingifierApiEntityRule::defaultResponseView)
                 .findFirst();
     }
 
@@ -269,6 +337,29 @@ public final class ThingifierApiSpec {
                 verb == RoutingVerb.DELETE ? relationshipPath + "/{relatedId}" : relationshipPath;
         relationshipWritePolicyRules.add(
                 new RelationshipWritePolicyRule(verb, path, relationshipOperations(operations)));
+    }
+
+    private void applyEntityDefaultsTo(
+            final RoutingDefinition route, final ApiRoutingDefinition routingDefinition) {
+        if (!route.hasRequestEntityView() && route.hasRequestPayload()) {
+            routingDefinition
+                    .objectSchemaNamed(route.getRequestPayload())
+                    .flatMap(this::defaultRequestEntityViewFor)
+                    .ifPresent(route::requestEntityView);
+        }
+
+        for (Integer statusCode : route.returnPayloadStatusCodes()) {
+            if (route.hasResponseEntityViewFor(statusCode)) {
+                continue;
+            }
+            if (statusCode < 200 || statusCode >= 300) {
+                continue;
+            }
+            routingDefinition
+                    .objectSchemaNamed(route.getReturnPayloadFor(statusCode))
+                    .flatMap(this::defaultResponseEntityViewFor)
+                    .ifPresent(viewName -> route.responseEntityView(statusCode, viewName));
+        }
     }
 
     private Set<EntityWriteOperation> entityOperations(final EntityWriteOperation... operations) {

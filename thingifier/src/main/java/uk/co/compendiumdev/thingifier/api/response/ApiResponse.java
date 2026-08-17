@@ -30,6 +30,7 @@ public final class ApiResponse {
     private HttpHeadersBlock headers;
     private EntityDefinition typeOfResults;
     private EntityViewDefinition responseView;
+    private EntityResponseViewResolver responseViewResolver;
     private String body;
     private RelationshipRepository relationshipRepository;
 
@@ -44,6 +45,7 @@ public final class ApiResponse {
         hasBody = false;
         body = null;
         responseView = null;
+        responseViewResolver = null;
     }
 
     public ApiResponse(
@@ -229,14 +231,29 @@ public final class ApiResponse {
 
     public ApiResponse usingEntityView(final EntityViewDefinition view) {
         responseView = view;
+        responseViewResolver = null;
+        return this;
+    }
+
+    public ApiResponse usingEntityResponseViewResolver(
+            final EntityResponseViewResolver viewResolver) {
+        responseViewResolver = viewResolver;
+        responseView = null;
         return this;
     }
 
     public boolean hasResponseView() {
-        return responseView != null;
+        return responseView != null || responseViewResolver != null;
     }
 
     public EntityViewDefinition getResponseView() {
+        return responseView;
+    }
+
+    public EntityViewDefinition responseViewFor(final EntityDefinition entity) {
+        if (responseViewResolver != null) {
+            return responseViewResolver.viewFor(entity);
+        }
         return responseView;
     }
 

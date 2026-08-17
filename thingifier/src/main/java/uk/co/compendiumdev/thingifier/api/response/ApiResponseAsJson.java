@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.api.response;
 import com.google.gson.Gson;
 import java.util.*;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
 public final class ApiResponseAsJson {
@@ -45,12 +46,16 @@ public final class ApiResponseAsJson {
             }
 
             if (typeName.length() > 0) {
+                final EntityDefinition entity =
+                        apiResponse.getTypeOfThingReturned() == null
+                                ? things.get(0).getEntity()
+                                : apiResponse.getTypeOfThingReturned();
                 output =
                         jsonThing.asJsonTypedArrayWithContentsUntyped(
                                 apiResponse.getReturnedInstanceCollection(),
                                 typeName,
                                 apiResponse.getRelationshipRepository(),
-                                apiResponse.getResponseView());
+                                apiResponse.responseViewFor(entity));
             } else {
                 if (things.size() == 0) {
                     output = "{}";
@@ -61,7 +66,12 @@ public final class ApiResponseAsJson {
 
         } else {
             if (apiResponse.hasReturnedDraft()) {
-                return jsonThing.asJsonObject(apiResponse.getReturnedDraft()).toString();
+                return jsonThing
+                        .asJsonObject(
+                                apiResponse.getReturnedDraft(),
+                                apiResponse.responseViewFor(
+                                        apiResponse.getReturnedDraft().getEntity()))
+                        .toString();
             }
             EntityInstance instance = apiResponse.getReturnedInstance();
 
@@ -70,7 +80,7 @@ public final class ApiResponseAsJson {
                     .asJsonObject(
                             instance,
                             apiResponse.getRelationshipRepository(),
-                            apiResponse.getResponseView())
+                            apiResponse.responseViewFor(instance.getEntity()))
                     .toString();
         }
     }

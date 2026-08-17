@@ -239,8 +239,12 @@ public final class RestApiQueryHandler {
 
         final EntityDefinition entity = response.getTypeOfThingReturned();
         return runtime.apiSpec()
-                .ruleFor(RoutingVerb.QUERY, url, runtime.apiConfig().getApiEndPointPrefix())
-                .map(rule -> rule.responseEntityViewFor(response.getStatusCode()))
+                .responseEntityViewFor(
+                        RoutingVerb.QUERY,
+                        url,
+                        runtime.apiConfig().getApiEndPointPrefix(),
+                        entity,
+                        response.getStatusCode())
                 .filter(entity::hasViewNamed)
                 .map(entity::getViewNamed)
                 .orElse(null);

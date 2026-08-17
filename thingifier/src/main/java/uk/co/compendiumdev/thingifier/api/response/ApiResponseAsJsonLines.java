@@ -65,7 +65,9 @@ public final class ApiResponseAsJsonLines {
             objects.add(
                     jsonThing
                             .asJsonObject(
-                                    apiResponse.getReturnedDraft(), apiResponse.getResponseView())
+                                    apiResponse.getReturnedDraft(),
+                                    apiResponse.responseViewFor(
+                                            apiResponse.getReturnedDraft().getEntity()))
                             .toString());
             return objects;
         }
@@ -79,7 +81,7 @@ public final class ApiResponseAsJsonLines {
                 .asJsonObject(
                         instance,
                         apiResponse.getRelationshipRepository(),
-                        apiResponse.getResponseView())
+                        apiResponse.responseViewFor(instance.getEntity()))
                 .toString();
     }
 }

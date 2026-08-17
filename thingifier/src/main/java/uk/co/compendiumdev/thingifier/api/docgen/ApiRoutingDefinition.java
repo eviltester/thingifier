@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityViewDefinition;
@@ -68,6 +69,10 @@ public final class ApiRoutingDefinition {
 
     public boolean hasObjectSchemaNamed(String aName) {
         return objectSchemas.containsKey(aName);
+    }
+
+    public Optional<EntityDefinition> objectSchemaNamed(final String name) {
+        return Optional.ofNullable(objectSchemas.get(name));
     }
 
     public Collection<EntityDefinition> getObjectSchemas() {

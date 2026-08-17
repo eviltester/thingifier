@@ -32,6 +32,7 @@ import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyField;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.JsonBodyValueConverter;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.api.response.EntityResponseViewResolver;
 import uk.co.compendiumdev.thingifier.api.spec.ThingifierApiRouteRule;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle;
 import uk.co.compendiumdev.thingifier.application.schema.RelationshipSpec;
@@ -393,17 +394,24 @@ public final class ThingifierHttpApi {
             return null;
         }
 
-        final Optional<ThingifierApiRouteRule> matchingRule = routeRuleFor(request, verb);
-        if (matchingRule.isEmpty() || !matchingRule.get().hasRequestEntityView()) {
-            return null;
-        }
-
         final EntityDefinition entity = targetEntityFor(request.getPath());
         if (entity == null) {
             return null;
         }
 
-        final String viewName = matchingRule.get().getRequestEntityView();
+        final Optional<String> configuredViewName =
+                thingifier
+                        .apiSpec()
+                        .requestEntityViewFor(
+                                routingVerbFor(verb),
+                                request.getPath(),
+                                thingifier.apiConfig().getApiEndPointPrefix(),
+                                entity);
+        if (configuredViewName.isEmpty()) {
+            return null;
+        }
+
+        final String viewName = configuredViewName.get();
         if (!entity.hasViewNamed(viewName)) {
             return new HttpApiResponse(
                     request.getHeaders(),
@@ -634,20 +642,43 @@ public final class ThingifierHttpApi {
         }
 
         final Optional<ThingifierApiRouteRule> matchingRule = routeRuleFor(request, verb);
-        if (matchingRule.isEmpty()) {
-            return;
-        }
-
-        final String viewName =
-                matchingRule.get().responseEntityViewFor(apiResponse.getStatusCode());
-        if (viewName == null || apiResponse.getTypeOfThingReturned() == null) {
+        if (apiResponse.getTypeOfThingReturned() == null) {
             return;
         }
 
         final EntityDefinition entity = apiResponse.getTypeOfThingReturned();
-        if (entity.hasViewNamed(viewName)) {
-            apiResponse.usingEntityView(entity.getViewNamed(viewName));
+        final String viewName =
+                matchingRule
+                        .map(rule -> rule.responseEntityViewFor(apiResponse.getStatusCode()))
+                        .orElse(null);
+        if (viewName != null) {
+            if (entity.hasViewNamed(viewName)) {
+                apiResponse.usingEntityView(entity.getViewNamed(viewName));
+            }
+            return;
         }
+
+        if (apiResponse.hasResponseView()) {
+            return;
+        }
+
+        if (thingifier.apiSpec().defaultResponseEntityViewFor(entity).isPresent()) {
+            apiResponse.usingEntityResponseViewResolver(defaultResponseViewResolver());
+        }
+    }
+
+    private EntityResponseViewResolver defaultResponseViewResolver() {
+        return entity -> {
+            if (entity == null) {
+                return null;
+            }
+            return thingifier
+                    .apiSpec()
+                    .defaultResponseEntityViewFor(entity)
+                    .filter(entity::hasViewNamed)
+                    .map(entity::getViewNamed)
+                    .orElse(null);
+        };
     }
 
     private EntityDefinition targetEntityFor(final String path) {
