@@ -10,10 +10,29 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.application.ThingCommandResult;
 import uk.co.compendiumdev.thingifier.application.ThingCommandService;
 
+/**
+ * Runs write-command lifecycle phases around Thingifier validation and apply steps.
+ *
+ * <p>The helper keeps POST, PUT, PATCH, and DELETE handlers consistent. It preserves the existing
+ * transaction boundary while allowing hooks to inspect or replace mapped commands, validation
+ * results, action results, and API responses.
+ */
 final class LifecycleWriteSupport {
 
+    /** Prevents construction because this class only provides static write lifecycle helpers. */
     private LifecycleWriteSupport() {}
 
+    /**
+     * Executes a mapped write request with optional lifecycle hook processing.
+     *
+     * @param runtime runtime services used to map results
+     * @param lifecycleHooks lifecycle hook registry
+     * @param lifecycle lifecycle context, or null for normal direct execution
+     * @param mapping mapped write request
+     * @param context request context containing the active store
+     * @param remapper callback used when hooks mutate request data before validation
+     * @return API response for the write operation
+     */
     static ApiResponse execute(
             final ThingifierApiRuntime runtime,
             final ThingifierApiLifecycleHookRegistry lifecycleHooks,
@@ -53,6 +72,20 @@ final class LifecycleWriteSupport {
         return mapResult(apiMapper, lifecycle, activeMapping[0], finalResult);
     }
 
+    /**
+     * Runs validation, action, and hook phases inside the write transaction.
+     *
+     * <p>If an after-action hook changes the command result to an error, the transaction returns
+     * that error result so normal rollback behavior is preserved.
+     *
+     * @param commandService command service owning the transaction
+     * @param lifecycleHooks lifecycle hook registry
+     * @param lifecycle lifecycle context for the request
+     * @param activeMapping current mapping, updated when remapping occurs
+     * @param apiMapper mapper used to convert command results to API responses
+     * @param remapper callback used when hooks mutate request data before validation
+     * @return final command result used by the transaction
+     */
     private static ThingCommandResult executeInsideTransaction(
             final ThingCommandService commandService,
             final ThingifierApiLifecycleHookRegistry lifecycleHooks,
@@ -106,11 +139,26 @@ final class LifecycleWriteSupport {
         return finalResult;
     }
 
+    /**
+     * Reports whether hook-mutated request data should be mapped into a new write command.
+     *
+     * @param lifecycle lifecycle context after before-validation hooks
+     * @return true when body data changed but the command was not explicitly replaced
+     */
     private static boolean shouldRemapCommand(final ThingifierApiLifecycleContext lifecycle) {
         return (lifecycle.bodyFieldsWereReplaced() || lifecycle.rawBodyWasReplaced())
                 && !lifecycle.writeCommandWasReplaced();
     }
 
+    /**
+     * Maps a command result back to an API response using the best available mapping context.
+     *
+     * @param apiMapper command result mapper
+     * @param lifecycle lifecycle context for the request
+     * @param mapping original or remapped request mapping
+     * @param result command result to map
+     * @return API response for the command result
+     */
     private static ApiResponse mapResult(
             final ThingCommandResultApiMapper apiMapper,
             final ThingifierApiLifecycleContext lifecycle,
@@ -122,7 +170,13 @@ final class LifecycleWriteSupport {
         return apiMapper.map(lifecycle.writeCommand(), result);
     }
 
+    /** Callback used to rebuild a write mapping after hooks replace request data. */
     interface CommandRemapper {
+        /**
+         * Remaps the current lifecycle request data to a write request mapping.
+         *
+         * @return remapped write request mapping
+         */
         ThingWriteRequestMapping remap();
     }
 }

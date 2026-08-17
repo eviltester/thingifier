@@ -6,6 +6,12 @@ import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
+/**
+ * Renders an {@link ApiResponse} as a JSON response body.
+ *
+ * <p>The renderer asks the response for the view to use for each entity so route-specific views and
+ * entity-level defaults are applied at serialization time.
+ */
 public final class ApiResponseAsJson {
     private final ApiResponse apiResponse;
     private final JsonThing jsonThing;
@@ -15,6 +21,11 @@ public final class ApiResponseAsJson {
         this.jsonThing = aJsonThing;
     }
 
+    /**
+     * Serializes the API response body to JSON.
+     *
+     * @return JSON response body, or an empty string when the response has no body
+     */
     public String getJson() {
 
         if (!apiResponse.hasABody()) {
@@ -86,12 +97,24 @@ public final class ApiResponseAsJson {
     }
 
     // error messages should always be plural to make it easier to parse
+    /**
+     * Serializes one error message using Thingifier's standard JSON error shape.
+     *
+     * @param errorMessage error message to include
+     * @return JSON error response body
+     */
     public static String getErrorMessageJson(final String errorMessage) {
         Collection<String> localErrorMessages = new ArrayList<>();
         localErrorMessages.add(errorMessage);
         return getErrorMessageJson(localErrorMessages);
     }
 
+    /**
+     * Serializes multiple error messages using Thingifier's standard JSON error shape.
+     *
+     * @param myErrorMessages error messages to include
+     * @return JSON error response body
+     */
     public static String getErrorMessageJson(final Collection<String> myErrorMessages) {
         Map errorResponseBody = new HashMap<String, Collection<String>>();
         errorResponseBody.put("errorMessages", myErrorMessages);

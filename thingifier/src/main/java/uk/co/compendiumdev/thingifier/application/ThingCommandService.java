@@ -15,6 +15,13 @@ import uk.co.compendiumdev.thingifier.application.command.ThingWriteCommand;
 import uk.co.compendiumdev.thingifier.application.schema.SchemaDefinitionResolver;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
+/**
+ * Coordinates validation and execution of Thingifier write commands.
+ *
+ * <p>The service exposes both the original one-step {@link #execute(ThingWriteCommand)} operation
+ * and the split {@link #validate(ThingWriteCommand)} / {@link #applyValidated(ThingWriteCommand)}
+ * operations needed by lifecycle hooks. All normal writes still run inside the transaction runner.
+ */
 public final class ThingCommandService {
 
     private final WriteTransactionRunner transactionRunner;
@@ -24,10 +31,23 @@ public final class ThingCommandService {
     private final DeleteThingHandler deleteHandler;
     private final RelationshipCommandHandler relationshipHandler;
 
+    /**
+     * Creates a command service with default type handling and JSON output configuration.
+     *
+     * @param store store to mutate
+     * @param schema schema resolver for entity and relationship definitions
+     */
     public ThingCommandService(final ThingStore store, final SchemaDefinitionResolver schema) {
         this(store, schema, false);
     }
 
+    /**
+     * Creates a command service with explicit declared-type enforcement.
+     *
+     * @param store store to mutate
+     * @param schema schema resolver for entity and relationship definitions
+     * @param enforceDeclaredTypes true when request values must match declared field types
+     */
     public ThingCommandService(
             final ThingStore store,
             final SchemaDefinitionResolver schema,
@@ -35,6 +55,14 @@ public final class ThingCommandService {
         this(store, schema, enforceDeclaredTypes, new JsonOutputConfig());
     }
 
+    /**
+     * Creates a command service with explicit validation and JSON rendering configuration.
+     *
+     * @param store store to mutate
+     * @param schema schema resolver for entity and relationship definitions
+     * @param enforceDeclaredTypes true when request values must match declared field types
+     * @param jsonOutput JSON rendering configuration used by patch document handling
+     */
     public ThingCommandService(
             final ThingStore store,
             final SchemaDefinitionResolver schema,
@@ -74,14 +102,35 @@ public final class ThingCommandService {
                         new RelationshipTargetResolver(store));
     }
 
+    /**
+     * Validates and applies a write command inside one transaction.
+     *
+     * @param command write command to execute
+     * @return command result from validation or application
+     */
     public ThingCommandResult execute(final ThingWriteCommand command) {
         return transactionRunner.run(() -> executeInsideTransaction(command));
     }
 
+    /**
+     * Runs a caller-supplied write operation inside the same transaction mechanism.
+     *
+     * <p>Lifecycle write support uses this so hooks, validation, and action execution share the
+     * original write transaction boundary.
+     *
+     * @param operation operation to run inside the transaction
+     * @return command result from the operation
+     */
     public ThingCommandResult runInTransaction(final Supplier<ThingCommandResult> operation) {
         return transactionRunner.run(operation);
     }
 
+    /**
+     * Validates a write command without mutating the store.
+     *
+     * @param command write command to validate
+     * @return validation error result, or null when validation succeeds
+     */
     public ThingCommandResult validate(final ThingWriteCommand command) {
         if (command instanceof CreateThingCommand) {
             return createHandler.validate((CreateThingCommand) command);
@@ -125,10 +174,25 @@ public final class ThingCommandService {
                                 "Unsupported command %s", command.getClass().getSimpleName())));
     }
 
+    /**
+     * Applies a command that has already passed validation.
+     *
+     * <p>Callers are responsible for only passing validated commands; the method exists so
+     * lifecycle hooks can run between validation and mutation.
+     *
+     * @param command validated write command to apply
+     * @return command result from applying the mutation
+     */
     public ThingCommandResult applyValidated(final ThingWriteCommand command) {
         return applyInsideTransaction(command);
     }
 
+    /**
+     * Runs the original validate-then-apply command flow inside a transaction.
+     *
+     * @param command write command to execute
+     * @return validation or apply result
+     */
     private ThingCommandResult executeInsideTransaction(final ThingWriteCommand command) {
         ThingCommandResult validationResult = validate(command);
         if (validationResult != null) {
@@ -137,6 +201,12 @@ public final class ThingCommandService {
         return applyInsideTransaction(command);
     }
 
+    /**
+     * Dispatches a validated write command to its concrete mutation handler.
+     *
+     * @param command validated write command
+     * @return command result from the matching handler
+     */
     private ThingCommandResult applyInsideTransaction(final ThingWriteCommand command) {
         if (command instanceof CreateThingCommand) {
             return createHandler.apply((CreateThingCommand) command);

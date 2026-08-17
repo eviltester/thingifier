@@ -13,6 +13,12 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.Nam
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 
+/**
+ * Converts an {@link ApiResponse} into field names and rows for tabular response formats.
+ *
+ * <p>The tabular formats cannot include nested object fields, and they must respect response views
+ * so the same public field visibility applies as JSON and XML rendering.
+ */
 final class ApiResponseBodyRows {
 
     private final ApiResponse apiResponse;
@@ -21,6 +27,11 @@ final class ApiResponseBodyRows {
         this.apiResponse = apiResponse;
     }
 
+    /**
+     * Returns the visible scalar field names for the response entity type.
+     *
+     * @return ordered field names suitable for a table header
+     */
     public List<String> fieldNames() {
         List<String> names = new ArrayList<>();
         EntityDefinition entity = entityDefinition();
@@ -43,6 +54,11 @@ final class ApiResponseBodyRows {
         return names;
     }
 
+    /**
+     * Returns the response body as scalar string rows.
+     *
+     * @return rows matching the order returned by {@link #fieldNames()}
+     */
     public List<List<String>> rows() {
         List<List<String>> rows = new ArrayList<>();
         if (!apiResponse.hasABody() || apiResponse.isErrorResponse()) {
@@ -66,6 +82,11 @@ final class ApiResponseBodyRows {
         return rows;
     }
 
+    /**
+     * Resolves the entity definition represented by the response body.
+     *
+     * @return response entity definition, or null when no entity body is present
+     */
     private EntityDefinition entityDefinition() {
         if (apiResponse.getTypeOfThingReturned() != null) {
             return apiResponse.getTypeOfThingReturned();
@@ -86,6 +107,13 @@ final class ApiResponseBodyRows {
         return apiResponse.getReturnedInstance().getEntity();
     }
 
+    /**
+     * Converts a persisted instance into a table row.
+     *
+     * @param instance instance to render
+     * @param fieldNames fields selected for the table
+     * @return scalar string values for the selected fields
+     */
     private List<String> rowFor(final EntityInstance instance, final List<String> fieldNames) {
         List<String> row = new ArrayList<>();
         for (String fieldName : fieldNames) {
@@ -95,6 +123,13 @@ final class ApiResponseBodyRows {
         return row;
     }
 
+    /**
+     * Converts a draft instance into a table row using explicit, protected, and default values.
+     *
+     * @param draft draft to render
+     * @param fieldNames fields selected for the table
+     * @return scalar string values for the selected fields
+     */
     private List<String> rowFor(final EntityInstanceDraft draft, final List<String> fieldNames) {
         List<String> row = new ArrayList<>();
         Map<String, String> values = new HashMap<>();

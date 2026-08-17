@@ -24,6 +24,13 @@ import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.query.RepositoryQueryResult;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
+/**
+ * Mutable operation context shared by all lifecycle hook phases for one Thingifier API request.
+ *
+ * <p>The class precomputes stable route details and tracks explicit replacements made by hooks. The
+ * replacement flags allow handlers to decide whether request data should be remapped or whether a
+ * hook intentionally supplied a final command, query, result, or response.
+ */
 public final class ThingifierApiLifecycleContext
         implements RouteMatchedContext,
                 BodyParsedContext,
@@ -65,6 +72,16 @@ public final class ThingifierApiLifecycleContext
     private boolean apiResponseReplaced;
     private boolean shortCircuit;
 
+    /**
+     * Creates a lifecycle context for one matched Thingifier API route.
+     *
+     * @param runtime runtime services for schema, API spec, stores, commands, and queries
+     * @param request HTTP API request being processed
+     * @param effectiveVerb verb after method override handling
+     * @param routingVerb generated routing verb equivalent
+     * @param route matched generated route
+     * @param apiPathPrefix configured API prefix used by scoped hook matching
+     */
     public ThingifierApiLifecycleContext(
             final ThingifierApiRuntime runtime,
             final HttpApiRequest request,
@@ -95,14 +112,29 @@ public final class ThingifierApiLifecycleContext
         return effectiveVerb;
     }
 
+    /**
+     * Returns the generated routing verb equivalent for scoped hook matching.
+     *
+     * @return routing verb, or null when no generated route verb applies
+     */
     public RoutingVerb routingVerb() {
         return routingVerb;
     }
 
+    /**
+     * Returns runtime services backing this lifecycle request.
+     *
+     * @return Thingifier API runtime
+     */
     public ThingifierApiRuntime runtime() {
         return runtime;
     }
 
+    /**
+     * Returns the underlying HTTP API request.
+     *
+     * @return request being processed
+     */
     public HttpApiRequest request() {
         return request;
     }
@@ -112,6 +144,11 @@ public final class ThingifierApiLifecycleContext
         return request.getPath();
     }
 
+    /**
+     * Returns the API path prefix used when matching scoped hooks and API spec rules.
+     *
+     * @return configured API prefix, or an empty string
+     */
     public String apiPathPrefix() {
         return apiPathPrefix;
     }
@@ -302,6 +339,14 @@ public final class ThingifierApiLifecycleContext
         return shortCircuit;
     }
 
+    /**
+     * Applies parsed request data after syntax and entity-view checks.
+     *
+     * <p>Values already replaced by earlier hooks are preserved so explicit hook mutations are not
+     * overwritten by normal parsing.
+     *
+     * @param envelope parsed request envelope
+     */
     public void applyParsedEnvelope(final ApiRequestEnvelope envelope) {
         if (envelope == null) {
             return;
@@ -316,6 +361,11 @@ public final class ThingifierApiLifecycleContext
         queryBodyFormat = envelope.queryBodyFormat();
     }
 
+    /**
+     * Converts the current lifecycle request state back into a handler envelope.
+     *
+     * @return request envelope reflecting hook mutations
+     */
     public ApiRequestEnvelope toEnvelope() {
         return ApiRequestEnvelope.fromParsed(
                 effectiveVerb,
@@ -327,49 +377,114 @@ public final class ThingifierApiLifecycleContext
                 queryBodyFormat);
     }
 
+    /**
+     * Stores the write command produced by normal request mapping.
+     *
+     * <p>This differs from {@link #replaceWriteCommand(ThingWriteCommand)} because it records the
+     * mapped baseline, not a hook replacement.
+     *
+     * @param command mapped write command
+     */
     public void useMappedWriteCommand(final ThingWriteCommand command) {
         this.writeCommand = command;
         this.writeCommandReplaced = false;
     }
 
+    /**
+     * Reports whether a hook explicitly replaced the write command.
+     *
+     * @return true when the mapped write command was replaced
+     */
     public boolean writeCommandWasReplaced() {
         return writeCommandReplaced;
     }
 
+    /**
+     * Stores the read query produced by normal request mapping.
+     *
+     * <p>This differs from {@link #replaceReadQuery(ThingReadQuery)} because it records the mapped
+     * baseline, not a hook replacement.
+     *
+     * @param query mapped read query
+     */
     public void useMappedReadQuery(final ThingReadQuery query) {
         this.readQuery = query;
         this.readQueryReplaced = false;
     }
 
+    /**
+     * Reports whether a hook explicitly replaced the read query.
+     *
+     * @return true when the mapped read query was replaced
+     */
     public boolean readQueryWasReplaced() {
         return readQueryReplaced;
     }
 
+    /**
+     * Reports whether query parameters were explicitly replaced.
+     *
+     * @return true when a hook replaced query parameters
+     */
     public boolean queryParamsWereReplaced() {
         return queryParamsReplaced;
     }
 
+    /**
+     * Reports whether parsed body fields were explicitly replaced.
+     *
+     * @return true when a hook replaced body fields
+     */
     public boolean bodyFieldsWereReplaced() {
         return bodyFieldsReplaced;
     }
 
+    /**
+     * Reports whether the raw body was explicitly replaced.
+     *
+     * @return true when a hook replaced raw body text
+     */
     public boolean rawBodyWasReplaced() {
         return rawBodyReplaced;
     }
 
+    /**
+     * Reports whether the QUERY body format was explicitly replaced.
+     *
+     * @return true when a hook replaced query body format
+     */
     public boolean queryBodyFormatWasReplaced() {
         return queryBodyFormatReplaced;
     }
 
+    /**
+     * Stores the API response produced by normal request processing.
+     *
+     * <p>This differs from {@link #replaceApiResponse(ApiResponse)} because it records the mapped
+     * baseline, not a hook replacement.
+     *
+     * @param response generated API response
+     */
     public void useApiResponse(final ApiResponse response) {
         this.apiResponse = response;
         this.apiResponseReplaced = false;
     }
 
+    /**
+     * Reports whether a hook explicitly replaced the API response.
+     *
+     * @return true when a hook replaced the API response
+     */
     public boolean apiResponseWasReplaced() {
         return apiResponseReplaced;
     }
 
+    /**
+     * Resolves the target entity for entity and relationship routes.
+     *
+     * @param route matched generated route
+     * @return target entity, or null when the route is not entity-backed
+     */
     private EntityDefinition resolveTargetEntity(final ThingRoute route) {
         if (route instanceof CollectionRoute) {
             return entityNamed(((CollectionRoute) route).entity().name());
@@ -390,6 +505,12 @@ public final class ThingifierApiLifecycleContext
         return null;
     }
 
+    /**
+     * Resolves the parent entity for relationship routes.
+     *
+     * @param route matched generated route
+     * @return parent entity, or null for non-relationship routes
+     */
     private EntityDefinition resolveParentEntity(final ThingRoute route) {
         if (route instanceof RelationshipCollectionRoute) {
             return entityNamed(((RelationshipCollectionRoute) route).parentEntity().name());
@@ -400,6 +521,12 @@ public final class ThingifierApiLifecycleContext
         return null;
     }
 
+    /**
+     * Resolves the target identifier for instance routes.
+     *
+     * @param route matched generated route
+     * @return target identifier, or null for collection routes
+     */
     private String resolveTargetIdentifier(final ThingRoute route) {
         if (route instanceof InstanceRoute) {
             return ((InstanceRoute) route).identifier();
@@ -410,6 +537,12 @@ public final class ThingifierApiLifecycleContext
         return null;
     }
 
+    /**
+     * Resolves the parent identifier for relationship routes.
+     *
+     * @param route matched generated route
+     * @return parent identifier, or null for non-relationship routes
+     */
     private String resolveParentIdentifier(final ThingRoute route) {
         if (route instanceof RelationshipCollectionRoute) {
             return ((RelationshipCollectionRoute) route).parentIdentifier();
@@ -420,6 +553,12 @@ public final class ThingifierApiLifecycleContext
         return null;
     }
 
+    /**
+     * Resolves the relationship name for relationship routes.
+     *
+     * @param route matched generated route
+     * @return relationship name, or null for entity routes
+     */
     private String resolveRelationshipName(final ThingRoute route) {
         if (route instanceof RelationshipCollectionRoute) {
             return ((RelationshipCollectionRoute) route).relationshipName();
@@ -430,6 +569,12 @@ public final class ThingifierApiLifecycleContext
         return null;
     }
 
+    /**
+     * Resolves the child identifier for relationship instance routes.
+     *
+     * @param route matched generated route
+     * @return child identifier, or null when the route does not identify a child
+     */
     private String resolveChildIdentifier(final ThingRoute route) {
         if (route instanceof RelationshipInstanceRoute) {
             return ((RelationshipInstanceRoute) route).childIdentifier();
@@ -437,6 +582,13 @@ public final class ThingifierApiLifecycleContext
         return null;
     }
 
+    /**
+     * Resolves the related entity targeted by a relationship route.
+     *
+     * @param parentEntity parent entity reference from the route
+     * @param relationshipName relationship route name
+     * @return related target entity, or null when the relationship cannot be resolved
+     */
     private EntityDefinition targetEntityForRelationship(
             final EntityTypeRef parentEntity, final String relationshipName) {
         if (parentEntity == null) {
@@ -450,10 +602,22 @@ public final class ThingifierApiLifecycleContext
         return null;
     }
 
+    /**
+     * Looks up an entity definition by singular or plural model name.
+     *
+     * @param entityName singular or plural entity name
+     * @return matching entity definition, or null
+     */
     private EntityDefinition entityNamed(final String entityName) {
         return runtime.schema().definitionWithSingularOrPluralNamed(entityName);
     }
 
+    /**
+     * Copies query parameters so hook callers cannot mutate internal state by retaining references.
+     *
+     * @param original source query parameters
+     * @return independent query parameter copy
+     */
     private QueryFilterParams copyQueryParams(final QueryFilterParams original) {
         QueryFilterParams copy = new QueryFilterParams();
         copy.addAll(original);

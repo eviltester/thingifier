@@ -13,6 +13,13 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStoreWriteException;
 
+/**
+ * Validates and applies relationship write commands.
+ *
+ * <p>Relationship writes can connect an existing child, create and connect a new child, infer the
+ * correct operation from a request body, or disconnect an existing relationship. Each command has a
+ * validation path separated from the mutation path for lifecycle hook processing.
+ */
 final class RelationshipCommandHandler {
 
     private final ThingStore store;
@@ -23,6 +30,17 @@ final class RelationshipCommandHandler {
     private final RelationshipConnectionService relationships;
     private final RelationshipTargetResolver targets;
 
+    /**
+     * Creates the relationship command handler.
+     *
+     * @param store store to mutate
+     * @param definitions resolver for model definitions and instances
+     * @param validation write validation policy
+     * @param drafts factory for child drafts
+     * @param createHandler handler used to persist newly related children
+     * @param relationships service used to connect relationship references
+     * @param targets resolver for relationship targets and references
+     */
     RelationshipCommandHandler(
             final ThingStore store,
             final ThingDefinitionResolver definitions,
@@ -40,6 +58,12 @@ final class RelationshipCommandHandler {
         this.targets = targets;
     }
 
+    /**
+     * Validates and applies a connect-existing relationship command in one call.
+     *
+     * @param command connect-existing command to handle
+     * @return validation error or successful relationship result
+     */
     ThingCommandResult handle(final ConnectExistingRelationshipCommand command) {
         ThingCommandResult validationResult = validate(command);
         if (validationResult != null) {
@@ -48,6 +72,12 @@ final class RelationshipCommandHandler {
         return apply(command);
     }
 
+    /**
+     * Validates that the parent and referenced related instance can be connected.
+     *
+     * @param command connect-existing command to validate
+     * @return validation error, or null when validation succeeds
+     */
     ThingCommandResult validate(final ConnectExistingRelationshipCommand command) {
         EntityDefinition parentEntity = definitions.entityNamed(command.getParentEntityName());
         EntityInstance parent =
@@ -79,6 +109,12 @@ final class RelationshipCommandHandler {
         return null;
     }
 
+    /**
+     * Applies a connect-existing relationship command after validation.
+     *
+     * @param command validated connect-existing command
+     * @return command result from connecting the relationship
+     */
     ThingCommandResult apply(final ConnectExistingRelationshipCommand command) {
         EntityDefinition parentEntity = definitions.entityNamed(command.getParentEntityName());
         EntityInstance parent =
@@ -102,6 +138,12 @@ final class RelationshipCommandHandler {
                 parent, relationshipToUse.getName(), related.instance(), false);
     }
 
+    /**
+     * Validates and applies a create-and-connect relationship command in one call.
+     *
+     * @param command create-and-connect command to handle
+     * @return validation error or successful creation/relationship result
+     */
     ThingCommandResult handle(final CreateAndConnectRelationshipCommand command) {
         ThingCommandResult validationResult = validate(command);
         if (validationResult != null) {
@@ -110,6 +152,12 @@ final class RelationshipCommandHandler {
         return apply(command);
     }
 
+    /**
+     * Validates that a new child can be created and connected to the parent.
+     *
+     * @param command create-and-connect command to validate
+     * @return validation error, or null when validation succeeds
+     */
     ThingCommandResult validate(final CreateAndConnectRelationshipCommand command) {
         EntityDefinition parentEntity = definitions.entityNamed(command.getParentEntityName());
         EntityInstance parent =
@@ -136,6 +184,12 @@ final class RelationshipCommandHandler {
         return null;
     }
 
+    /**
+     * Applies a create-and-connect command after validation.
+     *
+     * @param command validated create-and-connect command
+     * @return command result containing the created child or an error
+     */
     ThingCommandResult apply(final CreateAndConnectRelationshipCommand command) {
         EntityDefinition parentEntity = definitions.entityNamed(command.getParentEntityName());
         EntityInstance parent =
@@ -174,6 +228,12 @@ final class RelationshipCommandHandler {
         }
     }
 
+    /**
+     * Validates and applies a relate command in one call.
+     *
+     * @param command relate command to handle
+     * @return validation error or successful relationship result
+     */
     ThingCommandResult handle(final RelateThingCommand command) {
         ThingCommandResult validationResult = validate(command);
         if (validationResult != null) {
@@ -182,6 +242,15 @@ final class RelationshipCommandHandler {
         return apply(command);
     }
 
+    /**
+     * Validates a body-driven relationship command.
+     *
+     * <p>The command is resolved as connect-existing when the body references an existing child,
+     * otherwise it is validated as create-and-connect.
+     *
+     * @param command relate command to validate
+     * @return validation error, or null when validation succeeds
+     */
     ThingCommandResult validate(final RelateThingCommand command) {
         EntityDefinition parentEntity = definitions.entityNamed(command.getParentEntityName());
         if (parentEntity == null) {
@@ -239,6 +308,12 @@ final class RelationshipCommandHandler {
         return validate(create);
     }
 
+    /**
+     * Applies a body-driven relationship command after validation.
+     *
+     * @param command validated relate command
+     * @return command result from connect-existing or create-and-connect
+     */
     ThingCommandResult apply(final RelateThingCommand command) {
         EntityDefinition parentEntity = definitions.entityNamed(command.getParentEntityName());
         if (parentEntity == null) {
@@ -292,6 +367,12 @@ final class RelationshipCommandHandler {
         return result;
     }
 
+    /**
+     * Validates and applies a disconnect relationship command in one call.
+     *
+     * @param command disconnect command to handle
+     * @return validation error or successful disconnect result
+     */
     ThingCommandResult handle(final DisconnectRelationshipCommand command) {
         ThingCommandResult validationResult = validate(command);
         if (validationResult != null) {
@@ -300,6 +381,12 @@ final class RelationshipCommandHandler {
         return apply(command);
     }
 
+    /**
+     * Validates that the source and target instances are currently related.
+     *
+     * @param command disconnect command to validate
+     * @return validation error, or null when validation succeeds
+     */
     ThingCommandResult validate(final DisconnectRelationshipCommand command) {
         EntityDefinition parentEntity = definitions.entityNamed(command.getParentEntityName());
         EntityInstance parent =
@@ -317,6 +404,12 @@ final class RelationshipCommandHandler {
         return null;
     }
 
+    /**
+     * Applies a disconnect command after validation.
+     *
+     * @param command validated disconnect command
+     * @return successful command result or store error
+     */
     ThingCommandResult apply(final DisconnectRelationshipCommand command) {
         EntityDefinition parentEntity = definitions.entityNamed(command.getParentEntityName());
         EntityInstance parent =
@@ -341,6 +434,12 @@ final class RelationshipCommandHandler {
         }
     }
 
+    /**
+     * Builds a parent-not-found error for connect-existing commands.
+     *
+     * @param command command whose parent was missing
+     * @return command result containing the parent error
+     */
     private ThingCommandResult parentNotFound(final ConnectExistingRelationshipCommand command) {
         return parentNotFound(
                 command.getParentEntityName(),
@@ -348,6 +447,12 @@ final class RelationshipCommandHandler {
                 command.getRelationshipName());
     }
 
+    /**
+     * Builds a parent-not-found error for create-and-connect commands.
+     *
+     * @param command command whose parent was missing
+     * @return command result containing the parent error
+     */
     private ThingCommandResult parentNotFound(final CreateAndConnectRelationshipCommand command) {
         return parentNotFound(
                 command.getParentEntityName(),
@@ -355,6 +460,12 @@ final class RelationshipCommandHandler {
                 command.getRelationshipName());
     }
 
+    /**
+     * Builds a parent-not-found error for relate commands.
+     *
+     * @param command command whose parent was missing
+     * @return command result containing the parent error
+     */
     private ThingCommandResult parentNotFound(final RelateThingCommand command) {
         return parentNotFound(
                 command.getParentEntityName(),
@@ -362,12 +473,26 @@ final class RelationshipCommandHandler {
                 command.getRelationshipName());
     }
 
+    /**
+     * Builds the standard parent-not-found error.
+     *
+     * @param entityName parent entity name
+     * @param identifier parent identifier
+     * @param relationshipName relationship name
+     * @return command result containing the parent error
+     */
     private ThingCommandResult parentNotFound(
             final String entityName, final String identifier, final String relationshipName) {
         return ThingCommandResult.error(
                 ApplicationError.parentInstanceNotFound(entityName, identifier, relationshipName));
     }
 
+    /**
+     * Builds the standard missing relationship source error for disconnects.
+     *
+     * @param command disconnect command
+     * @return command result containing the source error
+     */
     private ThingCommandResult relationshipSourceNotFound(
             final DisconnectRelationshipCommand command) {
         return ThingCommandResult.error(
@@ -377,6 +502,12 @@ final class RelationshipCommandHandler {
                         command.getRelationshipName()));
     }
 
+    /**
+     * Builds the standard missing relationship target error for disconnects.
+     *
+     * @param command disconnect command
+     * @return command result containing the target error
+     */
     private ThingCommandResult relationshipTargetNotFound(
             final DisconnectRelationshipCommand command) {
         return ThingCommandResult.error(

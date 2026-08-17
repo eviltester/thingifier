@@ -375,11 +375,25 @@ public class ThingifierHttpApiRoutings {
         }
     }
 
+    /**
+     * Registers a server-level hook that runs before every HTTP request.
+     *
+     * <p>This hook sees all app routes, not only generated Thingifier API routes.
+     *
+     * @param hook hook to run before request routing
+     */
     public void registerPreRequestHook(final HttpRequestResponseHook hook) {
         // pre-request hooks run pre-every-request
         preHttpRequestHooks.add(hook);
     }
 
+    /**
+     * Registers a server-level hook that runs after every HTTP response.
+     *
+     * <p>This hook sees all app routes, not only generated Thingifier API routes.
+     *
+     * @param hook hook to run after response creation
+     */
     public void registerPostResponseHook(final HttpRequestResponseHook hook) {
         // post-request hooks run after-every-response
         postHttpResponseHooks.add(hook);
@@ -389,20 +403,47 @@ public class ThingifierHttpApiRoutings {
        HttpApiRequestHooks are run in the API Bridge routing, prior to being
        processed by the API handlers - these will be unique to each thingifier.
     */
+    /**
+     * Registers an API request hook for every generated Thingifier API request.
+     *
+     * <p>These legacy hooks run before lifecycle hooks and can short-circuit before Thingifier
+     * route processing begins.
+     *
+     * @param hook hook to run before generated API processing
+     */
     public void registerHttpApiRequestHook(final HttpApiRequestHook hook) {
         // pre-request hooks run pre-every-api-request
         httpApiHooks.registerRequestHook(hook);
     }
 
+    /**
+     * Registers an API request hook with an explicit scope.
+     *
+     * @param scope route and verb scope
+     * @param hook hook to run before generated API processing
+     */
     public void registerHttpApiRequestHook(final HookScope scope, final HttpApiRequestHook hook) {
         httpApiHooks.registerRequestHook(scope, hook);
     }
 
+    /**
+     * Registers an API request hook for one endpoint path pattern.
+     *
+     * @param pathPattern endpoint path pattern
+     * @param hook hook to run before generated API processing
+     */
     public void registerHttpApiRequestHook(
             final String pathPattern, final HttpApiRequestHook hook) {
         registerHttpApiRequestHook(HookScope.endpoint(pathPattern), hook);
     }
 
+    /**
+     * Registers an API request hook for one endpoint path pattern and selected verbs.
+     *
+     * @param pathPattern endpoint path pattern
+     * @param verbs verbs that should run the hook
+     * @param hook hook to run before generated API processing
+     */
     public void registerHttpApiRequestHook(
             final String pathPattern,
             final Collection<RoutingVerb> verbs,
@@ -414,20 +455,47 @@ public class ThingifierHttpApiRoutings {
     HttpApiResponseHooks are run in the API Bridge routing, after being
     processed by the API handlers - these will be unique to each thingifier.
     */
+    /**
+     * Registers an API response hook for every generated Thingifier API response.
+     *
+     * <p>These legacy hooks run after lifecycle hooks and after generated API processing has
+     * created an HTTP API response.
+     *
+     * @param hook hook to run after generated API processing
+     */
     public void registerHttpApiResponseHook(final HttpApiResponseHook hook) {
         // pre-request hooks run pre-every-api-request
         httpApiHooks.registerResponseHook(hook);
     }
 
+    /**
+     * Registers an API response hook with an explicit scope.
+     *
+     * @param scope route and verb scope
+     * @param hook hook to run after generated API processing
+     */
     public void registerHttpApiResponseHook(final HookScope scope, final HttpApiResponseHook hook) {
         httpApiHooks.registerResponseHook(scope, hook);
     }
 
+    /**
+     * Registers an API response hook for one endpoint path pattern.
+     *
+     * @param pathPattern endpoint path pattern
+     * @param hook hook to run after generated API processing
+     */
     public void registerHttpApiResponseHook(
             final String pathPattern, final HttpApiResponseHook hook) {
         registerHttpApiResponseHook(HookScope.endpoint(pathPattern), hook);
     }
 
+    /**
+     * Registers an API response hook for one endpoint path pattern and selected verbs.
+     *
+     * @param pathPattern endpoint path pattern
+     * @param verbs verbs that should run the hook
+     * @param hook hook to run after generated API processing
+     */
     public void registerHttpApiResponseHook(
             final String pathPattern,
             final Collection<RoutingVerb> verbs,
@@ -435,18 +503,42 @@ public class ThingifierHttpApiRoutings {
         registerHttpApiResponseHook(HookScope.endpointAndVerbs(pathPattern, verbs), hook);
     }
 
+    /**
+     * Registers a route-matched lifecycle hook for every generated Thingifier API route.
+     *
+     * @param hook hook to run after route matching
+     */
     public void registerRouteMatchedHook(final RouteMatchedHook hook) {
         lifecycleHooks.registerRouteMatchedHook(hook);
     }
 
+    /**
+     * Registers a route-matched lifecycle hook with an explicit scope.
+     *
+     * @param scope route and verb scope
+     * @param hook hook to run after route matching
+     */
     public void registerRouteMatchedHook(final HookScope scope, final RouteMatchedHook hook) {
         lifecycleHooks.registerRouteMatchedHook(scope, hook);
     }
 
+    /**
+     * Registers a route-matched lifecycle hook for one endpoint path pattern.
+     *
+     * @param pathPattern endpoint path pattern
+     * @param hook hook to run after route matching
+     */
     public void registerRouteMatchedHook(final String pathPattern, final RouteMatchedHook hook) {
         lifecycleHooks.registerRouteMatchedHook(pathPattern, hook);
     }
 
+    /**
+     * Registers a route-matched lifecycle hook for one endpoint path pattern and selected verbs.
+     *
+     * @param pathPattern endpoint path pattern
+     * @param verbs verbs that should run the hook
+     * @param hook hook to run after route matching
+     */
     public void registerRouteMatchedHook(
             final String pathPattern,
             final Collection<RoutingVerb> verbs,
@@ -454,18 +546,42 @@ public class ThingifierHttpApiRoutings {
         lifecycleHooks.registerRouteMatchedHook(pathPattern, verbs, hook);
     }
 
+    /**
+     * Registers a body-parsed lifecycle hook for every generated Thingifier API route.
+     *
+     * @param hook hook to run after request body parsing
+     */
     public void registerBodyParsedHook(final BodyParsedHook hook) {
         lifecycleHooks.registerBodyParsedHook(hook);
     }
 
+    /**
+     * Registers a body-parsed lifecycle hook with an explicit scope.
+     *
+     * @param scope route and verb scope
+     * @param hook hook to run after request body parsing
+     */
     public void registerBodyParsedHook(final HookScope scope, final BodyParsedHook hook) {
         lifecycleHooks.registerBodyParsedHook(scope, hook);
     }
 
+    /**
+     * Registers a body-parsed lifecycle hook for one endpoint path pattern.
+     *
+     * @param pathPattern endpoint path pattern
+     * @param hook hook to run after request body parsing
+     */
     public void registerBodyParsedHook(final String pathPattern, final BodyParsedHook hook) {
         lifecycleHooks.registerBodyParsedHook(pathPattern, hook);
     }
 
+    /**
+     * Registers a body-parsed lifecycle hook for one endpoint path pattern and selected verbs.
+     *
+     * @param pathPattern endpoint path pattern
+     * @param verbs verbs that should run the hook
+     * @param hook hook to run after request body parsing
+     */
     public void registerBodyParsedHook(
             final String pathPattern,
             final Collection<RoutingVerb> verbs,
@@ -473,20 +589,45 @@ public class ThingifierHttpApiRoutings {
         lifecycleHooks.registerBodyParsedHook(pathPattern, verbs, hook);
     }
 
+    /**
+     * Registers a before-validation lifecycle hook for every generated Thingifier API route.
+     *
+     * @param hook hook to run before Thingifier validation
+     */
     public void registerBeforeValidationHook(final BeforeValidationHook hook) {
         lifecycleHooks.registerBeforeValidationHook(hook);
     }
 
+    /**
+     * Registers a before-validation lifecycle hook with an explicit scope.
+     *
+     * @param scope route and verb scope
+     * @param hook hook to run before Thingifier validation
+     */
     public void registerBeforeValidationHook(
             final HookScope scope, final BeforeValidationHook hook) {
         lifecycleHooks.registerBeforeValidationHook(scope, hook);
     }
 
+    /**
+     * Registers a before-validation lifecycle hook for one endpoint path pattern.
+     *
+     * @param pathPattern endpoint path pattern
+     * @param hook hook to run before Thingifier validation
+     */
     public void registerBeforeValidationHook(
             final String pathPattern, final BeforeValidationHook hook) {
         lifecycleHooks.registerBeforeValidationHook(pathPattern, hook);
     }
 
+    /**
+     * Registers a before-validation lifecycle hook for one endpoint path pattern and selected
+     * verbs.
+     *
+     * @param pathPattern endpoint path pattern
+     * @param verbs verbs that should run the hook
+     * @param hook hook to run before Thingifier validation
+     */
     public void registerBeforeValidationHook(
             final String pathPattern,
             final Collection<RoutingVerb> verbs,
@@ -494,19 +635,44 @@ public class ThingifierHttpApiRoutings {
         lifecycleHooks.registerBeforeValidationHook(pathPattern, verbs, hook);
     }
 
+    /**
+     * Registers an after-validation lifecycle hook for every generated Thingifier API route.
+     *
+     * @param hook hook to run after Thingifier validation
+     */
     public void registerAfterValidationHook(final AfterValidationHook hook) {
         lifecycleHooks.registerAfterValidationHook(hook);
     }
 
+    /**
+     * Registers an after-validation lifecycle hook with an explicit scope.
+     *
+     * @param scope route and verb scope
+     * @param hook hook to run after Thingifier validation
+     */
     public void registerAfterValidationHook(final HookScope scope, final AfterValidationHook hook) {
         lifecycleHooks.registerAfterValidationHook(scope, hook);
     }
 
+    /**
+     * Registers an after-validation lifecycle hook for one endpoint path pattern.
+     *
+     * @param pathPattern endpoint path pattern
+     * @param hook hook to run after Thingifier validation
+     */
     public void registerAfterValidationHook(
             final String pathPattern, final AfterValidationHook hook) {
         lifecycleHooks.registerAfterValidationHook(pathPattern, hook);
     }
 
+    /**
+     * Registers an after-validation lifecycle hook for one endpoint path pattern and selected
+     * verbs.
+     *
+     * @param pathPattern endpoint path pattern
+     * @param verbs verbs that should run the hook
+     * @param hook hook to run after Thingifier validation
+     */
     public void registerAfterValidationHook(
             final String pathPattern,
             final Collection<RoutingVerb> verbs,
@@ -514,18 +680,42 @@ public class ThingifierHttpApiRoutings {
         lifecycleHooks.registerAfterValidationHook(pathPattern, verbs, hook);
     }
 
+    /**
+     * Registers a before-action lifecycle hook for every generated Thingifier API route.
+     *
+     * @param hook hook to run before read or write execution
+     */
     public void registerBeforeActionHook(final BeforeActionHook hook) {
         lifecycleHooks.registerBeforeActionHook(hook);
     }
 
+    /**
+     * Registers a before-action lifecycle hook with an explicit scope.
+     *
+     * @param scope route and verb scope
+     * @param hook hook to run before read or write execution
+     */
     public void registerBeforeActionHook(final HookScope scope, final BeforeActionHook hook) {
         lifecycleHooks.registerBeforeActionHook(scope, hook);
     }
 
+    /**
+     * Registers a before-action lifecycle hook for one endpoint path pattern.
+     *
+     * @param pathPattern endpoint path pattern
+     * @param hook hook to run before read or write execution
+     */
     public void registerBeforeActionHook(final String pathPattern, final BeforeActionHook hook) {
         lifecycleHooks.registerBeforeActionHook(pathPattern, hook);
     }
 
+    /**
+     * Registers a before-action lifecycle hook for one endpoint path pattern and selected verbs.
+     *
+     * @param pathPattern endpoint path pattern
+     * @param verbs verbs that should run the hook
+     * @param hook hook to run before read or write execution
+     */
     public void registerBeforeActionHook(
             final String pathPattern,
             final Collection<RoutingVerb> verbs,
@@ -533,18 +723,42 @@ public class ThingifierHttpApiRoutings {
         lifecycleHooks.registerBeforeActionHook(pathPattern, verbs, hook);
     }
 
+    /**
+     * Registers an after-action lifecycle hook for every generated Thingifier API route.
+     *
+     * @param hook hook to run after read or write execution
+     */
     public void registerAfterActionHook(final AfterActionHook hook) {
         lifecycleHooks.registerAfterActionHook(hook);
     }
 
+    /**
+     * Registers an after-action lifecycle hook with an explicit scope.
+     *
+     * @param scope route and verb scope
+     * @param hook hook to run after read or write execution
+     */
     public void registerAfterActionHook(final HookScope scope, final AfterActionHook hook) {
         lifecycleHooks.registerAfterActionHook(scope, hook);
     }
 
+    /**
+     * Registers an after-action lifecycle hook for one endpoint path pattern.
+     *
+     * @param pathPattern endpoint path pattern
+     * @param hook hook to run after read or write execution
+     */
     public void registerAfterActionHook(final String pathPattern, final AfterActionHook hook) {
         lifecycleHooks.registerAfterActionHook(pathPattern, hook);
     }
 
+    /**
+     * Registers an after-action lifecycle hook for one endpoint path pattern and selected verbs.
+     *
+     * @param pathPattern endpoint path pattern
+     * @param verbs verbs that should run the hook
+     * @param hook hook to run after read or write execution
+     */
     public void registerAfterActionHook(
             final String pathPattern,
             final Collection<RoutingVerb> verbs,
@@ -552,21 +766,45 @@ public class ThingifierHttpApiRoutings {
         lifecycleHooks.registerAfterActionHook(pathPattern, verbs, hook);
     }
 
+    /**
+     * Registers an internal HTTP response hook for every generated response.
+     *
+     * @param hook hook to run after conversion to the internal HTTP representation
+     */
     public void registerInternalHttpResponseHook(final InternalHttpResponseHook hook) {
         // pre-request hooks run post api processing on an internal http representation
         postInternalHttpResponseHooks.add(ScopedHook.any(hook));
     }
 
+    /**
+     * Registers an internal HTTP response hook with an explicit scope.
+     *
+     * @param scope route and verb scope
+     * @param hook hook to run after conversion to the internal HTTP representation
+     */
     public void registerInternalHttpResponseHook(
             final HookScope scope, final InternalHttpResponseHook hook) {
         postInternalHttpResponseHooks.add(ScopedHook.forScope(scope, hook));
     }
 
+    /**
+     * Registers an internal HTTP response hook for one endpoint path pattern.
+     *
+     * @param pathPattern endpoint path pattern
+     * @param hook hook to run after conversion to the internal HTTP representation
+     */
     public void registerInternalHttpResponseHook(
             final String pathPattern, final InternalHttpResponseHook hook) {
         registerInternalHttpResponseHook(HookScope.endpoint(pathPattern), hook);
     }
 
+    /**
+     * Registers an internal HTTP response hook for one endpoint path pattern and selected verbs.
+     *
+     * @param pathPattern endpoint path pattern
+     * @param verbs verbs that should run the hook
+     * @param hook hook to run after conversion to the internal HTTP representation
+     */
     public void registerInternalHttpResponseHook(
             final String pathPattern,
             final Collection<RoutingVerb> verbs,
@@ -574,21 +812,45 @@ public class ThingifierHttpApiRoutings {
         registerInternalHttpResponseHook(HookScope.endpointAndVerbs(pathPattern, verbs), hook);
     }
 
+    /**
+     * Registers an internal HTTP request hook for every generated request.
+     *
+     * @param hook hook to run before conversion to the HTTP API representation
+     */
     public void registerInternalHttpRequestHook(final InternalHttpRequestHook hook) {
         // pre-request hooks run pre api routing on an internal http representation
         preInternalHttpRequestHooks.add(ScopedHook.any(hook));
     }
 
+    /**
+     * Registers an internal HTTP request hook with an explicit scope.
+     *
+     * @param scope route and verb scope
+     * @param hook hook to run before conversion to the HTTP API representation
+     */
     public void registerInternalHttpRequestHook(
             final HookScope scope, final InternalHttpRequestHook hook) {
         preInternalHttpRequestHooks.add(ScopedHook.forScope(scope, hook));
     }
 
+    /**
+     * Registers an internal HTTP request hook for one endpoint path pattern.
+     *
+     * @param pathPattern endpoint path pattern
+     * @param hook hook to run before conversion to the HTTP API representation
+     */
     public void registerInternalHttpRequestHook(
             final String pathPattern, final InternalHttpRequestHook hook) {
         registerInternalHttpRequestHook(HookScope.endpoint(pathPattern), hook);
     }
 
+    /**
+     * Registers an internal HTTP request hook for one endpoint path pattern and selected verbs.
+     *
+     * @param pathPattern endpoint path pattern
+     * @param verbs verbs that should run the hook
+     * @param hook hook to run before conversion to the HTTP API representation
+     */
     public void registerInternalHttpRequestHook(
             final String pathPattern,
             final Collection<RoutingVerb> verbs,

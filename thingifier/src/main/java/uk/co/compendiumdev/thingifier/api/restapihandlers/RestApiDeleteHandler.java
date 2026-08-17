@@ -16,18 +16,40 @@ import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 
+/**
+ * Handles generated Thingifier DELETE routes.
+ *
+ * <p>The handler maps entity and relationship deletes to write commands, checks declarative write
+ * policy, then delegates lifecycle-aware validation and execution.
+ */
 public class RestApiDeleteHandler {
     private final ThingifierApiRuntime runtime;
     private final ThingifierApiLifecycleHookRegistry lifecycleHooks;
 
+    /**
+     * Creates a DELETE handler from a Thingifier model.
+     *
+     * @param aThingifier Thingifier model and configuration
+     */
     public RestApiDeleteHandler(final Thingifier aThingifier) {
         this(new DefaultThingifierApiRuntime(aThingifier));
     }
 
+    /**
+     * Creates a DELETE handler with no lifecycle hooks.
+     *
+     * @param runtime runtime services used by the handler
+     */
     public RestApiDeleteHandler(final ThingifierApiRuntime runtime) {
         this(runtime, new ThingifierApiLifecycleHookRegistry());
     }
 
+    /**
+     * Creates a DELETE handler with lifecycle hooks.
+     *
+     * @param runtime runtime services used by the handler
+     * @param lifecycleHooks lifecycle hooks for write processing
+     */
     public RestApiDeleteHandler(
             final ThingifierApiRuntime runtime,
             final ThingifierApiLifecycleHookRegistry lifecycleHooks) {
@@ -36,14 +58,36 @@ public class RestApiDeleteHandler {
                 lifecycleHooks == null ? new ThingifierApiLifecycleHookRegistry() : lifecycleHooks;
     }
 
+    /**
+     * Handles a DELETE request using raw headers to resolve context.
+     *
+     * @param url generated API path
+     * @param requestHeaders request headers used to resolve context
+     * @return API response for the DELETE
+     */
     public ApiResponse handle(final String url, HttpHeadersBlock requestHeaders) {
         return handle(url, runtime.contextFrom(requestHeaders));
     }
 
+    /**
+     * Handles a DELETE request without lifecycle hook state.
+     *
+     * @param url generated API path
+     * @param context request context containing the active store
+     * @return API response for the DELETE
+     */
     public ApiResponse handle(final String url, final ThingifierRequestContext context) {
         return handle(url, context, null);
     }
 
+    /**
+     * Handles a DELETE request with optional lifecycle hook state.
+     *
+     * @param url generated API path
+     * @param context request context containing the active store
+     * @param lifecycle lifecycle context, or null for direct processing
+     * @return API response for the DELETE
+     */
     public ApiResponse handle(
             final String url,
             final ThingifierRequestContext context,

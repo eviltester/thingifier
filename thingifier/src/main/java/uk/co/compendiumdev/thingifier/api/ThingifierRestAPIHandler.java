@@ -17,6 +17,13 @@ import uk.co.compendiumdev.thingifier.api.restapihandlers.*;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
+/**
+ * Direct Thingifier API facade for REST-style operations.
+ *
+ * <p>This class is used both by in-process callers and by the HTTP API adapter. It applies the same
+ * response policy as HTTP routing so direct calls and server calls agree on relationship rendering,
+ * route response views, and entity-level default response views.
+ */
 public class ThingifierRestAPIHandler {
     private final ThingifierApiRuntime runtime;
     private final RestApiDeleteHandler delete;
@@ -26,14 +33,34 @@ public class ThingifierRestAPIHandler {
     private final RestApiGetHandler get;
     private final RestApiQueryHandler query;
 
+    /**
+     * Creates a direct API facade for a Thingifier model.
+     *
+     * @param aThingifier Thingifier model and runtime configuration
+     */
     public ThingifierRestAPIHandler(final Thingifier aThingifier) {
         this(new DefaultThingifierApiRuntime(aThingifier));
     }
 
+    /**
+     * Creates a direct API facade using an explicit runtime.
+     *
+     * @param runtime runtime services used by the generated API handlers
+     */
     public ThingifierRestAPIHandler(final ThingifierApiRuntime runtime) {
         this(runtime, new ThingifierApiLifecycleHookRegistry());
     }
 
+    /**
+     * Creates a direct API facade using explicit runtime services and lifecycle hooks.
+     *
+     * <p>The lifecycle registry is supplied by HTTP routing when a request is being processed
+     * through the full lifecycle. Direct callers that do not need hooks can use the simpler
+     * constructors.
+     *
+     * @param runtime runtime services used by the generated API handlers
+     * @param lifecycleHooks lifecycle hook registry, or null for an empty registry
+     */
     public ThingifierRestAPIHandler(
             final ThingifierApiRuntime runtime,
             final ThingifierApiLifecycleHookRegistry lifecycleHooks) {
@@ -60,6 +87,14 @@ public class ThingifierRestAPIHandler {
     // wrong type then it should not cross ref
     // TODO: possibly consider an X- header which has the number of items in the collection
 
+    /**
+     * Handles a GET request using discrete direct-call arguments.
+     *
+     * @param url generated API path
+     * @param queryParams query filters to apply
+     * @param headers request headers used to resolve request context
+     * @return API response with repository and response-view policy applied
+     */
     public ApiResponse get(
             final String url, final QueryFilterParams queryParams, HttpHeadersBlock headers) {
         ThingifierRequestContext context = contextFrom(headers);
@@ -67,10 +102,23 @@ public class ThingifierRestAPIHandler {
                 RoutingVerb.GET, url, get.handle(url, queryParams, context), context);
     }
 
+    /**
+     * Handles a GET request from a parsed request envelope.
+     *
+     * @param request parsed request envelope
+     * @return API response with repository and response-view policy applied
+     */
     public ApiResponse get(final ApiRequestEnvelope request) {
         return get(request, null);
     }
 
+    /**
+     * Handles a GET request from a parsed request envelope and lifecycle context.
+     *
+     * @param request parsed request envelope
+     * @param lifecycle lifecycle context for hook-enabled HTTP processing, or null
+     * @return API response with repository and response-view policy applied
+     */
     public ApiResponse get(
             final ApiRequestEnvelope request, final ThingifierApiLifecycleContext lifecycle) {
         ThingifierRequestContext context = contextFrom(request.headers());
@@ -81,6 +129,14 @@ public class ThingifierRestAPIHandler {
                 context);
     }
 
+    /**
+     * Handles a HEAD request using discrete direct-call arguments.
+     *
+     * @param url generated API path
+     * @param queryParams query filters to apply
+     * @param headers request headers used to resolve request context
+     * @return API response with any body cleared after GET semantics are evaluated
+     */
     public ApiResponse head(
             final String url, final QueryFilterParams queryParams, HttpHeadersBlock headers) {
         ThingifierRequestContext context = contextFrom(headers);
@@ -89,10 +145,23 @@ public class ThingifierRestAPIHandler {
         return withResponsePolicy(RoutingVerb.HEAD, url, response, context);
     }
 
+    /**
+     * Handles a HEAD request from a parsed request envelope.
+     *
+     * @param request parsed request envelope
+     * @return API response with any body cleared after GET semantics are evaluated
+     */
     public ApiResponse head(final ApiRequestEnvelope request) {
         return head(request, null);
     }
 
+    /**
+     * Handles a HEAD request from a parsed request envelope and lifecycle context.
+     *
+     * @param request parsed request envelope
+     * @param lifecycle lifecycle context for hook-enabled HTTP processing, or null
+     * @return API response with any body cleared after GET semantics are evaluated
+     */
     public ApiResponse head(
             final ApiRequestEnvelope request, final ThingifierApiLifecycleContext lifecycle) {
         ThingifierRequestContext context = contextFrom(request.headers());
@@ -102,10 +171,23 @@ public class ThingifierRestAPIHandler {
         return withResponsePolicy(RoutingVerb.HEAD, request.path(), response, context);
     }
 
+    /**
+     * Handles a QUERY request from a parsed request envelope.
+     *
+     * @param request parsed request envelope
+     * @return API response with repository and response-view policy applied
+     */
     public ApiResponse query(final ApiRequestEnvelope request) {
         return query(request, null);
     }
 
+    /**
+     * Handles a QUERY request from a parsed request envelope and lifecycle context.
+     *
+     * @param request parsed request envelope
+     * @param lifecycle lifecycle context for hook-enabled HTTP processing, or null
+     * @return API response with repository and response-view policy applied
+     */
     public ApiResponse query(
             final ApiRequestEnvelope request, final ThingifierApiLifecycleContext lifecycle) {
         ThingifierRequestContext context = contextFrom(request.headers());
@@ -122,15 +204,35 @@ public class ThingifierRestAPIHandler {
                 context);
     }
 
+    /**
+     * Handles a DELETE request using discrete direct-call arguments.
+     *
+     * @param url generated API path
+     * @param headers request headers used to resolve request context
+     * @return API response with repository and response-view policy applied
+     */
     public ApiResponse delete(final String url, HttpHeadersBlock headers) {
         ThingifierRequestContext context = contextFrom(headers);
         return withResponsePolicy(RoutingVerb.DELETE, url, delete.handle(url, context), context);
     }
 
+    /**
+     * Handles a DELETE request from a parsed request envelope.
+     *
+     * @param request parsed request envelope
+     * @return API response with repository and response-view policy applied
+     */
     public ApiResponse delete(final ApiRequestEnvelope request) {
         return delete(request, null);
     }
 
+    /**
+     * Handles a DELETE request from a parsed request envelope and lifecycle context.
+     *
+     * @param request parsed request envelope
+     * @param lifecycle lifecycle context for hook-enabled HTTP processing, or null
+     * @return API response with repository and response-view policy applied
+     */
     public ApiResponse delete(
             final ApiRequestEnvelope request, final ThingifierApiLifecycleContext lifecycle) {
         ThingifierRequestContext context = contextFrom(request.headers());
@@ -141,15 +243,36 @@ public class ThingifierRestAPIHandler {
                 context);
     }
 
+    /**
+     * Handles a POST request using a body parser.
+     *
+     * @param url generated API path
+     * @param args parsed body source
+     * @param headers request headers used to resolve request context
+     * @return API response with repository and response-view policy applied
+     */
     public ApiResponse post(final String url, final BodyParser args, HttpHeadersBlock headers) {
         ThingifierRequestContext context = contextFrom(headers);
         return post(url, args.bodyFields(), context);
     }
 
+    /**
+     * Handles a POST request from a parsed request envelope.
+     *
+     * @param request parsed request envelope
+     * @return API response with repository and response-view policy applied
+     */
     public ApiResponse post(final ApiRequestEnvelope request) {
         return post(request, null);
     }
 
+    /**
+     * Handles a POST request from a parsed request envelope and lifecycle context.
+     *
+     * @param request parsed request envelope
+     * @param lifecycle lifecycle context for hook-enabled HTTP processing, or null
+     * @return API response with repository and response-view policy applied
+     */
     public ApiResponse post(
             final ApiRequestEnvelope request, final ThingifierApiLifecycleContext lifecycle) {
         ThingifierRequestContext context = contextFrom(request.headers());
@@ -160,6 +283,14 @@ public class ThingifierRestAPIHandler {
                 context);
     }
 
+    /**
+     * Handles a POST request using already parsed body fields and request context.
+     *
+     * @param url generated API path
+     * @param bodyFields parsed request body fields
+     * @param context request context including store selection
+     * @return API response with repository and response-view policy applied
+     */
     public ApiResponse post(
             final String url,
             final ApiBodyFields bodyFields,
@@ -168,15 +299,36 @@ public class ThingifierRestAPIHandler {
                 RoutingVerb.POST, url, post.handle(url, bodyFields, context), context);
     }
 
+    /**
+     * Handles a PUT request using a body parser.
+     *
+     * @param url generated API path
+     * @param args parsed body source
+     * @param headers request headers used to resolve request context
+     * @return API response with repository and response-view policy applied
+     */
     public ApiResponse put(final String url, final BodyParser args, HttpHeadersBlock headers) {
         ThingifierRequestContext context = contextFrom(headers);
         return put(url, args.bodyFields(), context);
     }
 
+    /**
+     * Handles a PUT request from a parsed request envelope.
+     *
+     * @param request parsed request envelope
+     * @return API response with repository and response-view policy applied
+     */
     public ApiResponse put(final ApiRequestEnvelope request) {
         return put(request, null);
     }
 
+    /**
+     * Handles a PUT request from a parsed request envelope and lifecycle context.
+     *
+     * @param request parsed request envelope
+     * @param lifecycle lifecycle context for hook-enabled HTTP processing, or null
+     * @return API response with repository and response-view policy applied
+     */
     public ApiResponse put(
             final ApiRequestEnvelope request, final ThingifierApiLifecycleContext lifecycle) {
         ThingifierRequestContext context = contextFrom(request.headers());
@@ -187,6 +339,14 @@ public class ThingifierRestAPIHandler {
                 context);
     }
 
+    /**
+     * Handles a PUT request using already parsed body fields and request context.
+     *
+     * @param url generated API path
+     * @param bodyFields parsed request body fields
+     * @param context request context including store selection
+     * @return API response with repository and response-view policy applied
+     */
     public ApiResponse put(
             final String url,
             final ApiBodyFields bodyFields,
@@ -195,20 +355,49 @@ public class ThingifierRestAPIHandler {
                 RoutingVerb.PUT, url, put.handle(url, bodyFields, context), context);
     }
 
+    /**
+     * Handles a PATCH request using a body parser.
+     *
+     * @param url generated API path
+     * @param args parsed body source
+     * @param headers request headers used to resolve request context
+     * @return API response with repository and response-view policy applied
+     */
     public ApiResponse patch(final String url, final BodyParser args, HttpHeadersBlock headers) {
         ThingifierRequestContext context = contextFrom(headers);
         return patch(url, args.rawBody(), headers, context);
     }
 
+    /**
+     * Handles a PATCH request using raw body text.
+     *
+     * @param url generated API path
+     * @param body raw patch body
+     * @param headers request headers used to resolve request context
+     * @return API response with repository and response-view policy applied
+     */
     public ApiResponse patch(final String url, final String body, HttpHeadersBlock headers) {
         ThingifierRequestContext context = contextFrom(headers);
         return patch(url, body, headers, context);
     }
 
+    /**
+     * Handles a PATCH request from a parsed request envelope.
+     *
+     * @param request parsed request envelope
+     * @return API response with repository and response-view policy applied
+     */
     public ApiResponse patch(final ApiRequestEnvelope request) {
         return patch(request, null);
     }
 
+    /**
+     * Handles a PATCH request from a parsed request envelope and lifecycle context.
+     *
+     * @param request parsed request envelope
+     * @param lifecycle lifecycle context for hook-enabled HTTP processing, or null
+     * @return API response with repository and response-view policy applied
+     */
     public ApiResponse patch(
             final ApiRequestEnvelope request, final ThingifierApiLifecycleContext lifecycle) {
         ThingifierRequestContext context = contextFrom(request.headers());
@@ -219,6 +408,15 @@ public class ThingifierRestAPIHandler {
                 context);
     }
 
+    /**
+     * Handles a PATCH request using raw body text and an explicit request context.
+     *
+     * @param url generated API path
+     * @param body raw patch body
+     * @param headers request headers used by patch format handling
+     * @param context request context including store selection
+     * @return API response with repository and response-view policy applied
+     */
     public ApiResponse patch(
             final String url,
             final String body,
@@ -232,6 +430,13 @@ public class ThingifierRestAPIHandler {
         return runtime.contextFrom(headers);
     }
 
+    /**
+     * Attaches the active relationship repository to responses that need serialization support.
+     *
+     * @param response response returned by a verb handler
+     * @param context request context containing the active store
+     * @return the same response with relationship repository metadata, or null
+     */
     private ApiResponse withRepository(
             final ApiResponse response, final ThingifierRequestContext context) {
         if (response == null) {
@@ -240,6 +445,18 @@ public class ThingifierRestAPIHandler {
         return response.usingRelationships(context.store().relationships());
     }
 
+    /**
+     * Applies shared direct-API response policy after a verb handler runs.
+     *
+     * <p>This keeps direct API calls aligned with HTTP calls for relationship rendering and
+     * route/entity response views.
+     *
+     * @param verb routing verb used for route rule lookup
+     * @param url generated API path
+     * @param response response returned by the verb handler
+     * @param context request context containing the active store
+     * @return response after repository and response-view policy have been applied
+     */
     private ApiResponse withResponsePolicy(
             final RoutingVerb verb,
             final String url,
@@ -250,6 +467,16 @@ public class ThingifierRestAPIHandler {
         return responseWithRepository;
     }
 
+    /**
+     * Applies the response entity view chosen by route or entity-level API spec rules.
+     *
+     * <p>Route status-specific views win over entity defaults. Existing response overrides and
+     * error bodies are left alone because they already control their rendered shape.
+     *
+     * @param verb routing verb used for route rule lookup
+     * @param url generated API path
+     * @param response response to update in place
+     */
     private void applyResponseEntityView(
             final RoutingVerb verb, final String url, final ApiResponse response) {
         if (response == null
@@ -282,6 +509,11 @@ public class ThingifierRestAPIHandler {
         }
     }
 
+    /**
+     * Creates a resolver that asks the API spec for the default response view of each entity.
+     *
+     * @return resolver used by serializers when entity-level defaults apply
+     */
     private EntityResponseViewResolver defaultResponseViewResolver() {
         return entity -> {
             if (entity == null) {

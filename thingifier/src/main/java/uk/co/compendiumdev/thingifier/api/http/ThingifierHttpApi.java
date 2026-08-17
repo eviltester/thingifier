@@ -40,6 +40,12 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityViewDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
+/**
+ * HTTP-facing adapter for the generated Thingifier REST API.
+ *
+ * <p>The adapter coordinates legacy HTTP request/response hooks, lifecycle hooks, request syntax
+ * validation, direct API handler calls, response view policy, and final HTTP response rendering.
+ */
 public final class ThingifierHttpApi {
 
     // TODO: each 'session' could have its own thingifier to support multiple users
@@ -62,6 +68,13 @@ public final class ThingifierHttpApi {
     private final HttpApiHookRegistry apiHookRegistry;
     private final ThingifierApiLifecycleHookRegistry lifecycleHooks;
 
+    /**
+     * Verbs understood by the Thingifier HTTP adapter.
+     *
+     * <p>The adapter keeps this enum separate from {@link RoutingVerb} because HTTP handling also
+     * sees methods such as OPTIONS and TRACE which may not be processed by the generated Thingifier
+     * API lifecycle.
+     */
     public enum HttpVerb {
         GET,
         DELETE,
@@ -75,10 +88,25 @@ public final class ThingifierHttpApi {
         TRACE
     };
 
+    /**
+     * Creates an HTTP API adapter with no legacy or lifecycle hooks.
+     *
+     * @param aThingifier Thingifier model and configuration
+     */
     public ThingifierHttpApi(final Thingifier aThingifier) {
         this(aThingifier, (List<HttpApiRequestHook>) null, (List<HttpApiResponseHook>) null);
     }
 
+    /**
+     * Creates an HTTP API adapter using legacy list-based request and response hooks.
+     *
+     * <p>This constructor is kept for backwards compatibility; scoped hook registries and lifecycle
+     * hooks can be supplied through the newer constructors.
+     *
+     * @param aThingifier Thingifier model and configuration
+     * @param apiRequestHooks legacy hooks run before API processing
+     * @param apiResponseHooks legacy hooks run after API processing
+     */
     public ThingifierHttpApi(
             final Thingifier aThingifier,
             List<HttpApiRequestHook> apiRequestHooks,
@@ -90,6 +118,14 @@ public final class ThingifierHttpApi {
                 new ThingifierApiLifecycleHookRegistry());
     }
 
+    /**
+     * Creates an HTTP API adapter using legacy hook lists plus lifecycle hooks.
+     *
+     * @param aThingifier Thingifier model and configuration
+     * @param apiRequestHooks legacy hooks run before API processing
+     * @param apiResponseHooks legacy hooks run after API processing
+     * @param lifecycleHooks lifecycle hooks run inside Thingifier API processing
+     */
     public ThingifierHttpApi(
             final Thingifier aThingifier,
             List<HttpApiRequestHook> apiRequestHooks,
@@ -117,11 +153,25 @@ public final class ThingifierHttpApi {
         jsonThing = new JsonThing(thingifier.apiConfig().jsonOutput());
     }
 
+    /**
+     * Creates an HTTP API adapter with the scoped legacy hook registry.
+     *
+     * @param aThingifier Thingifier model and configuration
+     * @param apiHookRegistry scoped request/response hook registry
+     */
     public ThingifierHttpApi(
             final Thingifier aThingifier, final HttpApiHookRegistry apiHookRegistry) {
         this(aThingifier, apiHookRegistry, new ThingifierApiLifecycleHookRegistry());
     }
 
+    /**
+     * Creates an HTTP API adapter with scoped legacy hooks and lifecycle hooks.
+     *
+     * @param aThingifier Thingifier model and configuration
+     * @param apiHookRegistry scoped request/response hook registry
+     * @param lifecycleHooks lifecycle hooks run inside Thingifier API processing
+     * @return configured HTTP API adapter
+     */
     public static ThingifierHttpApi withHookRegistries(
             final Thingifier aThingifier,
             final HttpApiHookRegistry apiHookRegistry,
@@ -143,6 +193,16 @@ public final class ThingifierHttpApi {
         jsonThing = new JsonThing(thingifier.apiConfig().jsonOutput());
     }
 
+    /**
+     * Processes one HTTP API request through hooks, validation, routing, and response hooks.
+     *
+     * <p>The order deliberately preserves legacy request hooks first and legacy response hooks
+     * last, with lifecycle hooks only applied to generated Thingifier API operations.
+     *
+     * @param request HTTP API request
+     * @param verb original HTTP method before method override handling
+     * @return rendered HTTP API response
+     */
     private HttpApiResponse handleRequest(final HttpApiRequest request, HttpVerb verb) {
 
         // if the request.url has the 'prefix' then remove the prefix and process the request
@@ -209,6 +269,13 @@ public final class ThingifierHttpApi {
         return runTheHttpApiResponseHooksOn(request, httpResponse, effectiveVerb);
     }
 
+    /**
+     * Builds the lifecycle context after the route has been mapped.
+     *
+     * @param request HTTP API request
+     * @param effectiveVerb verb after method override handling
+     * @return lifecycle context shared by every lifecycle phase
+     */
     private ThingifierApiLifecycleContext lifecycleContextFor(
             final HttpApiRequest request, final HttpVerb effectiveVerb) {
         ThingifierApiRuntime runtime = new DefaultThingifierApiRuntime(thingifier);
@@ -222,6 +289,12 @@ public final class ThingifierHttpApi {
                 thingifier.apiConfig().getApiEndPointPrefix());
     }
 
+    /**
+     * Reports whether lifecycle hooks should run for a verb.
+     *
+     * @param verb effective HTTP API verb
+     * @return true for dynamic Thingifier API operations
+     */
     private boolean supportsLifecycle(final HttpVerb verb) {
         switch (verb) {
             case GET:
@@ -237,6 +310,14 @@ public final class ThingifierHttpApi {
         }
     }
 
+    /**
+     * Converts an {@link ApiResponse} to an HTTP response, including HEAD body suppression.
+     *
+     * @param request original HTTP API request
+     * @param effectiveVerb verb after method override handling
+     * @param apiResponse structured API response
+     * @return rendered HTTP API response
+     */
     private HttpApiResponse httpResponseFor(
             final HttpApiRequest request,
             final HttpVerb effectiveVerb,
@@ -264,10 +345,24 @@ public final class ThingifierHttpApi {
         return httpResponse;
     }
 
+    /**
+     * Reports whether API spec disables the matched generated route.
+     *
+     * @param request HTTP API request
+     * @param verb effective HTTP API verb
+     * @return true when a route rule disables this request
+     */
     private boolean isDisabledByApiSpec(final HttpApiRequest request, final HttpVerb verb) {
         return routeRuleFor(request, verb).map(ThingifierApiRouteRule::isDisabled).orElse(false);
     }
 
+    /**
+     * Finds the API spec route rule matching the request and verb.
+     *
+     * @param request HTTP API request
+     * @param verb effective HTTP API verb
+     * @return matching route rule, or empty when the verb is not a generated routing verb
+     */
     private Optional<ThingifierApiRouteRule> routeRuleFor(
             final HttpApiRequest request, final HttpVerb verb) {
         try {
@@ -282,6 +377,12 @@ public final class ThingifierHttpApi {
         }
     }
 
+    /**
+     * Creates the legacy not-found style response used for disabled generated routes.
+     *
+     * @param request HTTP API request
+     * @return HTTP API response representing the disabled route
+     */
     private HttpApiResponse disabledRouteResponse(final HttpApiRequest request) {
         return new HttpApiResponse(
                 request.getHeaders(),
@@ -291,7 +392,13 @@ public final class ThingifierHttpApi {
                 xmlEntityNamesFor(request.getPath()));
     }
 
-    /** return an error response if the request is invalid, null if valid */
+    /**
+     * Validates HTTP request syntax before generated API processing.
+     *
+     * @param request HTTP API request
+     * @param verb effective HTTP API verb
+     * @return error response when syntax is invalid, otherwise null
+     */
     public HttpApiResponse validateRequestSyntax(
             final HttpApiRequest request, final HttpVerb verb) {
 
@@ -315,6 +422,16 @@ public final class ThingifierHttpApi {
         return httpResponse;
     }
 
+    /**
+     * Routes and processes a request without lifecycle hook state.
+     *
+     * <p>This path is used by backwards-compatible constructors and direct adapter calls. Response
+     * entity view policy is still applied after the direct API handler returns.
+     *
+     * @param request HTTP API request
+     * @param verb effective HTTP API verb
+     * @return structured API response
+     */
     public ApiResponse routeAndProcessRequest(final HttpApiRequest request, HttpVerb verb) {
 
         ApiResponse apiResponse = null;
@@ -351,6 +468,15 @@ public final class ThingifierHttpApi {
         return apiResponse;
     }
 
+    /**
+     * Routes and processes a request using an existing lifecycle context.
+     *
+     * <p>The context carries parsed body data, mapped commands or queries, hook replacements, and
+     * the final response through the lifecycle phases.
+     *
+     * @param lifecycle lifecycle context for the request
+     * @return structured API response
+     */
     public ApiResponse routeAndProcessRequest(final ThingifierApiLifecycleContext lifecycle) {
 
         ApiResponse apiResponse = null;
@@ -388,6 +514,16 @@ public final class ThingifierHttpApi {
         return apiResponse;
     }
 
+    /**
+     * Rejects write input fields that are not allowed by the configured request entity view.
+     *
+     * <p>Route request views take precedence over entity default request views. This check happens
+     * before body-parsed lifecycle hooks because it protects the public API input contract.
+     *
+     * @param request HTTP API request
+     * @param verb effective HTTP API verb
+     * @return error response when disallowed input fields are present, otherwise null
+     */
     private HttpApiResponse validateEntityViewInput(
             final HttpApiRequest request, final HttpVerb verb) {
         if (verb != HttpVerb.POST && verb != HttpVerb.PUT && verb != HttpVerb.PATCH) {
@@ -449,6 +585,14 @@ public final class ThingifierHttpApi {
                 xmlEntityNamesFor(request.getPath()));
     }
 
+    /**
+     * Extracts body fields relevant to entity-view input validation.
+     *
+     * @param request HTTP API request
+     * @param verb effective HTTP API verb
+     * @param entity target entity definition
+     * @return fields that may be checked against the input view
+     */
     private List<ApiBodyField> entityViewInputFields(
             final HttpApiRequest request, final HttpVerb verb, final EntityDefinition entity) {
         if (verb == HttpVerb.PATCH) {
@@ -460,6 +604,13 @@ public final class ThingifierHttpApi {
                 .topLevelFields();
     }
 
+    /**
+     * Extracts field names affected by a PATCH request.
+     *
+     * @param request HTTP API request
+     * @param entity target entity definition
+     * @return fields touched by the patch document
+     */
     private List<ApiBodyField> patchInputFields(
             final HttpApiRequest request, final EntityDefinition entity) {
         final Optional<EntityPatchUpdateStyle> style =
@@ -475,6 +626,12 @@ public final class ThingifierHttpApi {
         return objectPatchInputFields(request.getBody());
     }
 
+    /**
+     * Extracts top-level fields from Thingifier's object-style PATCH body.
+     *
+     * @param rawBody raw request body
+     * @return fields present in the object patch document
+     */
     private List<ApiBodyField> objectPatchInputFields(final String rawBody) {
         try {
             final JsonNode document = JsonBodyValueConverter.readTree(rawBody);
@@ -487,6 +644,13 @@ public final class ThingifierHttpApi {
         }
     }
 
+    /**
+     * Extracts top-level fields touched by an RFC 6902 JSON Patch document.
+     *
+     * @param request HTTP API request
+     * @param entity target entity definition
+     * @return fields referenced or produced by the patch document
+     */
     private List<ApiBodyField> jsonPatchInputFields(
             final HttpApiRequest request, final EntityDefinition entity) {
         final List<ApiBodyField> inputFields = new ArrayList<>();
@@ -516,6 +680,12 @@ public final class ThingifierHttpApi {
         return inputFields;
     }
 
+    /**
+     * Adds fields supplied by a JSON Patch operation which replaces the document root.
+     *
+     * @param inputFields accumulating field list
+     * @param operation JSON Patch operation node
+     */
     private void addRootReplacementFields(
             final List<ApiBodyField> inputFields, final JsonNode operation) {
         final JsonNode path = operation.get("path");
@@ -529,11 +699,28 @@ public final class ThingifierHttpApi {
         }
     }
 
+    /**
+     * Converts a JSON object into Thingifier body fields.
+     *
+     * @param document JSON object node
+     * @return top-level body fields
+     */
     private List<ApiBodyField> bodyFieldsForObject(final JsonNode document) {
         return ApiBodyFields.fromMap(JsonBodyValueConverter.objectNodeAsMap(document))
                 .topLevelFields();
     }
 
+    /**
+     * Determines fields that would exist after a root-replacing JSON Patch operation.
+     *
+     * <p>Root replacement can introduce or remove many fields at once, so the existing instance is
+     * patched in memory and the resulting top-level fields are checked against the request view.
+     *
+     * @param request HTTP API request
+     * @param entity target entity definition
+     * @param operations JSON Patch operation array
+     * @return resulting top-level fields when they can be calculated
+     */
     private Optional<List<ApiBodyField>> rootResultFieldsForJsonPatch(
             final HttpApiRequest request,
             final EntityDefinition entity,
@@ -563,6 +750,12 @@ public final class ThingifierHttpApi {
         return Optional.empty();
     }
 
+    /**
+     * Reports whether a JSON Patch document contains an operation against the root path.
+     *
+     * @param operations JSON Patch operation array
+     * @return true when a supported operation targets the root document
+     */
     private boolean hasRootReplacementOperation(final JsonNode operations) {
         for (JsonNode operation : operations) {
             if (!operation.isObject()) {
@@ -580,6 +773,12 @@ public final class ThingifierHttpApi {
         return false;
     }
 
+    /**
+     * Reports whether a JSON Patch operation can replace the root document.
+     *
+     * @param operationNode patch operation name node
+     * @return true when the operation may produce a new root object
+     */
     private boolean rootReplacementOperation(final JsonNode operationNode) {
         if (operationNode == null || !operationNode.isTextual()) {
             return false;
@@ -596,6 +795,13 @@ public final class ThingifierHttpApi {
         }
     }
 
+    /**
+     * Resolves the instance targeted by an instance route.
+     *
+     * @param request HTTP API request
+     * @param entity target entity definition
+     * @return matching instance, or null when the route is not an instance route
+     */
     private EntityInstance targetInstanceFor(
             final HttpApiRequest request, final EntityDefinition entity) {
         final SchemaCatalog schema = new ThingifierSchemaCatalog(thingifier);
@@ -610,6 +816,12 @@ public final class ThingifierHttpApi {
                 .findByQueryIdentifier(entity, ((InstanceRoute) route).identifier());
     }
 
+    /**
+     * Adds the top-level field name from a JSON Pointer.
+     *
+     * @param inputFields accumulating field list
+     * @param pointerNode JSON Pointer node from a patch operation
+     */
     private void addJsonPointerTopLevelField(
             final List<ApiBodyField> inputFields, final JsonNode pointerNode) {
         if (pointerNode == null || !pointerNode.isTextual()) {
@@ -622,6 +834,12 @@ public final class ThingifierHttpApi {
         }
     }
 
+    /**
+     * Extracts the first path segment from a JSON Pointer.
+     *
+     * @param pointer JSON Pointer text
+     * @return unescaped top-level field name, or null for a root/non-pointer value
+     */
     private String jsonPointerTopLevelFieldName(final String pointer) {
         if (pointer == null || pointer.isEmpty() || !pointer.startsWith("/")) {
             return null;
@@ -633,6 +851,16 @@ public final class ThingifierHttpApi {
         return escapedToken.replace("~1", "/").replace("~0", "~");
     }
 
+    /**
+     * Applies route-specific or entity-default response views to a structured response.
+     *
+     * <p>HTTP adapter responses use the same precedence as direct API responses: explicit route
+     * response view first, existing response view next, then entity default resolver.
+     *
+     * @param request HTTP API request
+     * @param verb effective HTTP API verb
+     * @param apiResponse structured API response
+     */
     private void applyResponseEntityView(
             final HttpApiRequest request, final HttpVerb verb, final ApiResponse apiResponse) {
         if (apiResponse == null
@@ -667,6 +895,11 @@ public final class ThingifierHttpApi {
         }
     }
 
+    /**
+     * Creates a resolver for entity-level default response views.
+     *
+     * @return resolver used when no route-specific view was applied
+     */
     private EntityResponseViewResolver defaultResponseViewResolver() {
         return entity -> {
             if (entity == null) {
@@ -681,6 +914,12 @@ public final class ThingifierHttpApi {
         };
     }
 
+    /**
+     * Resolves the entity targeted by a generated route path.
+     *
+     * @param path generated API path
+     * @return target or related entity, or null when the path does not map to a Thingifier entity
+     */
     private EntityDefinition targetEntityFor(final String path) {
         final SchemaCatalog schema = new ThingifierSchemaCatalog(thingifier);
         final ThingRoute route = new ThingRouteMapper(schema).map(path);
@@ -711,6 +950,12 @@ public final class ThingifierHttpApi {
         return null;
     }
 
+    /**
+     * Returns XML entity names that should be accepted or emitted for a path.
+     *
+     * @param path generated API path
+     * @return singular and plural entity names, or an empty list when no entity route matches
+     */
     private List<String> xmlEntityNamesFor(final String path) {
         final EntityDefinition entity = targetEntityFor(path);
         if (entity == null) {
@@ -719,34 +964,83 @@ public final class ThingifierHttpApi {
         return List.of(entity.getName(), entity.getPlural());
     }
 
+    /**
+     * Handles a GET request.
+     *
+     * @param request HTTP API request
+     * @return HTTP API response
+     */
     public HttpApiResponse get(final HttpApiRequest request) {
         return handleRequest(request, HttpVerb.GET);
     }
 
+    /**
+     * Handles a HEAD request.
+     *
+     * @param request HTTP API request
+     * @return HTTP API response
+     */
     public HttpApiResponse head(final HttpApiRequest request) {
         return handleRequest(request, HttpVerb.HEAD);
     }
 
+    /**
+     * Handles a DELETE request.
+     *
+     * @param request HTTP API request
+     * @return HTTP API response
+     */
     public HttpApiResponse delete(final HttpApiRequest request) {
         return handleRequest(request, HttpVerb.DELETE);
     }
 
+    /**
+     * Handles a POST request.
+     *
+     * @param request HTTP API request
+     * @return HTTP API response
+     */
     public HttpApiResponse post(final HttpApiRequest request) {
         return handleRequest(request, HttpVerb.POST);
     }
 
+    /**
+     * Handles a PUT request.
+     *
+     * @param request HTTP API request
+     * @return HTTP API response
+     */
     public HttpApiResponse put(final HttpApiRequest request) {
         return handleRequest(request, HttpVerb.PUT);
     }
 
+    /**
+     * Handles a PATCH request.
+     *
+     * @param request HTTP API request
+     * @return HTTP API response
+     */
     public HttpApiResponse patch(final HttpApiRequest request) {
         return handleRequest(request, HttpVerb.PATCH);
     }
 
+    /**
+     * Handles a QUERY request.
+     *
+     * @param request HTTP API request
+     * @return HTTP API response
+     */
     public HttpApiResponse queryRequest(final HttpApiRequest request) {
         return handleRequest(request, HttpVerb.QUERY);
     }
 
+    /**
+     * Handles the legacy query helper by applying a JSONPath-style query to a GET request.
+     *
+     * @param request HTTP API request
+     * @param query query expression
+     * @return HTTP API response
+     */
     public HttpApiResponse query(final HttpApiRequest request, final String query) {
 
         HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request, HttpVerb.GET);
@@ -768,6 +1062,14 @@ public final class ThingifierHttpApi {
         return runTheHttpApiResponseHooksOn(request, httpResponse, HttpVerb.GET);
     }
 
+    /**
+     * Runs legacy HTTP API response hooks in registration order.
+     *
+     * @param request HTTP API request
+     * @param response response produced by generated API processing
+     * @param verb effective HTTP API verb
+     * @return original or replacement response from hooks
+     */
     private HttpApiResponse runTheHttpApiResponseHooksOn(
             final HttpApiRequest request, final HttpApiResponse response, final HttpVerb verb) {
         if (apiHookRegistry != null) {
@@ -797,6 +1099,13 @@ public final class ThingifierHttpApi {
         return response;
     }
 
+    /**
+     * Runs legacy HTTP API request hooks in registration order.
+     *
+     * @param request HTTP API request
+     * @param verb effective HTTP API verb
+     * @return short-circuit response from hooks, or null to continue processing
+     */
     private HttpApiResponse runTheHttpApiRequestHooksOn(
             final HttpApiRequest request, final HttpVerb verb) {
         if (apiHookRegistry != null) {
@@ -825,6 +1134,12 @@ public final class ThingifierHttpApi {
         return null;
     }
 
+    /**
+     * Converts an HTTP adapter verb to the generated routing verb enum.
+     *
+     * @param verb HTTP adapter verb
+     * @return matching routing verb, or null when no generated route verb exists
+     */
     private RoutingVerb routingVerbFor(final HttpVerb verb) {
         if (verb == null) {
             return null;
