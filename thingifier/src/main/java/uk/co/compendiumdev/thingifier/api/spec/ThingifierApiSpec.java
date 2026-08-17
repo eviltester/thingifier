@@ -3,13 +3,18 @@ package uk.co.compendiumdev.thingifier.api.spec;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
+import uk.co.compendiumdev.thingifier.api.security.SecuritySchemeNames;
+import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthenticator;
+import uk.co.compendiumdev.thingifier.api.security.ThingifierApiSecuritySpec;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation;
 import uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation;
@@ -30,6 +35,8 @@ public final class ThingifierApiSpec {
     private final List<EntityWritePolicyRule> entityWritePolicyRules;
     private final List<EntityPatchPolicyRule> entityPatchPolicyRules;
     private final List<RelationshipWritePolicyRule> relationshipWritePolicyRules;
+    private final ThingifierApiSecuritySpec securitySpec;
+    private final Map<String, ThingifierApiAuthenticator> authenticators;
 
     public ThingifierApiSpec() {
         routeRules = new ArrayList<>();
@@ -37,6 +44,8 @@ public final class ThingifierApiSpec {
         entityWritePolicyRules = new ArrayList<>();
         entityPatchPolicyRules = new ArrayList<>();
         relationshipWritePolicyRules = new ArrayList<>();
+        securitySpec = new ThingifierApiSecuritySpec();
+        authenticators = new HashMap<>();
     }
 
     /**
@@ -81,6 +90,41 @@ public final class ThingifierApiSpec {
      */
     public ThingifierApiPathRule route(final String pathPattern) {
         return new ThingifierApiPathRule(this, pathPattern);
+    }
+
+    /**
+     * Returns the security declaration builder for this API.
+     *
+     * <p>Security declarations give named schemes a stable place in the API contract. Route rules
+     * still decide which endpoints use each scheme.
+     *
+     * @return security declaration builder
+     */
+    public ThingifierApiSecuritySpec security() {
+        return securitySpec;
+    }
+
+    /**
+     * Registers an authenticator for a named security scheme.
+     *
+     * <p>Registering an authenticator makes a named scheme enforceable at runtime. The scheme is
+     * also declared as a bearer scheme for generated documentation because enforcement without a
+     * published security scheme would mislead API consumers.
+     *
+     * @param schemeName named bearer scheme
+     * @param authenticator callback used to authenticate bearer tokens for the scheme
+     * @return this spec so API configuration can be chained
+     * @throws IllegalArgumentException when the scheme name is blank or the authenticator is null
+     */
+    public ThingifierApiSpec authenticator(
+            final String schemeName, final ThingifierApiAuthenticator authenticator) {
+        final String normalizedSchemeName = SecuritySchemeNames.requireValid(schemeName);
+        if (authenticator == null) {
+            throw new IllegalArgumentException("authenticator is required");
+        }
+        securitySpec.bearer(normalizedSchemeName);
+        authenticators.put(normalizedSchemeName, authenticator);
+        return this;
     }
 
     /**
@@ -331,6 +375,17 @@ public final class ThingifierApiSpec {
                                 ApiRoutePathMatcher.pathsMatch(
                                         rule.pathPattern(), path, apiPathPrefix))
                 .findFirst();
+    }
+
+    /**
+     * Finds the authenticator registered for a named security scheme.
+     *
+     * @param schemeName named bearer scheme
+     * @return authenticator when configured
+     */
+    public Optional<ThingifierApiAuthenticator> authenticatorFor(final String schemeName) {
+        return Optional.ofNullable(
+                authenticators.get(SecuritySchemeNames.requireValid(schemeName)));
     }
 
     /**

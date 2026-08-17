@@ -3,11 +3,14 @@ package uk.co.compendiumdev.thingifier.api.spec;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
+import uk.co.compendiumdev.thingifier.api.security.SecuritySchemeNames;
+import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthorizer;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation;
 import uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation;
@@ -28,6 +31,9 @@ public final class ThingifierApiRouteRule {
     private boolean methodNotAllowed;
     private boolean usesBasicAuth;
     private boolean usesBearerAuth;
+    private String bearerAuthSchemeName;
+    private String enforcedBearerAuthSchemeName;
+    private final List<ThingifierApiAuthorizer> authorizers;
     private String documentation;
     private String requestPayload;
     private String requestEntityView;
@@ -45,6 +51,9 @@ public final class ThingifierApiRouteRule {
         this.methodNotAllowed = false;
         this.usesBasicAuth = false;
         this.usesBearerAuth = false;
+        this.bearerAuthSchemeName = SecuritySchemeNames.DEFAULT_BEARER_AUTH_SCHEME;
+        this.enforcedBearerAuthSchemeName = null;
+        this.authorizers = new java.util.ArrayList<>();
         this.documentation = null;
         this.requestPayload = null;
         this.requestEntityView = null;
@@ -163,11 +172,98 @@ public final class ThingifierApiRouteRule {
     /**
      * Marks the route as requiring Bearer authentication in generated documentation.
      *
+     * <p>This historical form is documentation-only. Use {@link #secureWithBearerAuth(String)} when
+     * Thingifier should also enforce a named bearer policy at runtime.
+     *
      * @return this rule so route API configuration can be chained
      */
+    @Deprecated
     public ThingifierApiRouteRule secureWithBearerAuth() {
         usesBearerAuth = true;
+        bearerAuthSchemeName = SecuritySchemeNames.DEFAULT_BEARER_AUTH_SCHEME;
         return this;
+    }
+
+    /**
+     * Marks the route as requiring a named Bearer authentication scheme and runtime enforcement.
+     *
+     * <p>The scheme name is used in generated documentation, authenticator lookup, and the
+     * authenticated-principal slot on the request context. Applications supply the authenticator
+     * through {@link ThingifierApiSpec#authenticator(String,
+     * uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthenticator)}.
+     *
+     * @param schemeName named bearer scheme, for example {@code cartToken}
+     * @return this rule so route API configuration can be chained
+     */
+    public ThingifierApiRouteRule secureWithBearerAuth(final String schemeName) {
+        final String normalizedSchemeName = SecuritySchemeNames.requireValid(schemeName);
+        usesBearerAuth = true;
+        bearerAuthSchemeName = normalizedSchemeName;
+        enforcedBearerAuthSchemeName = normalizedSchemeName;
+        return this;
+    }
+
+    /**
+     * Adds a route-specific authorization callback.
+     *
+     * <p>Authorizers run only after the named authenticator accepts the bearer token. Multiple
+     * authorizers are evaluated in registration order and the first rejection stops the request.
+     *
+     * @param authorizer authorization callback
+     * @return this rule so route API configuration can be chained
+     * @throws IllegalArgumentException when the authorizer is null
+     */
+    public ThingifierApiRouteRule authorizeWith(final ThingifierApiAuthorizer authorizer) {
+        if (authorizer == null) {
+            throw new IllegalArgumentException("authorizer is required");
+        }
+        authorizers.add(authorizer);
+        return this;
+    }
+
+    /**
+     * Reports whether this route is documented as bearer secured.
+     *
+     * @return true when bearer auth should appear in generated documentation
+     */
+    public boolean isSecuredByBearerAuth() {
+        return usesBearerAuth;
+    }
+
+    /**
+     * Returns the bearer scheme name used in generated documentation.
+     *
+     * @return bearer auth scheme name
+     */
+    public String bearerAuthSchemeName() {
+        return bearerAuthSchemeName;
+    }
+
+    /**
+     * Reports whether this route should enforce bearer auth at runtime.
+     *
+     * @return true when the route has a named bearer enforcement scheme
+     */
+    public boolean hasBearerAuthEnforcement() {
+        return enforcedBearerAuthSchemeName != null;
+    }
+
+    /**
+     * Returns the bearer scheme name used for runtime enforcement.
+     *
+     * @return bearer enforcement scheme name, or null for documentation-only bearer routes
+     */
+    public String bearerAuthEnforcementSchemeName() {
+        return enforcedBearerAuthSchemeName;
+    }
+
+    /**
+     * Returns route-specific authorizers in registration order.
+     *
+     * @return immutable authorizer list
+     */
+    public List<ThingifierApiAuthorizer> authorizers() {
+        return List.copyOf(authorizers);
     }
 
     /**
@@ -413,7 +509,7 @@ public final class ThingifierApiRouteRule {
             route.secureWithBasicAuth();
         }
         if (usesBearerAuth) {
-            route.secureWithBearerAuth();
+            route.secureWithBearerAuth(bearerAuthSchemeName);
         }
         if (documentation != null) {
             route.addDocumentation(documentation);

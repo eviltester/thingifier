@@ -11,6 +11,7 @@ import java.util.Optional;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.adapter.hooks.ScopedHook;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.DefaultThingifierApiRuntime;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.RouteAuthPolicy;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.SchemaCatalog;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierApiRuntime;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierSchemaCatalog;
@@ -232,6 +233,19 @@ public final class ThingifierHttpApi {
 
         if (httpResponse == null && isDisabledByApiSpec(request, effectiveVerb)) {
             httpResponse = disabledRouteResponse(request);
+        }
+
+        if (httpResponse == null && lifecycle != null) {
+            final ApiResponse authResponse =
+                    new RouteAuthPolicy(lifecycle.runtime())
+                            .rejectIfNotAuthorized(
+                                    lifecycle.routingVerb(),
+                                    lifecycle.path(),
+                                    lifecycle.requestContext(),
+                                    lifecycle.route());
+            if (authResponse != null) {
+                httpResponse = httpResponseFor(request, effectiveVerb, authResponse);
+            }
         }
 
         // validate request syntax

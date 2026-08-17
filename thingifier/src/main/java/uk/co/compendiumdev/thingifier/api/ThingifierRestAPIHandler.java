@@ -1,7 +1,9 @@
 package uk.co.compendiumdev.thingifier.api;
 
+import java.util.function.Supplier;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.DefaultThingifierApiRuntime;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.RouteAuthPolicy;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierApiRuntime;
 import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleContext;
 import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleHookRegistry;
@@ -32,6 +34,7 @@ public class ThingifierRestAPIHandler {
     private final RestApiPatchHandler patch;
     private final RestApiGetHandler get;
     private final RestApiQueryHandler query;
+    private final RouteAuthPolicy authPolicy;
 
     /**
      * Creates a direct API facade for a Thingifier model.
@@ -73,6 +76,7 @@ public class ThingifierRestAPIHandler {
         this.put = new RestApiPutHandler(runtime, hooks);
         this.patch = new RestApiPatchHandler(runtime, hooks);
         this.query = new RestApiQueryHandler(runtime, hooks);
+        this.authPolicy = new RouteAuthPolicy(runtime);
     }
 
     // TODO: we should be able to accept xml with correct content type
@@ -98,8 +102,8 @@ public class ThingifierRestAPIHandler {
     public ApiResponse get(
             final String url, final QueryFilterParams queryParams, HttpHeadersBlock headers) {
         ThingifierRequestContext context = contextFrom(headers);
-        return withResponsePolicy(
-                RoutingVerb.GET, url, get.handle(url, queryParams, context), context);
+        return withAuthorizedResponsePolicy(
+                RoutingVerb.GET, url, context, null, () -> get.handle(url, queryParams, context));
     }
 
     /**
@@ -121,12 +125,13 @@ public class ThingifierRestAPIHandler {
      */
     public ApiResponse get(
             final ApiRequestEnvelope request, final ThingifierApiLifecycleContext lifecycle) {
-        ThingifierRequestContext context = contextFrom(request.headers());
-        return withResponsePolicy(
+        ThingifierRequestContext context = contextFrom(request.headers(), lifecycle);
+        return withAuthorizedResponsePolicy(
                 RoutingVerb.GET,
                 request.path(),
-                get.handle(request.path(), request.queryParams(), context, lifecycle),
-                context);
+                context,
+                lifecycle,
+                () -> get.handle(request.path(), request.queryParams(), context, lifecycle));
     }
 
     /**
@@ -140,9 +145,16 @@ public class ThingifierRestAPIHandler {
     public ApiResponse head(
             final String url, final QueryFilterParams queryParams, HttpHeadersBlock headers) {
         ThingifierRequestContext context = contextFrom(headers);
-        final ApiResponse response = get.handle(url, queryParams, context);
-        response.clearBody();
-        return withResponsePolicy(RoutingVerb.HEAD, url, response, context);
+        return withAuthorizedResponsePolicy(
+                RoutingVerb.HEAD,
+                url,
+                context,
+                null,
+                () -> {
+                    final ApiResponse response = get.handle(url, queryParams, context);
+                    response.clearBody();
+                    return response;
+                });
     }
 
     /**
@@ -164,11 +176,18 @@ public class ThingifierRestAPIHandler {
      */
     public ApiResponse head(
             final ApiRequestEnvelope request, final ThingifierApiLifecycleContext lifecycle) {
-        ThingifierRequestContext context = contextFrom(request.headers());
-        final ApiResponse response =
-                get.handle(request.path(), request.queryParams(), context, lifecycle);
-        response.clearBody();
-        return withResponsePolicy(RoutingVerb.HEAD, request.path(), response, context);
+        ThingifierRequestContext context = contextFrom(request.headers(), lifecycle);
+        return withAuthorizedResponsePolicy(
+                RoutingVerb.HEAD,
+                request.path(),
+                context,
+                lifecycle,
+                () -> {
+                    final ApiResponse response =
+                            get.handle(request.path(), request.queryParams(), context, lifecycle);
+                    response.clearBody();
+                    return response;
+                });
     }
 
     /**
@@ -190,18 +209,20 @@ public class ThingifierRestAPIHandler {
      */
     public ApiResponse query(
             final ApiRequestEnvelope request, final ThingifierApiLifecycleContext lifecycle) {
-        ThingifierRequestContext context = contextFrom(request.headers());
-        return withResponsePolicy(
+        ThingifierRequestContext context = contextFrom(request.headers(), lifecycle);
+        return withAuthorizedResponsePolicy(
                 RoutingVerb.QUERY,
                 request.path(),
-                query.handle(
-                        request.path(),
-                        request.queryParams(),
-                        request.queryBodyFormat(),
-                        request.body(),
-                        context,
-                        lifecycle),
-                context);
+                context,
+                lifecycle,
+                () ->
+                        query.handle(
+                                request.path(),
+                                request.queryParams(),
+                                request.queryBodyFormat(),
+                                request.body(),
+                                context,
+                                lifecycle));
     }
 
     /**
@@ -213,7 +234,8 @@ public class ThingifierRestAPIHandler {
      */
     public ApiResponse delete(final String url, HttpHeadersBlock headers) {
         ThingifierRequestContext context = contextFrom(headers);
-        return withResponsePolicy(RoutingVerb.DELETE, url, delete.handle(url, context), context);
+        return withAuthorizedResponsePolicy(
+                RoutingVerb.DELETE, url, context, null, () -> delete.handle(url, context));
     }
 
     /**
@@ -235,12 +257,13 @@ public class ThingifierRestAPIHandler {
      */
     public ApiResponse delete(
             final ApiRequestEnvelope request, final ThingifierApiLifecycleContext lifecycle) {
-        ThingifierRequestContext context = contextFrom(request.headers());
-        return withResponsePolicy(
+        ThingifierRequestContext context = contextFrom(request.headers(), lifecycle);
+        return withAuthorizedResponsePolicy(
                 RoutingVerb.DELETE,
                 request.path(),
-                delete.handle(request.path(), context, lifecycle),
-                context);
+                context,
+                lifecycle,
+                () -> delete.handle(request.path(), context, lifecycle));
     }
 
     /**
@@ -253,7 +276,12 @@ public class ThingifierRestAPIHandler {
      */
     public ApiResponse post(final String url, final BodyParser args, HttpHeadersBlock headers) {
         ThingifierRequestContext context = contextFrom(headers);
-        return post(url, args.bodyFields(), context);
+        return withAuthorizedResponsePolicy(
+                RoutingVerb.POST,
+                url,
+                context,
+                null,
+                () -> post.handle(url, args.bodyFields(), context));
     }
 
     /**
@@ -275,12 +303,13 @@ public class ThingifierRestAPIHandler {
      */
     public ApiResponse post(
             final ApiRequestEnvelope request, final ThingifierApiLifecycleContext lifecycle) {
-        ThingifierRequestContext context = contextFrom(request.headers());
-        return withResponsePolicy(
+        ThingifierRequestContext context = contextFrom(request.headers(), lifecycle);
+        return withAuthorizedResponsePolicy(
                 RoutingVerb.POST,
                 request.path(),
-                post.handle(request.path(), request.bodyFields(), context, lifecycle),
-                context);
+                context,
+                lifecycle,
+                () -> post.handle(request.path(), request.bodyFields(), context, lifecycle));
     }
 
     /**
@@ -295,8 +324,8 @@ public class ThingifierRestAPIHandler {
             final String url,
             final ApiBodyFields bodyFields,
             final ThingifierRequestContext context) {
-        return withResponsePolicy(
-                RoutingVerb.POST, url, post.handle(url, bodyFields, context), context);
+        return withAuthorizedResponsePolicy(
+                RoutingVerb.POST, url, context, null, () -> post.handle(url, bodyFields, context));
     }
 
     /**
@@ -309,7 +338,12 @@ public class ThingifierRestAPIHandler {
      */
     public ApiResponse put(final String url, final BodyParser args, HttpHeadersBlock headers) {
         ThingifierRequestContext context = contextFrom(headers);
-        return put(url, args.bodyFields(), context);
+        return withAuthorizedResponsePolicy(
+                RoutingVerb.PUT,
+                url,
+                context,
+                null,
+                () -> put.handle(url, args.bodyFields(), context));
     }
 
     /**
@@ -331,12 +365,13 @@ public class ThingifierRestAPIHandler {
      */
     public ApiResponse put(
             final ApiRequestEnvelope request, final ThingifierApiLifecycleContext lifecycle) {
-        ThingifierRequestContext context = contextFrom(request.headers());
-        return withResponsePolicy(
+        ThingifierRequestContext context = contextFrom(request.headers(), lifecycle);
+        return withAuthorizedResponsePolicy(
                 RoutingVerb.PUT,
                 request.path(),
-                put.handle(request.path(), request.bodyFields(), context, lifecycle),
-                context);
+                context,
+                lifecycle,
+                () -> put.handle(request.path(), request.bodyFields(), context, lifecycle));
     }
 
     /**
@@ -351,8 +386,8 @@ public class ThingifierRestAPIHandler {
             final String url,
             final ApiBodyFields bodyFields,
             final ThingifierRequestContext context) {
-        return withResponsePolicy(
-                RoutingVerb.PUT, url, put.handle(url, bodyFields, context), context);
+        return withAuthorizedResponsePolicy(
+                RoutingVerb.PUT, url, context, null, () -> put.handle(url, bodyFields, context));
     }
 
     /**
@@ -365,7 +400,12 @@ public class ThingifierRestAPIHandler {
      */
     public ApiResponse patch(final String url, final BodyParser args, HttpHeadersBlock headers) {
         ThingifierRequestContext context = contextFrom(headers);
-        return patch(url, args.rawBody(), headers, context);
+        return withAuthorizedResponsePolicy(
+                RoutingVerb.PATCH,
+                url,
+                context,
+                null,
+                () -> patch.handle(url, args.rawBody(), headers, context));
     }
 
     /**
@@ -378,7 +418,12 @@ public class ThingifierRestAPIHandler {
      */
     public ApiResponse patch(final String url, final String body, HttpHeadersBlock headers) {
         ThingifierRequestContext context = contextFrom(headers);
-        return patch(url, body, headers, context);
+        return withAuthorizedResponsePolicy(
+                RoutingVerb.PATCH,
+                url,
+                context,
+                null,
+                () -> patch.handle(url, body, headers, context));
     }
 
     /**
@@ -400,12 +445,19 @@ public class ThingifierRestAPIHandler {
      */
     public ApiResponse patch(
             final ApiRequestEnvelope request, final ThingifierApiLifecycleContext lifecycle) {
-        ThingifierRequestContext context = contextFrom(request.headers());
-        return withResponsePolicy(
+        ThingifierRequestContext context = contextFrom(request.headers(), lifecycle);
+        return withAuthorizedResponsePolicy(
                 RoutingVerb.PATCH,
                 request.path(),
-                patch.handle(request.path(), request.body(), request.headers(), context, lifecycle),
-                context);
+                context,
+                lifecycle,
+                () ->
+                        patch.handle(
+                                request.path(),
+                                request.body(),
+                                request.headers(),
+                                context,
+                                lifecycle));
     }
 
     /**
@@ -422,12 +474,62 @@ public class ThingifierRestAPIHandler {
             final String body,
             final HttpHeadersBlock headers,
             final ThingifierRequestContext context) {
-        return withResponsePolicy(
-                RoutingVerb.PATCH, url, patch.handle(url, body, headers, context), context);
+        return withAuthorizedResponsePolicy(
+                RoutingVerb.PATCH,
+                url,
+                context,
+                null,
+                () -> patch.handle(url, body, headers, context));
     }
 
     private ThingifierRequestContext contextFrom(final HttpHeadersBlock headers) {
         return runtime.contextFrom(headers);
+    }
+
+    /**
+     * Returns the lifecycle context when available, otherwise creates a direct-call context.
+     *
+     * <p>Lifecycle routing may have already stored an authenticated principal on the request
+     * context, so lifecycle-backed handler calls must reuse it.
+     *
+     * @param headers request headers used for direct context creation
+     * @param lifecycle lifecycle context, or null for direct calls
+     * @return active request context
+     */
+    private ThingifierRequestContext contextFrom(
+            final HttpHeadersBlock headers, final ThingifierApiLifecycleContext lifecycle) {
+        if (lifecycle != null) {
+            return lifecycle.requestContext();
+        }
+        return contextFrom(headers);
+    }
+
+    /**
+     * Applies route auth policy before executing a generated API handler.
+     *
+     * <p>HTTP lifecycle routing runs auth before body parsing, so lifecycle-backed calls skip this
+     * direct gate to avoid authenticating twice. Direct calls pass null lifecycle and are checked
+     * here before validation or mutation.
+     *
+     * @param verb routing verb used for auth and response-view lookup
+     * @param url generated API path
+     * @param context request context containing the active store
+     * @param lifecycle lifecycle context when called through HTTP processing, otherwise null
+     * @param action handler action to run when auth allows the request
+     * @return response after auth and normal response policy have been applied
+     */
+    private ApiResponse withAuthorizedResponsePolicy(
+            final RoutingVerb verb,
+            final String url,
+            final ThingifierRequestContext context,
+            final ThingifierApiLifecycleContext lifecycle,
+            final Supplier<ApiResponse> action) {
+        final ApiResponse authResponse =
+                lifecycle == null ? authPolicy.rejectIfNotAuthorized(verb, url, context) : null;
+        if (authResponse != null) {
+            return withResponsePolicy(verb, url, authResponse, context);
+        }
+        return withResponsePolicy(verb, url, action.get(), context);
     }
 
     /**
