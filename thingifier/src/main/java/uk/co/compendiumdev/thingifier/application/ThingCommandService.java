@@ -12,6 +12,7 @@ import uk.co.compendiumdev.thingifier.application.command.PatchThingDocumentComm
 import uk.co.compendiumdev.thingifier.application.command.RelateThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.ReplaceThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.ThingWriteCommand;
+import uk.co.compendiumdev.thingifier.application.command.UpdateConnectedRelationshipCommand;
 import uk.co.compendiumdev.thingifier.application.schema.SchemaDefinitionResolver;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
@@ -74,6 +75,8 @@ public final class ThingCommandService {
                 new RelationshipReferenceResolver(store, schema);
         RelationshipConnectionService relationshipConnections =
                 new RelationshipConnectionService(store, relationshipResolver);
+        RelationshipCascadeDeleteService cascadeDeletes =
+                new RelationshipCascadeDeleteService(store);
         ThingDraftFactory drafts = new ThingDraftFactory(store);
 
         this.transactionRunner = new WriteTransactionRunner(store);
@@ -90,7 +93,7 @@ public final class ThingCommandService {
                         relationshipConnections);
         this.patchDocumentHandler =
                 new PatchThingDocumentHandler(definitions, amendHandler, jsonOutput);
-        this.deleteHandler = new DeleteThingHandler(store, definitions);
+        this.deleteHandler = new DeleteThingHandler(store, definitions, cascadeDeletes);
         this.relationshipHandler =
                 new RelationshipCommandHandler(
                         store,
@@ -99,7 +102,8 @@ public final class ThingCommandService {
                         drafts,
                         createHandler,
                         relationshipConnections,
-                        new RelationshipTargetResolver(store));
+                        new RelationshipTargetResolver(store),
+                        cascadeDeletes);
     }
 
     /**
@@ -162,6 +166,10 @@ public final class ThingCommandService {
 
         if (command instanceof RelateThingCommand) {
             return relationshipHandler.validate((RelateThingCommand) command);
+        }
+
+        if (command instanceof UpdateConnectedRelationshipCommand) {
+            return relationshipHandler.validate((UpdateConnectedRelationshipCommand) command);
         }
 
         if (command instanceof DisconnectRelationshipCommand) {
@@ -238,6 +246,10 @@ public final class ThingCommandService {
 
         if (command instanceof RelateThingCommand) {
             return relationshipHandler.apply((RelateThingCommand) command);
+        }
+
+        if (command instanceof UpdateConnectedRelationshipCommand) {
+            return relationshipHandler.apply((UpdateConnectedRelationshipCommand) command);
         }
 
         if (command instanceof DisconnectRelationshipCommand) {

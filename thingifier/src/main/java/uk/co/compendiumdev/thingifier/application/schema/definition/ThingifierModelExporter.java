@@ -9,6 +9,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.DefinedFields;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldRelationshipReference;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optionality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
@@ -87,6 +88,13 @@ public final class ThingifierModelExporter {
         }
         if (field.getObjectDefinition() != null) {
             addObjectFields(builder, field.getObjectDefinition());
+        }
+        if (field.hasRelationshipReference()) {
+            FieldRelationshipReference reference = field.relationshipReference();
+            builder.reference(
+                    reference.targetEntity().getName(),
+                    reference.targetFieldName(),
+                    reference.relationshipName());
         }
         return builder.build();
     }
@@ -178,6 +186,8 @@ public final class ThingifierModelExporter {
                 forward.getTo().getName(),
                 cardinalitySpecFor(forward.getCardinality()),
                 optionalityNameFor(forward.getOptionality()),
+                forward.shouldDeleteTargetWhenDisconnected(),
+                forward.shouldDeleteTargetsWhenSourceDeleted(),
                 reverse);
     }
 
@@ -185,7 +195,9 @@ public final class ThingifierModelExporter {
         return new RelationshipVectorSpec(
                 vector.getName(),
                 cardinalitySpecFor(vector.getCardinality()),
-                optionalityNameFor(vector.getOptionality()));
+                optionalityNameFor(vector.getOptionality()),
+                vector.shouldDeleteTargetWhenDisconnected(),
+                vector.shouldDeleteTargetsWhenSourceDeleted());
     }
 
     private CardinalitySpec cardinalitySpecFor(final Cardinality cardinality) {

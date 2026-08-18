@@ -87,6 +87,12 @@ final class AmendThingHandler {
                     ApplicationError.instanceNotFound(
                             command.getEntityName(), command.getIdentifier()));
         }
+        ThingCommandResult relationshipValidation =
+                relationships.validateRelationshipReferences(
+                        entity, command.getRelationships(), false);
+        if (relationshipValidation != null) {
+            return relationshipValidation;
+        }
         return null;
     }
 
@@ -157,6 +163,13 @@ final class AmendThingHandler {
                         entity, command.getBodyFields());
         if (typeValidation != null) {
             return typeValidation;
+        }
+
+        ThingCommandResult relationshipValidation =
+                relationships.validateRelationshipReferences(
+                        entity, command.getRelationships(), false);
+        if (relationshipValidation != null) {
+            return relationshipValidation;
         }
 
         List<NamedValue> fieldValues =

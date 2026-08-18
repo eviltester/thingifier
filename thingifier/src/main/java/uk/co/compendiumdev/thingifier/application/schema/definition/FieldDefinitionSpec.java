@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.application.schema.definition;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import uk.co.compendiumdev.thingifier.application.schema.FieldReferenceSpec;
 
 public final class FieldDefinitionSpec {
 
@@ -18,6 +19,7 @@ public final class FieldDefinitionSpec {
     private final String maxValue;
     private final List<ValidationRuleSpec> validationRules;
     private final List<FieldDefinitionSpec> objectFields;
+    private final FieldReferenceSpec reference;
 
     private FieldDefinitionSpec(final Builder builder) {
         name = builder.name;
@@ -32,6 +34,7 @@ public final class FieldDefinitionSpec {
         maxValue = builder.maxValue;
         validationRules = Collections.unmodifiableList(new ArrayList<>(builder.validationRules));
         objectFields = Collections.unmodifiableList(new ArrayList<>(builder.objectFields));
+        reference = builder.reference;
     }
 
     public static Builder named(final String name, final String type) {
@@ -86,6 +89,24 @@ public final class FieldDefinitionSpec {
         return objectFields;
     }
 
+    /**
+     * Reports whether this field has a field-backed relationship reference.
+     *
+     * @return true when the field value should maintain a relationship
+     */
+    public boolean hasRelationshipReference() {
+        return reference != null;
+    }
+
+    /**
+     * Returns this field's relationship reference description.
+     *
+     * @return relationship reference spec, or null when none is configured
+     */
+    public FieldReferenceSpec relationshipReference() {
+        return reference;
+    }
+
     public boolean hasRange() {
         return minValue != null || maxValue != null;
     }
@@ -104,6 +125,7 @@ public final class FieldDefinitionSpec {
         private String maxValue;
         private final List<ValidationRuleSpec> validationRules;
         private final List<FieldDefinitionSpec> objectFields;
+        private FieldReferenceSpec reference;
 
         private Builder(final String name, final String type) {
             this.name = name;
@@ -172,6 +194,33 @@ public final class FieldDefinitionSpec {
         public Builder objectFields(final List<FieldDefinitionSpec> objectFields) {
             this.objectFields.addAll(objectFields);
             return this;
+        }
+
+        /**
+         * Configures a field-backed relationship reference for this field.
+         *
+         * @param reference reference metadata to preserve in model definitions
+         * @return this builder so field definitions can be chained
+         */
+        public Builder reference(final FieldReferenceSpec reference) {
+            this.reference = reference;
+            return this;
+        }
+
+        /**
+         * Configures a field-backed relationship reference for this field.
+         *
+         * @param targetEntityName entity containing the referenced value
+         * @param targetFieldName field on the target entity to match
+         * @param relationshipName relationship from the owning entity to the target entity
+         * @return this builder so field definitions can be chained
+         */
+        public Builder reference(
+                final String targetEntityName,
+                final String targetFieldName,
+                final String relationshipName) {
+            return reference(
+                    new FieldReferenceSpec(targetEntityName, targetFieldName, relationshipName));
         }
 
         public FieldDefinitionSpec build() {

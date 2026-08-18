@@ -18,6 +18,7 @@ public final class YamlFieldDocument {
     private final String maxValue;
     private final List<Object> validations;
     private final Map<String, YamlFieldDocument> fields;
+    private final YamlFieldReferenceDocument reference;
 
     private YamlFieldDocument(
             final String name,
@@ -31,7 +32,8 @@ public final class YamlFieldDocument {
             final String minValue,
             final String maxValue,
             final List<Object> validations,
-            final Map<String, YamlFieldDocument> fields) {
+            final Map<String, YamlFieldDocument> fields,
+            final YamlFieldReferenceDocument reference) {
         this.name = name;
         this.type = type;
         this.required = required;
@@ -44,6 +46,7 @@ public final class YamlFieldDocument {
         this.maxValue = maxValue;
         this.validations = validations;
         this.fields = fields;
+        this.reference = reference;
     }
 
     static YamlFieldDocument fromEntry(final String name, final Object source) {
@@ -60,7 +63,8 @@ public final class YamlFieldDocument {
                 YamlMapSupport.stringValue(map.get("min")),
                 YamlMapSupport.stringValue(map.get("max")),
                 YamlMapSupport.listValue(map.get("validations")),
-                fieldsFrom(map.get("fields")));
+                fieldsFrom(map.get("fields")),
+                YamlFieldReferenceDocument.fromObject(map.get("reference")));
     }
 
     public String name() {
@@ -109,6 +113,10 @@ public final class YamlFieldDocument {
 
     public Map<String, YamlFieldDocument> fields() {
         return fields;
+    }
+
+    public YamlFieldReferenceDocument reference() {
+        return reference;
     }
 
     private static Map<String, YamlFieldDocument> fieldsFrom(final Object source) {

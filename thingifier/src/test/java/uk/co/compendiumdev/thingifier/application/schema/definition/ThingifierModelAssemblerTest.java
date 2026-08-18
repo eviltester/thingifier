@@ -7,7 +7,9 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierSchemaCatalog;
 import uk.co.compendiumdev.thingifier.application.schema.EntityTypeRef;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldRelationshipReference;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 
 class ThingifierModelAssemblerTest {
 
@@ -44,6 +46,44 @@ class ThingifierModelAssemblerTest {
         Assertions.assertEquals("todos", task.pluralName());
         Assertions.assertEquals("id", task.primaryKeyFieldName());
         Assertions.assertEquals("title", task.fieldNamed("title").name());
+    }
+
+    @Test
+    void assemblerPreservesRelationshipOwnershipPolicies() {
+        Thingifier thingifier =
+                new ThingifierModelAssembler().assemble(relationshipMetadataDefinition());
+        EntityDefinition item = thingifier.getDefinitionNamed("item");
+        EntityDefinition product = thingifier.getDefinitionNamed("product");
+
+        RelationshipVectorDefinition relationship = item.getNamedRelationshipTo("product", product);
+
+        Assertions.assertTrue(relationship.shouldDeleteTargetWhenDisconnected());
+        Assertions.assertTrue(relationship.shouldDeleteTargetsWhenSourceDeleted());
+    }
+
+    @Test
+    void assemblerPreservesFieldRelationshipReferences() {
+        Thingifier thingifier =
+                new ThingifierModelAssembler().assemble(relationshipMetadataDefinition());
+
+        FieldRelationshipReference reference =
+                thingifier.getDefinitionNamed("item").getField("productId").relationshipReference();
+
+        Assertions.assertEquals("product", reference.targetEntity().getName());
+        Assertions.assertEquals("id", reference.targetFieldName());
+        Assertions.assertEquals("product", reference.relationshipName());
+    }
+
+    @Test
+    void fieldReferenceRequiresStableTargetField() {
+        SchemaDefinitionValidationReport report =
+                new ThingifierModelAssembler().validate(unstableFieldReferenceDefinition());
+
+        Assertions.assertFalse(report.isValid());
+        Assertions.assertTrue(
+                messages(report)
+                        .contains(
+                                "entities.item.fields.productName.reference.field: Reference target field must be unique, primary, or protected"));
     }
 
     @Test
@@ -173,6 +213,67 @@ class ThingifierModelAssemblerTest {
                                 "optional",
                                 new RelationshipVectorSpec(
                                         "taskof", CardinalitySpec.oneToOne(), "mandatory")))
+                .build();
+    }
+
+    private ThingifierModelDefinition relationshipMetadataDefinition() {
+        return ThingifierModelDefinition.builder()
+                .entity(
+                        EntityDefinitionSpec.named("product")
+                                .plural("products")
+                                .primaryKey("id")
+                                .field(FieldDefinitionSpec.named("id", "auto-increment").build())
+                                .build())
+                .entity(
+                        EntityDefinitionSpec.named("item")
+                                .plural("items")
+                                .primaryKey("id")
+                                .field(FieldDefinitionSpec.named("id", "auto-increment").build())
+                                .field(
+                                        FieldDefinitionSpec.named("productId", "integer")
+                                                .reference("product", "id", "product")
+                                                .build())
+                                .build())
+                .relationship(
+                        new RelationshipDefinitionSpec(
+                                "item",
+                                "product",
+                                "product",
+                                CardinalitySpec.oneToOne(),
+                                "optional",
+                                true,
+                                true,
+                                null))
+                .build();
+    }
+
+    private ThingifierModelDefinition unstableFieldReferenceDefinition() {
+        return ThingifierModelDefinition.builder()
+                .entity(
+                        EntityDefinitionSpec.named("product")
+                                .plural("products")
+                                .primaryKey("id")
+                                .field(FieldDefinitionSpec.named("id", "string").build())
+                                .field(FieldDefinitionSpec.named("name", "string").build())
+                                .build())
+                .entity(
+                        EntityDefinitionSpec.named("item")
+                                .plural("items")
+                                .primaryKey("id")
+                                .field(FieldDefinitionSpec.named("id", "string").build())
+                                .field(
+                                        FieldDefinitionSpec.named("productName", "string")
+                                                .reference("product", "name", "product")
+                                                .build())
+                                .build())
+                .relationship(
+                        new RelationshipDefinitionSpec(
+                                "item",
+                                "product",
+                                "product",
+                                CardinalitySpec.oneToOne(),
+                                "optional",
+                                null))
                 .build();
     }
 

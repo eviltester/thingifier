@@ -13,8 +13,8 @@ import uk.co.compendiumdev.thingifier.core.repository.ThingStoreWriteException;
  */
 final class DeleteThingHandler {
 
-    private final ThingStore store;
     private final ThingDefinitionResolver definitions;
+    private final RelationshipCascadeDeleteService cascadeDeletes;
 
     /**
      * Creates the delete handler.
@@ -23,8 +23,22 @@ final class DeleteThingHandler {
      * @param definitions resolver for model definitions and instances
      */
     DeleteThingHandler(final ThingStore store, final ThingDefinitionResolver definitions) {
-        this.store = store;
+        this(store, definitions, new RelationshipCascadeDeleteService(store));
+    }
+
+    /**
+     * Creates the delete handler with an explicit cascade delete service for focused tests.
+     *
+     * @param store store associated with the command service
+     * @param definitions resolver for model definitions and instances
+     * @param cascadeDeletes service that applies configured relationship ownership deletes
+     */
+    DeleteThingHandler(
+            final ThingStore store,
+            final ThingDefinitionResolver definitions,
+            final RelationshipCascadeDeleteService cascadeDeletes) {
         this.definitions = definitions;
+        this.cascadeDeletes = cascadeDeletes;
     }
 
     /**
@@ -73,7 +87,7 @@ final class DeleteThingHandler {
                             command.getEntityName(), command.getIdentifier()));
         }
         try {
-            store.entities().delete(instance);
+            cascadeDeletes.deleteInstance(instance);
             return ThingCommandResult.success();
         } catch (ThingStoreWriteException e) {
             throw e;

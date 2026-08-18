@@ -18,10 +18,7 @@ import uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation;
 import uk.co.compendiumdev.thingifier.apiconfig.PutIdentifierPolicy;
 import uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation;
 import uk.co.compendiumdev.thingifier.application.schema.EntityTypeRef;
-import uk.co.compendiumdev.thingifier.application.schema.RelationshipSpec;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 
 /**
  * Enforces write-method policy for generated Thingifier routes.
@@ -74,7 +71,7 @@ public final class WriteMethodPolicy {
 
         if (route instanceof RelationshipCollectionRoute
                 || route instanceof RelationshipInstanceRoute) {
-            return rejectRelationshipWriteIfNotAllowed(verb, route, bodyFields);
+            return rejectRelationshipWriteIfNotAllowed(verb, route, bodyFields, context);
         }
 
         return null;
@@ -188,13 +185,17 @@ public final class WriteMethodPolicy {
      * @return rejection response, or null when the relationship write may continue
      */
     private ApiResponse rejectRelationshipWriteIfNotAllowed(
-            final RoutingVerb verb, final ThingRoute route, final ApiBodyFields bodyFields) {
-        RelationshipWriteOperation operation = relationshipOperationFor(verb, route, bodyFields);
+            final RoutingVerb verb,
+            final ThingRoute route,
+            final ApiBodyFields bodyFields,
+            final ThingifierRequestContext context) {
+        Set<RelationshipWriteOperation> allowed = relationshipOperationsFor(verb, route);
+        RelationshipWriteOperation operation =
+                relationshipOperationFor(verb, route, bodyFields, context, allowed);
         if (operation == null) {
             return null;
         }
 
-        Set<RelationshipWriteOperation> allowed = relationshipOperationsFor(verb, route);
         if (allowed.contains(operation)) {
             return null;
         }
@@ -353,61 +354,14 @@ public final class WriteMethodPolicy {
      * @return relationship operation, or null when the route does not map to one
      */
     private RelationshipWriteOperation relationshipOperationFor(
-            final RoutingVerb verb, final ThingRoute route, final ApiBodyFields bodyFields) {
-        if (verb == RoutingVerb.DELETE && route instanceof RelationshipInstanceRoute) {
-            return RelationshipWriteOperation.DISCONNECT;
-        }
-        if (verb == RoutingVerb.POST && route instanceof RelationshipCollectionRoute) {
-            return bodyReferencesExistingRelatedItem(
-                            (RelationshipCollectionRoute) route, bodyFields)
-                    ? RelationshipWriteOperation.CONNECT_EXISTING
-                    : RelationshipWriteOperation.CREATE_AND_CONNECT;
-        }
-        return null;
-    }
-
-    /**
-     * Reports whether a relationship POST body references an existing related item.
-     *
-     * <p>When the body contains an automatic identifier field for the target entity, the request is
-     * treated as connect-existing rather than create-and-connect.
-     *
-     * @param route mapped relationship collection route
-     * @param bodyFields parsed request body fields
-     * @return true when the body identifies an existing related item
-     */
-    private boolean bodyReferencesExistingRelatedItem(
-            final RelationshipCollectionRoute route, final ApiBodyFields bodyFields) {
-        EntityDefinition targetEntity = targetEntityFor(route);
-        if (targetEntity == null) {
-            return false;
-        }
-
-        for (java.util.Map.Entry<String, String> entry : bodyFields.asFlattenedStringMap()) {
-            Field field = targetEntity.getField(entry.getKey());
-            if (field != null
-                    && (field.getType() == FieldType.AUTO_GUID
-                            || field.getType() == FieldType.AUTO_INCREMENT)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Resolves the target entity of a relationship collection route.
-     *
-     * @param route mapped relationship collection route
-     * @return related target entity, or null when it cannot be resolved
-     */
-    private EntityDefinition targetEntityFor(final RelationshipCollectionRoute route) {
-        for (RelationshipSpec relationship : route.parentEntity().relationships()) {
-            if (relationship.name().equals(route.relationshipName())) {
-                return runtime.schema()
-                        .definitionWithSingularOrPluralNamed(relationship.toEntityName());
-            }
-        }
-        return null;
+            final RoutingVerb verb,
+            final ThingRoute route,
+            final ApiBodyFields bodyFields,
+            final ThingifierRequestContext context,
+            final Set<RelationshipWriteOperation> allowedOperations) {
+        return new RelationshipWriteIntentResolver(runtime.schema())
+                .intentFor(verb, route, bodyFields, context, allowedOperations)
+                .operation();
     }
 
     /**
@@ -445,7 +399,7 @@ public final class WriteMethodPolicy {
      * @param route mapped relationship route
      * @return allowed relationship operations
      */
-    private Set<RelationshipWriteOperation> relationshipOperationsFor(
+    public Set<RelationshipWriteOperation> relationshipOperationsFor(
             final RoutingVerb verb, final ThingRoute route) {
         return runtime.apiSpec()
                 .relationshipWriteOperationsFor(
@@ -687,7 +641,12 @@ public final class WriteMethodPolicy {
         RelationshipWriteOperation operation =
                 verb == blockedVerb
                         ? blockedOperation
-                        : relationshipOperationFor(verb, route, ApiBodyFields.empty());
+                        : relationshipOperationFor(
+                                verb,
+                                route,
+                                ApiBodyFields.empty(),
+                                null,
+                                relationshipOperationsFor(verb, route));
         return operation != null && relationshipOperationsFor(verb, route).contains(operation);
     }
 

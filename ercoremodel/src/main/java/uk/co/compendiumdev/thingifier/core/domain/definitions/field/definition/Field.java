@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.DefinedFields;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.*;
 import uk.co.compendiumdev.thingifier.core.domain.randomdata.RandomString;
@@ -33,6 +34,7 @@ public final class Field {
     private int truncatedStringLength;
     private Function<String, String> transformToMakeUnique;
     private String description;
+    private FieldRelationshipReference relationshipReference;
 
     // todo: rather than all these fields, consider moving to more validation rules
     // to help keep the class to a more manageable size or create a FieldValidator class
@@ -74,6 +76,7 @@ public final class Field {
 
         description = "";
         transformToMakeUnique = (s) -> s;
+        relationshipReference = null;
     }
 
     public static Field is(String name, FieldType type) {
@@ -449,6 +452,45 @@ public final class Field {
 
     public String getDescription() {
         return description;
+    }
+
+    /**
+     * Declares that this field references another entity through a named relationship.
+     *
+     * <p>The field remains part of the source entity's data. During write processing, Thingifier
+     * resolves the supplied field value against {@code targetFieldName} on {@code targetEntity} and
+     * connects the source instance through {@code relationshipName}.
+     *
+     * @param targetEntity entity containing the referenced value
+     * @param targetFieldName field on the target entity to match
+     * @param relationshipName relationship from this field's owning entity to the target entity
+     * @return this field so definition code can be chained
+     */
+    public Field references(
+            final EntityDefinition targetEntity,
+            final String targetFieldName,
+            final String relationshipName) {
+        relationshipReference =
+                FieldRelationshipReference.to(targetEntity, targetFieldName, relationshipName);
+        return this;
+    }
+
+    /**
+     * Reports whether this field declares a relationship reference.
+     *
+     * @return true when writes to the field should also maintain a relationship
+     */
+    public boolean hasRelationshipReference() {
+        return relationshipReference != null;
+    }
+
+    /**
+     * Returns this field's relationship reference metadata.
+     *
+     * @return relationship reference metadata, or null when none is configured
+     */
+    public FieldRelationshipReference relationshipReference() {
+        return relationshipReference;
     }
 
     public Field withMinMaxValues(int minInt, int maxInt) {

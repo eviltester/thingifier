@@ -92,6 +92,12 @@ final class CreateThingHandler {
         if (validationResult != null) {
             return validationResult;
         }
+        ThingCommandResult relationshipValidation =
+                relationships.validateRelationshipReferences(
+                        entity, command.getRelationships(), true);
+        if (relationshipValidation != null) {
+            return relationshipValidation;
+        }
         return null;
     }
 

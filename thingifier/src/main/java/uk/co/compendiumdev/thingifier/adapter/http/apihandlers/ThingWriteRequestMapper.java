@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.adapter.http.apihandlers;
 
+import java.util.Set;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.commonerrorresponse.NoSuchEntity;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.CollectionRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.InstanceRoute;
@@ -7,12 +8,15 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.Relationshi
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.RelationshipInstanceRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.UnmatchedRoute;
+import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityWriteMethodConfig;
 import uk.co.compendiumdev.thingifier.apiconfig.PutIdentifierPolicy;
+import uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation;
 import uk.co.compendiumdev.thingifier.application.command.DeleteThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DisconnectRelationshipCommand;
 import uk.co.compendiumdev.thingifier.application.command.RelateThingCommand;
+import uk.co.compendiumdev.thingifier.application.command.UpdateConnectedRelationshipCommand;
 import uk.co.compendiumdev.thingifier.application.schema.EntityTypeRef;
 import uk.co.compendiumdev.thingifier.application.schema.RelationshipSpec;
 import uk.co.compendiumdev.thingifier.application.schema.SchemaViewCatalog;
@@ -22,6 +26,9 @@ public final class ThingWriteRequestMapper {
     private final SchemaViewCatalog schema;
     private final ThingBodyCommandMapper bodyCommandMapper;
     private final EntityWriteMethodConfig entityWriteMethods;
+    private final Set<RelationshipWriteOperation> relationshipPostOperations;
+    private final ThingifierRequestContext context;
+    private final RelationshipWriteIntentResolver relationshipIntents;
 
     public ThingWriteRequestMapper(final SchemaViewCatalog schema) {
         this(schema, new EntityWriteMethodConfig());
@@ -33,6 +40,24 @@ public final class ThingWriteRequestMapper {
         this.bodyCommandMapper = new ThingBodyCommandMapper(schema);
         this.entityWriteMethods =
                 entityWriteMethods == null ? new EntityWriteMethodConfig() : entityWriteMethods;
+        this.relationshipPostOperations = Set.of();
+        this.context = null;
+        this.relationshipIntents = null;
+    }
+
+    public ThingWriteRequestMapper(
+            final SchemaCatalog schema,
+            final EntityWriteMethodConfig entityWriteMethods,
+            final Set<RelationshipWriteOperation> relationshipPostOperations,
+            final ThingifierRequestContext context) {
+        this.schema = schema;
+        this.bodyCommandMapper = new ThingBodyCommandMapper(schema);
+        this.entityWriteMethods =
+                entityWriteMethods == null ? new EntityWriteMethodConfig() : entityWriteMethods;
+        this.relationshipPostOperations =
+                relationshipPostOperations == null ? Set.of() : relationshipPostOperations;
+        this.context = context;
+        this.relationshipIntents = new RelationshipWriteIntentResolver(schema);
     }
 
     public ThingWriteRequestMapping mapPost(
@@ -299,6 +324,20 @@ public final class ThingWriteRequestMapper {
                                     relationships.validationReport().getCombinedErrorMessages())));
         }
 
+        RelationshipWriteIntent intent = relationshipIntentFor(route, bodyFields);
+        if (intent.operation() == RelationshipWriteOperation.UPDATE_CONNECTED) {
+            return ThingWriteRequestMapping.command(
+                    new UpdateConnectedRelationshipCommand(
+                            route.parentEntity().name(),
+                            route.parentIdentifier(),
+                            route.relationshipName(),
+                            bodyCommandMapper.fieldValuesExcludingRelationships(
+                                    bodyFields, relationships),
+                            bodyCommandMapper.bodyFieldValues(bodyFields),
+                            relationships.references()),
+                    ApiRouteDisplay.originalPath(route.originalPath()));
+        }
+
         return ThingWriteRequestMapping.command(
                 new RelateThingCommand(
                         route.parentEntity().name(),
@@ -318,5 +357,18 @@ public final class ThingWriteRequestMapper {
             }
         }
         return null;
+    }
+
+    private RelationshipWriteIntent relationshipIntentFor(
+            final RelationshipCollectionRoute route, final ApiBodyFields bodyFields) {
+        if (relationshipIntents == null) {
+            return RelationshipWriteIntent.none();
+        }
+        return relationshipIntents.intentFor(
+                uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb.POST,
+                route,
+                bodyFields,
+                context,
+                relationshipPostOperations);
     }
 }

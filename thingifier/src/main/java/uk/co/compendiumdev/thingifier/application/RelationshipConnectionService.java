@@ -1,8 +1,11 @@
 package uk.co.compendiumdev.thingifier.application;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import uk.co.compendiumdev.thingifier.application.command.RelationshipReference;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
@@ -70,8 +73,25 @@ final class RelationshipConnectionService {
             return ThingCommandResult.error(resolution.errors());
         }
 
+        disconnectFieldBoundRelationships(instance, references);
         return connectRelationships(
                 instance, resolution.relationships(), validateFinalRelationships);
+    }
+
+    ThingCommandResult validateRelationshipReferences(
+            final EntityDefinition sourceEntity,
+            final List<RelationshipReference> references,
+            final boolean prefixRelationshipErrors) {
+        RelationshipReferenceResolver.Resolution resolution =
+                relationshipResolver.resolve(sourceEntity, references);
+        if (!resolution.hasErrors()) {
+            return null;
+        }
+        if (prefixRelationshipErrors) {
+            return ThingCommandResult.error(
+                    "Invalid relationships: " + String.join(", ", resolution.errors()));
+        }
+        return ThingCommandResult.error(resolution.errors());
     }
 
     ThingCommandResult relationshipErrorIfInvalid(
@@ -136,6 +156,24 @@ final class RelationshipConnectionService {
             disconnectConnections(instance, connectedByCommand);
             return ThingCommandResult.error(
                     "Error creating relationships " + ApplicationExceptionMessages.messageFrom(e));
+        }
+    }
+
+    private void disconnectFieldBoundRelationships(
+            final EntityInstance instance, final List<RelationshipReference> references) {
+        Set<String> relationshipNames = new HashSet<>();
+        for (RelationshipReference reference : references) {
+            if (reference.isFieldBinding()) {
+                relationshipNames.add(reference.relationshipName());
+            }
+        }
+
+        for (String relationshipName : relationshipNames) {
+            List<EntityInstance> currentlyRelated =
+                    new ArrayList<>(store.relationships().listRelated(instance, relationshipName));
+            for (EntityInstance related : currentlyRelated) {
+                store.relationships().disconnectBetween(instance, related, relationshipName);
+            }
         }
     }
 

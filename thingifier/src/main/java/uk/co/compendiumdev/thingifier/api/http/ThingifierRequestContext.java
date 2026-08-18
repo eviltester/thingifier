@@ -4,12 +4,14 @@ import static uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi.HTTP_SES
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.security.SecuritySchemeNames;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.NamedValue;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
@@ -108,6 +110,58 @@ public final class ThingifierRequestContext {
         }
         EntityInstance found = store.entityQueries().findByQueryIdentifier(entity, identifier);
         return found != null;
+    }
+
+    /**
+     * Reports whether a source instance is related to a target matched by supplied field values.
+     *
+     * <p>Generated route mappers use this to decide whether a relationship collection write should
+     * update an already connected target while keeping repository lookups inside request context
+     * services.
+     *
+     * @param sourceEntity source entity definition
+     * @param sourceIdentifier route/query identifier for the source instance
+     * @param targetEntity target entity definition
+     * @param relationshipName relationship from source to target
+     * @param targetReferenceFields field values that identify the target
+     * @return true when source and target instances exist and are already related
+     */
+    public boolean hasRelatedEntityInstanceMatchingFields(
+            final EntityDefinition sourceEntity,
+            final String sourceIdentifier,
+            final EntityDefinition targetEntity,
+            final String relationshipName,
+            final List<NamedValue> targetReferenceFields) {
+        if (sourceEntity == null || targetEntity == null || targetReferenceFields == null) {
+            return false;
+        }
+
+        EntityInstance source =
+                store.entityQueries().findByQueryIdentifier(sourceEntity, sourceIdentifier);
+        EntityInstance target = referencedEntityInstance(targetEntity, targetReferenceFields);
+        if (source == null || target == null) {
+            return false;
+        }
+
+        for (EntityInstance related : store.relationships().listRelated(source, relationshipName)) {
+            if (related.getInternalId().equals(target.getInternalId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private EntityInstance referencedEntityInstance(
+            final EntityDefinition entity, final List<NamedValue> referenceFields) {
+        for (NamedValue reference : referenceFields) {
+            EntityInstance found =
+                    store.entityQueries()
+                            .findByField(entity, reference.getName(), reference.asString());
+            if (found != null) {
+                return found;
+            }
+        }
+        return null;
     }
 
     /**

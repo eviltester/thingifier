@@ -115,23 +115,26 @@ public class RestApiPostHandler {
             final ThingifierRequestContext context,
             final ThingifierApiLifecycleContext lifecycle) {
         ThingRoute route = new ThingRouteMapper(runtime.schema()).map(url);
+        WriteMethodPolicy writePolicy = new WriteMethodPolicy(runtime);
         ApiResponse policyResponse =
-                new WriteMethodPolicy(runtime)
-                        .rejectIfNotAllowed(RoutingVerb.POST, route, bodyFields, context);
+                writePolicy.rejectIfNotAllowed(RoutingVerb.POST, route, bodyFields, context);
         if (policyResponse != null) {
             return policyResponse;
         }
 
-        ThingWriteRequestMapping mapping =
-                new ThingWriteRequestMapper(runtime.schema()).mapPost(route, bodyFields);
+        ThingWriteRequestMapper mapper =
+                new ThingWriteRequestMapper(
+                        runtime.schema(),
+                        runtime.apiConfig().writeMethods().entities(),
+                        writePolicy.relationshipOperationsFor(RoutingVerb.POST, route),
+                        context);
+        ThingWriteRequestMapping mapping = mapper.mapPost(route, bodyFields);
         return LifecycleWriteSupport.execute(
                 runtime,
                 lifecycleHooks,
                 lifecycle,
                 mapping,
                 context,
-                () ->
-                        new ThingWriteRequestMapper(runtime.schema())
-                                .mapPost(route, lifecycle.bodyFields()));
+                () -> mapper.mapPost(route, lifecycle.bodyFields()));
     }
 }

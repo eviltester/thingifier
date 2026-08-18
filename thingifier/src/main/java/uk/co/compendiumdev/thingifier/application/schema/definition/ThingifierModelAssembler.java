@@ -1,11 +1,13 @@
 package uk.co.compendiumdev.thingifier.application.schema.definition;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.application.schema.FieldReferenceSpec;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -31,6 +33,7 @@ public final class ThingifierModelAssembler {
         }
         validateEntities(definition, report);
         validateRelationships(definition, report);
+        validateFieldReferences(definition, report);
         return report;
     }
 
@@ -73,6 +76,8 @@ public final class ThingifierModelAssembler {
             }
         }
 
+        applyFieldReferences(thingifier, definition);
+
         for (RelationshipDefinitionSpec relationshipSpec : definition.relationships()) {
             final EntityDefinition from =
                     thingifier.getDefinitionNamed(relationshipSpec.fromEntityName());
@@ -92,10 +97,31 @@ public final class ThingifierModelAssembler {
                 applyOptionality(
                         relationship.getReversedRelationship(),
                         relationshipSpec.reverse().optionality());
+                applyRelationshipPolicies(
+                        relationship.getReversedRelationship(), relationshipSpec.reverse());
             }
+            applyRelationshipPolicies(relationship.getFromRelationship(), relationshipSpec);
         }
 
         return thingifier;
+    }
+
+    private void applyFieldReferences(
+            final Thingifier thingifier, final ThingifierModelDefinition definition) {
+        for (EntityDefinitionSpec entitySpec : definition.entities()) {
+            final EntityDefinition entity = thingifier.getDefinitionNamed(entitySpec.name());
+            for (FieldDefinitionSpec fieldSpec : entitySpec.fields()) {
+                if (!fieldSpec.hasRelationshipReference()) {
+                    continue;
+                }
+                FieldReferenceSpec reference = fieldSpec.relationshipReference();
+                entity.getField(fieldSpec.name())
+                        .references(
+                                thingifier.getDefinitionNamed(reference.targetEntityName()),
+                                reference.targetFieldName(),
+                                reference.relationshipName());
+            }
+        }
     }
 
     private void validateEntities(
@@ -199,6 +225,97 @@ public final class ThingifierModelAssembler {
 
         validateRange(field, fieldPath, fieldType, report);
         validateRules(field, fieldPath, report);
+    }
+
+    private void validateFieldReferences(
+            final ThingifierModelDefinition definition,
+            final SchemaDefinitionValidationReport report) {
+        for (EntityDefinitionSpec entity : definition.entities()) {
+            validateFieldReferencesFor(
+                    definition,
+                    entity,
+                    entity.fields(),
+                    "entities." + emptyIfNull(entity.name()) + ".fields",
+                    false,
+                    report);
+        }
+    }
+
+    private void validateFieldReferencesFor(
+            final ThingifierModelDefinition definition,
+            final EntityDefinitionSpec sourceEntity,
+            final List<FieldDefinitionSpec> fields,
+            final String fieldPath,
+            final boolean nested,
+            final SchemaDefinitionValidationReport report) {
+        for (FieldDefinitionSpec field : fields) {
+            final String path = fieldPath + "." + emptyIfNull(field.name()) + ".reference";
+            if (field.hasRelationshipReference()) {
+                validateFieldReference(definition, sourceEntity, field, path, nested, report);
+            }
+            validateFieldReferencesFor(
+                    definition, sourceEntity, field.objectFields(), path + ".fields", true, report);
+        }
+    }
+
+    private void validateFieldReference(
+            final ThingifierModelDefinition definition,
+            final EntityDefinitionSpec sourceEntity,
+            final FieldDefinitionSpec field,
+            final String path,
+            final boolean nested,
+            final SchemaDefinitionValidationReport report) {
+        if (nested) {
+            report.addError(path, "Only top-level fields can define relationship references");
+            return;
+        }
+
+        FieldReferenceSpec reference = field.relationshipReference();
+        if (isBlank(reference.targetEntityName())) {
+            report.addError(path + ".entity", "Reference target entity is required");
+            return;
+        }
+        if (isBlank(reference.targetFieldName())) {
+            report.addError(path + ".field", "Reference target field is required");
+            return;
+        }
+        if (isBlank(reference.relationshipName())) {
+            report.addError(path + ".relationship", "Reference relationship is required");
+            return;
+        }
+
+        EntityDefinitionSpec targetEntity = definition.entityNamed(reference.targetEntityName());
+        if (targetEntity == null) {
+            report.addError(
+                    path + ".entity", "Unknown reference target " + reference.targetEntityName());
+            return;
+        }
+
+        FieldDefinitionSpec targetField = targetEntity.fieldNamed(reference.targetFieldName());
+        if (targetField == null) {
+            report.addError(
+                    path + ".field",
+                    "Unknown reference target field " + reference.targetFieldName());
+            return;
+        }
+        if (!isStableReferenceField(targetEntity, targetField)) {
+            report.addError(
+                    path + ".field",
+                    "Reference target field must be unique, primary, or protected");
+        }
+        if (!relationshipConnects(
+                definition,
+                sourceEntity.name(),
+                reference.relationshipName(),
+                targetEntity.name())) {
+            report.addError(
+                    path + ".relationship",
+                    String.format(
+                            "Relationship %s does not connect %s to %s",
+                            reference.relationshipName(),
+                            sourceEntity.name(),
+                            targetEntity.name()));
+        }
     }
 
     private void validateRange(
@@ -436,6 +553,61 @@ public final class ThingifierModelAssembler {
     private void applyOptionality(
             final RelationshipVectorDefinition relationship, final String optionality) {
         relationship.setOptionality(optionalityFor(optionality));
+    }
+
+    private void applyRelationshipPolicies(
+            final RelationshipVectorDefinition relationship,
+            final RelationshipDefinitionSpec relationshipSpec) {
+        if (relationshipSpec.deleteTargetWhenDisconnected()) {
+            relationship.deleteTargetWhenDisconnected();
+        }
+        if (relationshipSpec.deleteTargetsWhenSourceDeleted()) {
+            relationship.deleteTargetsWhenSourceDeleted();
+        }
+    }
+
+    private void applyRelationshipPolicies(
+            final RelationshipVectorDefinition relationship, final RelationshipVectorSpec spec) {
+        if (spec.deleteTargetWhenDisconnected()) {
+            relationship.deleteTargetWhenDisconnected();
+        }
+        if (spec.deleteTargetsWhenSourceDeleted()) {
+            relationship.deleteTargetsWhenSourceDeleted();
+        }
+    }
+
+    private boolean isStableReferenceField(
+            final EntityDefinitionSpec targetEntity, final FieldDefinitionSpec targetField) {
+        if (targetField.unique()) {
+            return true;
+        }
+        if (targetEntity.hasPrimaryKeyField()
+                && targetEntity.primaryKeyFieldName().equals(targetField.name())) {
+            return true;
+        }
+        final FieldType type = fieldTypeFor(targetField.type());
+        return type == FieldType.AUTO_INCREMENT || type == FieldType.AUTO_GUID;
+    }
+
+    private boolean relationshipConnects(
+            final ThingifierModelDefinition definition,
+            final String sourceEntityName,
+            final String relationshipName,
+            final String targetEntityName) {
+        for (RelationshipDefinitionSpec relationship : definition.relationships()) {
+            if (relationship.fromEntityName().equals(sourceEntityName)
+                    && relationship.toEntityName().equals(targetEntityName)
+                    && relationship.name().equals(relationshipName)) {
+                return true;
+            }
+            if (relationship.hasReverse()
+                    && relationship.toEntityName().equals(sourceEntityName)
+                    && relationship.fromEntityName().equals(targetEntityName)
+                    && relationship.reverse().name().equals(relationshipName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Optionality optionalityFor(final String optionality) {

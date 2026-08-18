@@ -94,6 +94,50 @@ public class RelationshipBodyCommandParserTest {
                         .isError());
     }
 
+    @Test
+    public void parsesFieldReferenceAsRelationshipReference() {
+        Thingifier thingifier = productItemThingifier();
+        ThingifierSchemaCatalog schema = new ThingifierSchemaCatalog(thingifier);
+        Map<String, String> body = new HashMap<>();
+        body.put("productId", "1");
+        body.put("quantity", "2");
+
+        RelationshipBodyCommands commands =
+                new RelationshipBodyCommandParser(schema)
+                        .parse(
+                                bodyFieldsFor(body).asFlattenedStringMap(),
+                                schema.entityWithSingularOrPluralName("item"));
+
+        Assertions.assertTrue(commands.validationReport().isValid());
+        Assertions.assertEquals(1, commands.references().size());
+        Assertions.assertTrue(commands.references().get(0).isFieldBinding());
+        Assertions.assertEquals("product", commands.references().get(0).relationshipName());
+        Assertions.assertEquals("id", commands.references().get(0).referenceFieldName());
+        Assertions.assertEquals("1", commands.references().get(0).referenceValue());
+        Assertions.assertTrue(commands.relationshipEntries().isEmpty());
+    }
+
+    @Test
+    public void rejectsConflictingFieldAndExplicitRelationshipReferences() {
+        Thingifier thingifier = productItemThingifier();
+        ThingifierSchemaCatalog schema = new ThingifierSchemaCatalog(thingifier);
+        Map<String, String> body = new HashMap<>();
+        body.put("productId", "1");
+        body.put("product.id", "2");
+
+        RelationshipBodyCommands commands =
+                new RelationshipBodyCommandParser(schema)
+                        .parse(
+                                bodyFieldsFor(body).asFlattenedStringMap(),
+                                schema.entityWithSingularOrPluralName("item"));
+
+        Assertions.assertFalse(commands.validationReport().isValid());
+        Assertions.assertTrue(
+                commands.validationReport()
+                        .getErrorMessages()
+                        .contains("Conflicting relationship references supplied for product"));
+    }
+
     private Thingifier taskProjectThingifier() {
         Thingifier thingifier = new Thingifier();
         EntityDefinition task = thingifier.defineThing("task", "tasks");
@@ -107,6 +151,21 @@ public class RelationshipBodyCommandParserTest {
         thingifier
                 .defineRelationship(task, project, "task-of", Cardinality.ONE_TO_ONE())
                 .whenReversed(Cardinality.ONE_TO_MANY(), "tasks");
+        return thingifier;
+    }
+
+    private Thingifier productItemThingifier() {
+        Thingifier thingifier = new Thingifier();
+        EntityDefinition product = thingifier.defineThing("product", "products");
+        product.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+
+        EntityDefinition item = thingifier.defineThing("item", "items");
+        item.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+        item.addField(
+                Field.is("productId", FieldType.INTEGER).references(product, "id", "product"));
+        item.addField(Field.is("quantity", FieldType.INTEGER));
+
+        thingifier.defineRelationship(item, product, "product", Cardinality.ONE_TO_ONE());
         return thingifier;
     }
 
