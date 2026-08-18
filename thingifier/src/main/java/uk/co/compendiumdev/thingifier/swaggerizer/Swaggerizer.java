@@ -133,6 +133,9 @@ public class Swaggerizer {
         Components components = convertEntityDefinitionsToComponents(routingDefinitions);
 
         api.components(components);
+        for (String bearerSchemeName : thingifier.apiSpec().security().bearerSchemes()) {
+            addHttpSecurityScheme(components, bearerSchemeName, "bearer", null);
+        }
 
         if (routes != null) {
 
@@ -248,9 +251,10 @@ public class Swaggerizer {
                             }
 
                             if (subroute.isSecuredByBearerAuth()) {
-                                addHttpSecurityScheme(components, "bearerAuth", "bearer", null);
+                                final String bearerSchemeName = subroute.bearerAuthSchemeName();
+                                addHttpSecurityScheme(components, bearerSchemeName, "bearer", null);
                                 operation.addSecurityItem(
-                                        new SecurityRequirement().addList("bearerAuth"));
+                                        new SecurityRequirement().addList(bearerSchemeName));
                             }
 
                             if (shouldDocumentSortParameter(thingifier, subroute)) {

@@ -9,6 +9,8 @@ public final class YamlRelationshipDocument {
     private final String toEntityName;
     private final String cardinality;
     private final String optionality;
+    private final boolean deleteTargetWhenDisconnected;
+    private final boolean deleteTargetsWhenSourceDeleted;
     private final YamlRelationshipReverseDocument reverse;
 
     private YamlRelationshipDocument(
@@ -17,12 +19,16 @@ public final class YamlRelationshipDocument {
             final String toEntityName,
             final String cardinality,
             final String optionality,
+            final boolean deleteTargetWhenDisconnected,
+            final boolean deleteTargetsWhenSourceDeleted,
             final YamlRelationshipReverseDocument reverse) {
         this.fromEntityName = fromEntityName;
         this.name = name;
         this.toEntityName = toEntityName;
         this.cardinality = cardinality;
         this.optionality = optionality;
+        this.deleteTargetWhenDisconnected = deleteTargetWhenDisconnected;
+        this.deleteTargetsWhenSourceDeleted = deleteTargetsWhenSourceDeleted;
         this.reverse = reverse;
     }
 
@@ -34,6 +40,8 @@ public final class YamlRelationshipDocument {
                 YamlMapSupport.stringValue(map.get("to")),
                 YamlMapSupport.stringValue(map.get("cardinality")),
                 YamlMapSupport.stringValue(map.get("optionality")),
+                YamlMapSupport.booleanValue(map.get("deleteTargetWhenDisconnected")),
+                YamlMapSupport.booleanValue(map.get("deleteTargetsWhenSourceDeleted")),
                 reverseFrom(map.get("reverse")));
     }
 
@@ -55,6 +63,14 @@ public final class YamlRelationshipDocument {
 
     public String optionality() {
         return optionality;
+    }
+
+    public boolean deleteTargetWhenDisconnected() {
+        return deleteTargetWhenDisconnected;
+    }
+
+    public boolean deleteTargetsWhenSourceDeleted() {
+        return deleteTargetsWhenSourceDeleted;
     }
 
     public YamlRelationshipReverseDocument reverse() {

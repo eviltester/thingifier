@@ -4,6 +4,7 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.application.schema.FieldReferenceSpec;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -73,6 +74,30 @@ class ThingifierModelExporterTest {
     }
 
     @Test
+    void exporterCapturesRelationshipOwnershipPolicies() {
+        ThingifierModelDefinition definition =
+                new ThingifierModelExporter().export(relationshipMetadataModel());
+
+        RelationshipDefinitionSpec relationship = definition.relationships().get(0);
+
+        Assertions.assertTrue(relationship.deleteTargetWhenDisconnected());
+        Assertions.assertTrue(relationship.deleteTargetsWhenSourceDeleted());
+    }
+
+    @Test
+    void exporterCapturesFieldRelationshipReferences() {
+        ThingifierModelDefinition definition =
+                new ThingifierModelExporter().export(relationshipMetadataModel());
+
+        FieldReferenceSpec reference =
+                definition.entityNamed("item").fieldNamed("productId").relationshipReference();
+
+        Assertions.assertEquals("product", reference.targetEntityName());
+        Assertions.assertEquals("id", reference.targetFieldName());
+        Assertions.assertEquals("product", reference.relationshipName());
+    }
+
+    @Test
     void exportedDefinitionCanBeAssembledAgain() {
         ThingifierModelDefinition definition = new ThingifierModelExporter().export(model());
 
@@ -118,6 +143,23 @@ class ThingifierModelExporterTest {
                 .defineRelationship(project, task, "tasks", Cardinality.ONE_TO_MANY())
                 .whenReversed(Cardinality.ONE_TO_ONE(), "taskof");
 
+        return thingifier;
+    }
+
+    private Thingifier relationshipMetadataModel() {
+        Thingifier thingifier = new Thingifier();
+        EntityDefinition product = thingifier.defineThing("product", "products");
+        product.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+
+        EntityDefinition item = thingifier.defineThing("item", "items");
+        item.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+        item.addField(
+                Field.is("productId", FieldType.INTEGER).references(product, "id", "product"));
+
+        thingifier
+                .defineRelationship(item, product, "product", Cardinality.ONE_TO_ONE())
+                .deleteTargetWhenDisconnected()
+                .deleteTargetsWhenSourceDeleted();
         return thingifier;
     }
 }

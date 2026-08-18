@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import uk.co.compendiumdev.thingifier.application.schema.FieldReferenceSpec;
 import uk.co.compendiumdev.thingifier.application.schema.definition.CardinalitySpec;
 import uk.co.compendiumdev.thingifier.application.schema.definition.EntityDefinitionSpec;
 import uk.co.compendiumdev.thingifier.application.schema.definition.FieldDefinitionSpec;
@@ -61,6 +62,12 @@ public final class YamlThingifierDocumentMapper {
                         .truncateTo(field.truncateTo())
                         .range(field.minValue(), field.maxValue())
                         .validationRules(validationRulesFor(field.validations()));
+        if (field.reference() != null) {
+            builder.reference(
+                    field.reference().targetEntityName(),
+                    field.reference().targetFieldName(),
+                    field.reference().relationshipName());
+        }
         for (YamlFieldDocument child : field.fields().values()) {
             builder.objectField(fieldSpecFor(child));
         }
@@ -96,6 +103,8 @@ public final class YamlThingifierDocumentMapper {
                 relationship.toEntityName(),
                 cardinalityFor(relationship.cardinality()),
                 relationship.optionality(),
+                relationship.deleteTargetWhenDisconnected(),
+                relationship.deleteTargetsWhenSourceDeleted(),
                 reverseSpecFor(relationship.reverse()));
     }
 
@@ -104,7 +113,11 @@ public final class YamlThingifierDocumentMapper {
             return null;
         }
         return new RelationshipVectorSpec(
-                reverse.name(), cardinalityFor(reverse.cardinality()), reverse.optionality());
+                reverse.name(),
+                cardinalityFor(reverse.cardinality()),
+                reverse.optionality(),
+                reverse.deleteTargetWhenDisconnected(),
+                reverse.deleteTargetsWhenSourceDeleted());
     }
 
     private CardinalitySpec cardinalityFor(final String text) {
@@ -168,9 +181,20 @@ public final class YamlThingifierDocumentMapper {
         if (!field.validationRules().isEmpty()) {
             map.put("validations", validationRulesListFor(field.validationRules()));
         }
+        if (field.hasRelationshipReference()) {
+            map.put("reference", referenceMapFor(field.relationshipReference()));
+        }
         if (!field.objectFields().isEmpty()) {
             map.put("fields", fieldsMapFor(field.objectFields()));
         }
+        return map;
+    }
+
+    private Map<String, Object> referenceMapFor(final FieldReferenceSpec reference) {
+        final Map<String, Object> map = new LinkedHashMap<>();
+        map.put("entity", reference.targetEntityName());
+        map.put("field", reference.targetFieldName());
+        map.put("relationship", reference.relationshipName());
         return map;
     }
 
@@ -203,6 +227,11 @@ public final class YamlThingifierDocumentMapper {
         map.put("to", relationship.toEntityName());
         map.put("cardinality", relationship.cardinality().canonicalName());
         putIfPresent(map, "optionality", relationship.optionality());
+        putIfTrue(map, "deleteTargetWhenDisconnected", relationship.deleteTargetWhenDisconnected());
+        putIfTrue(
+                map,
+                "deleteTargetsWhenSourceDeleted",
+                relationship.deleteTargetsWhenSourceDeleted());
         if (relationship.hasReverse()) {
             map.put("reverse", reverseMapFor(relationship.reverse()));
         }
@@ -214,6 +243,8 @@ public final class YamlThingifierDocumentMapper {
         map.put("name", reverse.name());
         map.put("cardinality", reverse.cardinality().canonicalName());
         putIfPresent(map, "optionality", reverse.optionality());
+        putIfTrue(map, "deleteTargetWhenDisconnected", reverse.deleteTargetWhenDisconnected());
+        putIfTrue(map, "deleteTargetsWhenSourceDeleted", reverse.deleteTargetsWhenSourceDeleted());
         return map;
     }
 

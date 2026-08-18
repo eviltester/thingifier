@@ -144,6 +144,10 @@
         <property name="id" value="productionDeprecatedApi"/>
         <property name="files" value=".*[/\\]thingifier[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]Thingifier\.java"/>
     </module>
+    <module name="SuppressionSingleFilter">
+        <property name="id" value="productionDeprecatedApi"/>
+        <property name="files" value=".*[/\\]thingifier[/\\]src[/\\]main[/\\]java[/\\]uk[/\\]co[/\\]compendiumdev[/\\]thingifier[/\\]api[/\\]spec[/\\]ThingifierApiRouteRule\.java"/>
+    </module>
     <module name="RegexpMultiline">
         <property name="id" value="commandDtosNoMutableDomain"/>
         <property name="format" value="(?s)package uk\.co\.compendiumdev\.thingifier\.application\.command;.*import uk\.co\.compendiumdev\.thingifier\.core\.domain\.(definitions\.EntityDefinition|instances\.(EntityInstance|EntityInstanceDraft));"/>

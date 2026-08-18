@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.application.schema.definition.ThingifierModelDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldRelationshipReference;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
 
 class ThingifierYamlExporterTest {
 
@@ -53,6 +55,34 @@ class ThingifierYamlExporterTest {
     }
 
     @Test
+    void loadExportLoadRoundTripPreservesRelationshipOwnershipPolicies() {
+        Thingifier first = new ThingifierYamlLoader().loadThingifier(relationshipMetadataYaml());
+
+        String yaml = new ThingifierYamlExporter().export(first);
+        Thingifier second = new ThingifierYamlLoader().loadThingifier(yaml);
+
+        RelationshipVectorDefinition relationship =
+                second.getDefinitionNamed("item")
+                        .getNamedRelationshipTo("product", second.getDefinitionNamed("product"));
+        Assertions.assertTrue(relationship.shouldDeleteTargetWhenDisconnected());
+        Assertions.assertTrue(relationship.shouldDeleteTargetsWhenSourceDeleted());
+    }
+
+    @Test
+    void loadExportLoadRoundTripPreservesFieldRelationshipReferences() {
+        Thingifier first = new ThingifierYamlLoader().loadThingifier(relationshipMetadataYaml());
+
+        String yaml = new ThingifierYamlExporter().export(first);
+        Thingifier second = new ThingifierYamlLoader().loadThingifier(yaml);
+
+        FieldRelationshipReference reference =
+                second.getDefinitionNamed("item").getField("productId").relationshipReference();
+        Assertions.assertEquals("product", reference.targetEntity().getName());
+        Assertions.assertEquals("id", reference.targetFieldName());
+        Assertions.assertEquals("product", reference.relationshipName());
+    }
+
+    @Test
     void exporterCanEmitYamlFromRuntimeThingifier() {
         Thingifier thingifier =
                 new ThingifierYamlLoader().loadThingifier(resource("field-types.yaml"));
@@ -69,5 +99,39 @@ class ThingifierYamlExporterTest {
         InputStream stream = getClass().getResourceAsStream("/models/" + resourceName);
         Assertions.assertNotNull(stream, resourceName);
         return stream;
+    }
+
+    private String relationshipMetadataYaml() {
+        return "formatVersion: 1\n"
+                + "model:\n"
+                + "  title: Relationships\n"
+                + "  description: Relationship metadata.\n"
+                + "entities:\n"
+                + "  product:\n"
+                + "    plural: products\n"
+                + "    primaryKey: id\n"
+                + "    fields:\n"
+                + "      id:\n"
+                + "        type: auto-increment\n"
+                + "  item:\n"
+                + "    plural: items\n"
+                + "    primaryKey: id\n"
+                + "    fields:\n"
+                + "      id:\n"
+                + "        type: auto-increment\n"
+                + "      productId:\n"
+                + "        type: integer\n"
+                + "        reference:\n"
+                + "          entity: product\n"
+                + "          field: id\n"
+                + "          relationship: product\n"
+                + "relationships:\n"
+                + "  - from: item\n"
+                + "    name: product\n"
+                + "    to: product\n"
+                + "    cardinality: one-to-one\n"
+                + "    optionality: optional\n"
+                + "    deleteTargetWhenDisconnected: true\n"
+                + "    deleteTargetsWhenSourceDeleted: true\n";
     }
 }

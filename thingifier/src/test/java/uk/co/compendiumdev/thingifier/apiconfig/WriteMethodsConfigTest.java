@@ -9,6 +9,7 @@ import static uk.co.compendiumdev.thingifier.apiconfig.PutIdentifierPolicy.OPTIO
 import static uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation.CONNECT_EXISTING;
 import static uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation.CREATE_AND_CONNECT;
 import static uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation.DISCONNECT;
+import static uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation.UPDATE_CONNECTED;
 
 import java.util.Set;
 import org.junit.jupiter.api.Assertions;
@@ -41,6 +42,15 @@ public class WriteMethodsConfigTest {
 
         Assertions.assertEquals(Set.of(), config.entities().postOperations());
         Assertions.assertEquals(Set.of(), config.relationships().deleteOperations());
+    }
+
+    @Test
+    public void relationshipPostCanBeConfiguredToUpdateConnectedChildren() {
+        WriteMethodsConfig config = new WriteMethodsConfig();
+
+        config.relationships().postCan(UPDATE_CONNECTED);
+
+        Assertions.assertEquals(Set.of(UPDATE_CONNECTED), config.relationships().postOperations());
     }
 
     @Test

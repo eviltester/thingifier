@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.application.schema.EntityTypeRef;
+import uk.co.compendiumdev.thingifier.application.schema.FieldReferenceSpec;
 import uk.co.compendiumdev.thingifier.application.schema.FieldSpec;
 import uk.co.compendiumdev.thingifier.application.schema.RelationshipSpec;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -57,7 +58,17 @@ public final class ThingifierSchemaCatalog implements SchemaCatalog {
         List<FieldSpec> fields = new ArrayList<>();
         for (String fieldName : definition.getFieldNames()) {
             Field field = definition.getField(fieldName);
-            fields.add(new FieldSpec(field.getName(), field.getType(), field.mustBeUnique()));
+            FieldReferenceSpec reference = null;
+            if (field.hasRelationshipReference()) {
+                reference =
+                        new FieldReferenceSpec(
+                                field.relationshipReference().targetEntity().getName(),
+                                field.relationshipReference().targetFieldName(),
+                                field.relationshipReference().relationshipName());
+            }
+            fields.add(
+                    new FieldSpec(
+                            field.getName(), field.getType(), field.mustBeUnique(), reference));
         }
         return fields;
     }

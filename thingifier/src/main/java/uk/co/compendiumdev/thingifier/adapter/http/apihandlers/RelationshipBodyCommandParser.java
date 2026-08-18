@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import uk.co.compendiumdev.thingifier.application.command.RelationshipReference;
 import uk.co.compendiumdev.thingifier.application.schema.EntityTypeRef;
+import uk.co.compendiumdev.thingifier.application.schema.FieldReferenceSpec;
 import uk.co.compendiumdev.thingifier.application.schema.FieldSpec;
 import uk.co.compendiumdev.thingifier.application.schema.RelationshipSpec;
 import uk.co.compendiumdev.thingifier.application.schema.SchemaViewCatalog;
@@ -35,11 +36,34 @@ public final class RelationshipBodyCommandParser {
                     relationshipEntries.add(keyValue);
                     parseCompressedRelationship(entity, keyValue, report, references);
                 }
+            } else {
+                parseFieldRelationshipReference(entity, keyValue, report, references);
             }
         }
 
         report.setValid(report.getErrorMessages().isEmpty());
         return new RelationshipBodyCommands(relationshipEntries, references, report);
+    }
+
+    private void parseFieldRelationshipReference(
+            final EntityTypeRef entity,
+            final Map.Entry<String, String> keyValue,
+            final ValidationReport report,
+            final List<RelationshipReference> references) {
+        FieldSpec field = entity.fieldNamed(keyValue.getKey());
+        if (field == null || !field.hasRelationshipReference()) {
+            return;
+        }
+
+        FieldReferenceSpec reference = field.relationshipReference();
+        addReference(
+                RelationshipReference.fieldBinding(
+                        reference.relationshipName(),
+                        reference.targetEntityName(),
+                        reference.targetFieldName(),
+                        keyValue.getValue()),
+                report,
+                references);
     }
 
     private void parseCompressedRelationship(
@@ -65,8 +89,10 @@ public final class RelationshipBodyCommandParser {
             return;
         }
 
-        references.add(
-                RelationshipReference.compressed(relationshipName, fieldName, keyValue.getValue()));
+        addReference(
+                RelationshipReference.compressed(relationshipName, fieldName, keyValue.getValue()),
+                report,
+                references);
     }
 
     private void parseComplexRelationship(
@@ -95,13 +121,51 @@ public final class RelationshipBodyCommandParser {
             return;
         }
 
-        references.add(
+        addReference(
                 RelationshipReference.explicit(
                         relationshipName,
                         relationshipTo.name(),
                         relationshipToTerm,
                         relationshipField,
-                        keyValue.getValue()));
+                        keyValue.getValue()),
+                report,
+                references);
+    }
+
+    private void addReference(
+            final RelationshipReference candidate,
+            final ValidationReport report,
+            final List<RelationshipReference> references) {
+        for (RelationshipReference existing : references) {
+            if (!sameRelationship(existing, candidate)) {
+                continue;
+            }
+            if (sameReference(existing, candidate)) {
+                return;
+            }
+            report.addErrorMessage(
+                    String.format(
+                            "Conflicting relationship references supplied for %s",
+                            candidate.relationshipName()));
+            return;
+        }
+        references.add(candidate);
+    }
+
+    private boolean sameRelationship(
+            final RelationshipReference first, final RelationshipReference second) {
+        return first.relationshipName().equals(second.relationshipName());
+    }
+
+    private boolean sameReference(
+            final RelationshipReference first, final RelationshipReference second) {
+        if (first.hasExplicitTargetEntity()
+                && second.hasExplicitTargetEntity()
+                && !first.targetEntityName().equals(second.targetEntityName())) {
+            return false;
+        }
+        return first.referenceFieldName().equals(second.referenceFieldName())
+                && first.referenceValue().equals(second.referenceValue());
     }
 
     private boolean supportsReferenceField(

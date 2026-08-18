@@ -83,6 +83,32 @@ public class RelationshipDefinition {
         return fromTo;
     }
 
+    /**
+     * Configures the forward relationship vector to delete targets when disconnected.
+     *
+     * <p>This convenience method covers the common ownership case. Use {@link
+     * #getReversedRelationship()} when the reverse vector should have a different policy.
+     *
+     * @return this relationship definition so model configuration can be chained
+     */
+    public RelationshipDefinition deleteTargetWhenDisconnected() {
+        fromTo.deleteTargetWhenDisconnected();
+        return this;
+    }
+
+    /**
+     * Configures the forward relationship vector to delete targets when the source is deleted.
+     *
+     * <p>This convenience method covers the common ownership case. Use {@link
+     * #getReversedRelationship()} when the reverse vector should have a different policy.
+     *
+     * @return this relationship definition so model configuration can be chained
+     */
+    public RelationshipDefinition deleteTargetsWhenSourceDeleted() {
+        fromTo.deleteTargetsWhenSourceDeleted();
+        return this;
+    }
+
     /* given a vector in this relationship, return the other one */
     public RelationshipVectorDefinition otherVectorOf(
             final RelationshipVectorDefinition relationshipVector) {

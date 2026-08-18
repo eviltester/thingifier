@@ -3,10 +3,12 @@ package uk.co.compendiumdev.thingifier.api.restapihandlers;
 import static uk.co.compendiumdev.thingifier.apiconfig.PutIdentifierPolicy.DISALLOWED;
 import static uk.co.compendiumdev.thingifier.apiconfig.PutIdentifierPolicy.MANDATORY;
 import static uk.co.compendiumdev.thingifier.apiconfig.PutIdentifierPolicy.OPTIONAL;
+import static uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation.UPDATE_CONNECTED;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
@@ -15,7 +17,9 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingWriteRequest
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierSchemaCatalog;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
+import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
+import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityWriteMethodConfig;
 import uk.co.compendiumdev.thingifier.application.command.AmendThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.CreateThingCommand;
@@ -23,6 +27,7 @@ import uk.co.compendiumdev.thingifier.application.command.DeleteThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.DisconnectRelationshipCommand;
 import uk.co.compendiumdev.thingifier.application.command.RelateThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.ReplaceThingCommand;
+import uk.co.compendiumdev.thingifier.application.command.UpdateConnectedRelationshipCommand;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -231,6 +236,32 @@ public class ThingWriteRequestMapperTest {
     }
 
     @Test
+    public void mapsRelationshipPostWithConnectedChildToUpdateCommandWhenConfigured() {
+        Thingifier thingifier = taskProjectThingifier();
+        ThingStore store = storeFor(thingifier);
+        EntityInstance task = createTask(thingifier, "Task");
+        EntityInstance project = createProject(thingifier, "Project");
+        store.relationships().connect(project, "tasks", task);
+
+        ThingWriteRequestMapping mapping =
+                mapperFor(thingifier, Set.of(UPDATE_CONNECTED))
+                        .mapPost(
+                                routeFor(
+                                        thingifier,
+                                        String.format(
+                                                "project/%s/tasks", project.getPrimaryKeyValue())),
+                                parserFor(
+                                        Map.of(
+                                                "guid",
+                                                task.getPrimaryKeyValue(),
+                                                "title",
+                                                "Updated")));
+
+        Assertions.assertFalse(mapping.isError());
+        Assertions.assertTrue(mapping.getCommand() instanceof UpdateConnectedRelationshipCommand);
+    }
+
+    @Test
     public void mapsDeleteInstanceToDeleteCommand() {
         Thingifier thingifier = taskProjectThingifier();
         EntityInstance task = createTask(thingifier, "Task");
@@ -328,6 +359,17 @@ public class ThingWriteRequestMapperTest {
     private ThingWriteRequestMapper mapperFor(
             final Thingifier thingifier, final EntityWriteMethodConfig config) {
         return new ThingWriteRequestMapper(new ThingifierSchemaCatalog(thingifier), config);
+    }
+
+    private ThingWriteRequestMapper mapperFor(
+            final Thingifier thingifier,
+            final Set<uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation>
+                    relationshipOperations) {
+        return new ThingWriteRequestMapper(
+                new ThingifierSchemaCatalog(thingifier),
+                thingifier.apiDefaults().writeMethods().entities(),
+                relationshipOperations,
+                ThingifierRequestContext.from(thingifier, new HttpHeadersBlock()));
     }
 
     private ThingStore storeFor(final Thingifier thingifier) {

@@ -7,6 +7,12 @@ import uk.co.compendiumdev.thingifier.api.http.bodyparser.xml.StringToXML;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
+/**
+ * Renders an {@link ApiResponse} as an XML response body.
+ *
+ * <p>XML rendering follows the same response-view selection as JSON rendering so default entity
+ * views and route response views hide or expose the same fields across representations.
+ */
 public final class ApiResponseAsXml {
     private final ApiResponse apiResponse;
     private final JsonThing jsonThing;
@@ -18,6 +24,11 @@ public final class ApiResponseAsXml {
         this.xmlThing = new XmlThing(jsonThing);
     }
 
+    /**
+     * Serializes the API response body to XML.
+     *
+     * @return XML response body, or an empty string when the response has no body
+     */
     public String getXml() {
 
         if (!apiResponse.hasABody()) {
@@ -59,7 +70,7 @@ public final class ApiResponseAsXml {
                                 thingsToReturn,
                                 apiResponse.getTypeOfThingReturned(),
                                 apiResponse.getRelationshipRepository(),
-                                apiResponse.getResponseView());
+                                apiResponse.responseViewFor(apiResponse.getTypeOfThingReturned()));
             } catch (Exception e) {
                 // TODO: if this happens then the status code is going to be wrong, should probably
                 // throw an exception instead
@@ -71,7 +82,9 @@ public final class ApiResponseAsXml {
             return output;
         } else {
             if (apiResponse.hasReturnedDraft()) {
-                return xmlThing.getSingleObjectXml(apiResponse.getReturnedDraft());
+                return xmlThing.getSingleObjectXml(
+                        apiResponse.getReturnedDraft(),
+                        apiResponse.responseViewFor(apiResponse.getReturnedDraft().getEntity()));
             }
             EntityInstance instance = apiResponse.getReturnedInstance();
 
@@ -81,7 +94,7 @@ public final class ApiResponseAsXml {
                         xmlThing.getSingleObjectXml(
                                 instance,
                                 apiResponse.getRelationshipRepository(),
-                                apiResponse.getResponseView());
+                                apiResponse.responseViewFor(instance.getEntity()));
             } catch (Exception e) {
                 // TODO: if this happens then the status code is going to be wrong
                 output = getErrorMessageXml(e.getMessage());
@@ -93,12 +106,24 @@ public final class ApiResponseAsXml {
         }
     }
 
+    /**
+     * Serializes one error message using Thingifier's standard XML error shape.
+     *
+     * @param errorMessage error message to include
+     * @return XML error response body
+     */
     public static String getErrorMessageXml(final String errorMessage) {
         Collection<String> localErrorMessages = new ArrayList<>();
         localErrorMessages.add(errorMessage);
         return getErrorMessageXml(localErrorMessages);
     }
 
+    /**
+     * Serializes multiple error messages using Thingifier's standard XML error shape.
+     *
+     * @param myErrorMessages error messages to include
+     * @return XML error response body
+     */
     public static String getErrorMessageXml(final Collection<String> myErrorMessages) {
         return StringToXML.getStringCollectionAsXml(
                 "errorMessages", "errorMessage", myErrorMessages);

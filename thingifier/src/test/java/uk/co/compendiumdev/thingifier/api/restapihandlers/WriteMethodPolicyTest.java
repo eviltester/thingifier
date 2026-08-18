@@ -10,6 +10,7 @@ import static uk.co.compendiumdev.thingifier.apiconfig.PutIdentifierPolicy.MANDA
 import static uk.co.compendiumdev.thingifier.apiconfig.PutIdentifierPolicy.OPTIONAL;
 import static uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation.CONNECT_EXISTING;
 import static uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation.CREATE_AND_CONNECT;
+import static uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation.UPDATE_CONNECTED;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -620,6 +621,23 @@ public class WriteMethodPolicyTest {
                                 new HttpHeadersBlock());
 
         Assertions.assertEquals(405, response.getStatusCode());
+    }
+
+    @Test
+    public void generatedDocsTreatUpdateConnectedAsRelationshipPostSupport() {
+        Thingifier thingifier = relationshipModel();
+        thingifier.apiConfig().writeMethods().relationships().postCan(UPDATE_CONNECTED);
+
+        ApiRoutingDefinition definition =
+                new ApiRoutingDefinitionDocGenerator(thingifier).generate("");
+
+        Assertions.assertTrue(
+                route(definition, RoutingVerb.POST, "projects/:id/tasks")
+                        .status()
+                        .isReturnedFromCall());
+        Assertions.assertEquals(
+                "OPTIONS, GET, HEAD, POST, QUERY",
+                route(definition, RoutingVerb.OPTIONS, "projects/:id/tasks").headerValue());
     }
 
     @Test

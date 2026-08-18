@@ -23,6 +23,8 @@ public class RelationshipVectorDefinition {
     private EntityDefinition from;
     private EntityDefinition to;
     private RelationshipDefinition parentRelationship;
+    private boolean deleteTargetWhenDisconnected;
+    private boolean deleteTargetsWhenSourceDeleted;
 
     public RelationshipVectorDefinition(
             EntityDefinition from,
@@ -34,6 +36,8 @@ public class RelationshipVectorDefinition {
         this.to = to;
         this.cardinality = cardinality;
         this.optionality = OPTIONAL_RELATIONSHIP;
+        this.deleteTargetWhenDisconnected = false;
+        this.deleteTargetsWhenSourceDeleted = false;
 
         // assign to the from thingDefinition
         from.related().addRelationship(this);
@@ -70,5 +74,49 @@ public class RelationshipVectorDefinition {
 
     public void forRelationship(final RelationshipDefinition relationshipDefinition) {
         this.parentRelationship = relationshipDefinition;
+    }
+
+    /**
+     * Configures relationship instance deletion to delete the related target entity.
+     *
+     * <p>This models owned children such as cart items, where removing the relationship from the
+     * source should remove the target record rather than merely disconnecting it.
+     *
+     * @return this vector so relationship configuration can be chained
+     */
+    public RelationshipVectorDefinition deleteTargetWhenDisconnected() {
+        deleteTargetWhenDisconnected = true;
+        return this;
+    }
+
+    /**
+     * Configures source entity deletion to delete all currently related target entities.
+     *
+     * <p>This is an explicit cascade policy for generated and direct Thingifier deletes. It is
+     * independent of mandatory-relationship cleanup, which remains the store's responsibility.
+     *
+     * @return this vector so relationship configuration can be chained
+     */
+    public RelationshipVectorDefinition deleteTargetsWhenSourceDeleted() {
+        deleteTargetsWhenSourceDeleted = true;
+        return this;
+    }
+
+    /**
+     * Reports whether disconnecting this vector should delete the target entity.
+     *
+     * @return true when relationship-instance DELETE should also delete the target
+     */
+    public boolean shouldDeleteTargetWhenDisconnected() {
+        return deleteTargetWhenDisconnected;
+    }
+
+    /**
+     * Reports whether deleting the source should delete related targets for this vector.
+     *
+     * @return true when source entity DELETE should cascade to current targets
+     */
+    public boolean shouldDeleteTargetsWhenSourceDeleted() {
+        return deleteTargetsWhenSourceDeleted;
     }
 }

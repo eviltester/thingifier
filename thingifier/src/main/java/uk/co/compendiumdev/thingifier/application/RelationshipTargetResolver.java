@@ -104,6 +104,18 @@ final class RelationshipTargetResolver {
         return null;
     }
 
+    boolean isRelated(
+            final EntityInstance parent,
+            final String relationshipName,
+            final EntityInstance child) {
+        for (EntityInstance related : store.relationships().listRelated(parent, relationshipName)) {
+            if (related.getInternalId().equals(child.getInternalId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private boolean matchesQueryIdentifier(final EntityInstance instance, final String identifier) {
         for (Field autoIncrementField :
                 instance.getEntity().getFieldsOfType(FieldType.AUTO_INCREMENT)) {

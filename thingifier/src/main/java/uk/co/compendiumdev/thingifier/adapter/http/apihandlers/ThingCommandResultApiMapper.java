@@ -15,6 +15,7 @@ import uk.co.compendiumdev.thingifier.application.command.PatchThingDocumentComm
 import uk.co.compendiumdev.thingifier.application.command.RelateThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.ReplaceThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.ThingWriteCommand;
+import uk.co.compendiumdev.thingifier.application.command.UpdateConnectedRelationshipCommand;
 
 public final class ThingCommandResultApiMapper {
 
@@ -71,6 +72,10 @@ public final class ThingCommandResultApiMapper {
         }
 
         if (command instanceof AmendThingCommand || command instanceof PatchThingDocumentCommand) {
+            return ApiResponse.success().returnSingleInstance(result.getInstance());
+        }
+
+        if (command instanceof UpdateConnectedRelationshipCommand) {
             return ApiResponse.success().returnSingleInstance(result.getInstance());
         }
 

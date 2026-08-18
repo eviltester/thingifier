@@ -171,7 +171,8 @@ public final class WriteMethodRoutePolicy {
             Set<RelationshipWriteOperation> operations =
                     relationshipOperationsFor(route.verb(), thingRoute, apiPathPrefix);
             if (operations.contains(RelationshipWriteOperation.CREATE_AND_CONNECT)
-                    || operations.contains(RelationshipWriteOperation.CONNECT_EXISTING)) {
+                    || operations.contains(RelationshipWriteOperation.CONNECT_EXISTING)
+                    || operations.contains(RelationshipWriteOperation.UPDATE_CONNECTED)) {
                 route.replaceStatus(RoutingStatus.returnedFromCall());
             } else {
                 methodNotAllowed(route);

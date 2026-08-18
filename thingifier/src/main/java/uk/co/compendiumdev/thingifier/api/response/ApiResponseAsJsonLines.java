@@ -6,6 +6,12 @@ import java.util.List;
 import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 
+/**
+ * Renders an {@link ApiResponse} as JSON Lines or an RFC 7464 JSON text sequence.
+ *
+ * <p>Each entity is serialized individually, so the renderer resolves the response view for each
+ * instance rather than assuming a single global view.
+ */
 public final class ApiResponseAsJsonLines {
 
     private static final String RECORD_SEPARATOR = "\u001E";
@@ -18,6 +24,11 @@ public final class ApiResponseAsJsonLines {
         this.jsonThing = jsonThing;
     }
 
+    /**
+     * Serializes the response as newline-delimited JSON objects.
+     *
+     * @return JSON Lines body, or an empty string when there are no records
+     */
     public String getJsonLines() {
         List<String> jsonObjects = jsonObjects();
         if (jsonObjects.isEmpty()) {
@@ -26,6 +37,11 @@ public final class ApiResponseAsJsonLines {
         return String.join("\n", jsonObjects) + "\n";
     }
 
+    /**
+     * Serializes the response as a JSON text sequence with record separators.
+     *
+     * @return JSON sequence body, or an empty string when there are no records
+     */
     public String getJsonSequence() {
         List<String> jsonObjects = jsonObjects();
         if (jsonObjects.isEmpty()) {
@@ -39,6 +55,11 @@ public final class ApiResponseAsJsonLines {
         return sequence.toString();
     }
 
+    /**
+     * Builds the individual JSON objects used by both streaming representations.
+     *
+     * @return serialized JSON objects without line separators
+     */
     private List<String> jsonObjects() {
         List<String> objects = new ArrayList<>();
         if (!apiResponse.hasABody()) {
@@ -65,7 +86,9 @@ public final class ApiResponseAsJsonLines {
             objects.add(
                     jsonThing
                             .asJsonObject(
-                                    apiResponse.getReturnedDraft(), apiResponse.getResponseView())
+                                    apiResponse.getReturnedDraft(),
+                                    apiResponse.responseViewFor(
+                                            apiResponse.getReturnedDraft().getEntity()))
                             .toString());
             return objects;
         }
@@ -74,12 +97,18 @@ public final class ApiResponseAsJsonLines {
         return objects;
     }
 
+    /**
+     * Serializes one persisted instance with its applicable response view.
+     *
+     * @param instance instance to serialize
+     * @return JSON object text
+     */
     private String jsonFor(final EntityInstance instance) {
         return jsonThing
                 .asJsonObject(
                         instance,
                         apiResponse.getRelationshipRepository(),
-                        apiResponse.getResponseView())
+                        apiResponse.responseViewFor(instance.getEntity()))
                 .toString();
     }
 }

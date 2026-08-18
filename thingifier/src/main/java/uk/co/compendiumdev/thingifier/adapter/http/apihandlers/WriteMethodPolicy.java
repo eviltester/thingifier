@@ -18,19 +18,37 @@ import uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation;
 import uk.co.compendiumdev.thingifier.apiconfig.PutIdentifierPolicy;
 import uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation;
 import uk.co.compendiumdev.thingifier.application.schema.EntityTypeRef;
-import uk.co.compendiumdev.thingifier.application.schema.RelationshipSpec;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
-import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 
+/**
+ * Enforces write-method policy for generated Thingifier routes.
+ *
+ * <p>The policy combines global write-method configuration with API spec route overrides such as
+ * {@code methodNotAllowed}. It returns 405 responses before write commands are validated or applied
+ * when the generated route should not perform the requested operation.
+ */
 public final class WriteMethodPolicy {
 
     private final ThingifierApiRuntime runtime;
 
+    /**
+     * Creates a policy checker backed by runtime configuration and API spec rules.
+     *
+     * @param runtime runtime services for config, spec, schema, and store access
+     */
     public WriteMethodPolicy(final ThingifierApiRuntime runtime) {
         this.runtime = runtime;
     }
 
+    /**
+     * Rejects a write request when the generated route is not allowed to perform its operation.
+     *
+     * @param verb routing verb being processed
+     * @param route mapped generated route
+     * @param bodyFields parsed request body fields
+     * @param context request context used to inspect existing data when needed
+     * @return rejection response, or null when the write may continue
+     */
     public ApiResponse rejectIfNotAllowed(
             final RoutingVerb verb,
             final ThingRoute route,
@@ -41,18 +59,56 @@ public final class WriteMethodPolicy {
             return invalidConfig;
         }
 
+        ApiResponse configuredMethodNotAllowed =
+                rejectIfMethodNotAllowedByApiSpec(verb, route, bodyFields, context);
+        if (configuredMethodNotAllowed != null) {
+            return configuredMethodNotAllowed;
+        }
+
         if (route instanceof CollectionRoute || route instanceof InstanceRoute) {
             return rejectEntityWriteIfNotAllowed(verb, route, bodyFields, context);
         }
 
         if (route instanceof RelationshipCollectionRoute
                 || route instanceof RelationshipInstanceRoute) {
-            return rejectRelationshipWriteIfNotAllowed(verb, route, bodyFields);
+            return rejectRelationshipWriteIfNotAllowed(verb, route, bodyFields, context);
         }
 
         return null;
     }
 
+    /**
+     * Rejects a route when the API spec declares the verb as method-not-allowed.
+     *
+     * <p>This check runs before operation-specific write policy because a route-level public API
+     * decision should win over generated create/update/connect semantics.
+     *
+     * @param verb routing verb being processed
+     * @param route mapped generated route
+     * @param bodyFields parsed request body fields
+     * @param context request context used for Allow header calculation
+     * @return rejection response, or null when the API spec allows the method
+     */
+    private ApiResponse rejectIfMethodNotAllowedByApiSpec(
+            final RoutingVerb verb,
+            final ThingRoute route,
+            final ApiBodyFields bodyFields,
+            final ThingifierRequestContext context) {
+        if (!isMethodNotAllowedByApiSpec(verb, route)) {
+            return null;
+        }
+        return methodNotAllowed(allowHeaderFor(route, bodyFields, context));
+    }
+
+    /**
+     * Rejects entity writes whose concrete create/update operation is not allowed.
+     *
+     * @param verb routing verb being processed
+     * @param route mapped entity route
+     * @param bodyFields parsed request body fields
+     * @param context request context used to inspect existing data when needed
+     * @return rejection response, or null when the entity write may continue
+     */
     private ApiResponse rejectEntityWriteIfNotAllowed(
             final RoutingVerb verb,
             final ThingRoute route,
@@ -85,6 +141,14 @@ public final class WriteMethodPolicy {
         return methodNotAllowed(allowHeaderFor(route, bodyFields, context, verb, operation));
     }
 
+    /**
+     * Rejects PATCH requests when the route or API config does not accept the requested shape.
+     *
+     * @param route mapped entity route
+     * @param bodyFields parsed request body fields
+     * @param context request context used for Allow header calculation
+     * @return rejection response, or null when PATCH may continue
+     */
     private ApiResponse rejectEntityPatchIfNotAllowed(
             final ThingRoute route,
             final ApiBodyFields bodyFields,
@@ -112,14 +176,26 @@ public final class WriteMethodPolicy {
         return null;
     }
 
+    /**
+     * Rejects relationship writes whose connect/disconnect operation is not allowed.
+     *
+     * @param verb routing verb being processed
+     * @param route mapped relationship route
+     * @param bodyFields parsed request body fields
+     * @return rejection response, or null when the relationship write may continue
+     */
     private ApiResponse rejectRelationshipWriteIfNotAllowed(
-            final RoutingVerb verb, final ThingRoute route, final ApiBodyFields bodyFields) {
-        RelationshipWriteOperation operation = relationshipOperationFor(verb, route, bodyFields);
+            final RoutingVerb verb,
+            final ThingRoute route,
+            final ApiBodyFields bodyFields,
+            final ThingifierRequestContext context) {
+        Set<RelationshipWriteOperation> allowed = relationshipOperationsFor(verb, route);
+        RelationshipWriteOperation operation =
+                relationshipOperationFor(verb, route, bodyFields, context, allowed);
         if (operation == null) {
             return null;
         }
 
-        Set<RelationshipWriteOperation> allowed = relationshipOperationsFor(verb, route);
         if (allowed.contains(operation)) {
             return null;
         }
@@ -127,10 +203,21 @@ public final class WriteMethodPolicy {
         return methodNotAllowed(allowHeaderFor(route, verb, operation));
     }
 
+    /**
+     * Creates Thingifier's standard 405 response.
+     *
+     * @param allowHeader value to expose in the Allow header
+     * @return method-not-allowed API response
+     */
     private ApiResponse methodNotAllowed(final String allowHeader) {
         return ApiResponse.error(405, "Method Not Allowed").setHeader("Allow", allowHeader);
     }
 
+    /**
+     * Rejects requests when global API write-method configuration is invalid.
+     *
+     * @return server error response, or null when configuration is valid
+     */
     private ApiResponse rejectInvalidApiConfig() {
         ApiConfigValidationReport validation = runtime.apiConfig().validate();
         if (validation.isValid()) {
@@ -139,6 +226,15 @@ public final class WriteMethodPolicy {
         return ApiResponse.error(500, validation.errorMessages());
     }
 
+    /**
+     * Determines the entity operation represented by a generated write route.
+     *
+     * @param verb routing verb being processed
+     * @param route mapped entity route
+     * @param bodyFields parsed request body fields
+     * @param context request context used to check whether a PUT target already exists
+     * @return create/update operation, or null when the route does not map to one
+     */
     private EntityWriteOperation entityOperationFor(
             final RoutingVerb verb,
             final ThingRoute route,
@@ -164,6 +260,14 @@ public final class WriteMethodPolicy {
         return null;
     }
 
+    /**
+     * Reports whether an entity instance already exists for the supplied identifier.
+     *
+     * @param entityRef entity reference from the route
+     * @param identifier route or payload identifier
+     * @param context request context containing the active store
+     * @return true when the instance exists
+     */
     private boolean entityInstanceExists(
             final EntityTypeRef entityRef,
             final String identifier,
@@ -176,6 +280,12 @@ public final class WriteMethodPolicy {
         return context.hasEntityInstanceWithIdentifier(entity, identifier);
     }
 
+    /**
+     * Extracts the entity reference from a collection or instance route.
+     *
+     * @param route mapped entity route
+     * @return entity reference from the route
+     */
     private EntityTypeRef entityFor(final ThingRoute route) {
         if (route instanceof CollectionRoute) {
             return ((CollectionRoute) route).entity();
@@ -183,6 +293,13 @@ public final class WriteMethodPolicy {
         return ((InstanceRoute) route).entity();
     }
 
+    /**
+     * Resolves the identifier PUT would use for create-or-update decisions.
+     *
+     * @param route mapped entity route
+     * @param bodyFields parsed request body fields
+     * @return identifier from URI or payload, or null when none is available
+     */
     private String putIdentifierFor(final ThingRoute route, final ApiBodyFields bodyFields) {
         if (route instanceof InstanceRoute) {
             return ((InstanceRoute) route).identifier();
@@ -196,6 +313,12 @@ public final class WriteMethodPolicy {
         return null;
     }
 
+    /**
+     * Reports whether a PUT route can legally derive an identifier from its URI or payload.
+     *
+     * @param route mapped entity route
+     * @return true when PUT identifier policy permits this route shape
+     */
     private boolean canPutRouteUseIdentifier(final ThingRoute route) {
         if (route instanceof CollectionRoute) {
             CollectionRoute collection = (CollectionRoute) route;
@@ -212,52 +335,42 @@ public final class WriteMethodPolicy {
         return false;
     }
 
+    /**
+     * Reports whether an identifier has usable text.
+     *
+     * @param identifier candidate identifier
+     * @return true when the identifier is not blank
+     */
     private boolean hasIdentifier(final String identifier) {
         return identifier != null && !identifier.trim().isEmpty();
     }
 
+    /**
+     * Determines the relationship operation represented by a generated relationship route.
+     *
+     * @param verb routing verb being processed
+     * @param route mapped relationship route
+     * @param bodyFields parsed request body fields
+     * @return relationship operation, or null when the route does not map to one
+     */
     private RelationshipWriteOperation relationshipOperationFor(
-            final RoutingVerb verb, final ThingRoute route, final ApiBodyFields bodyFields) {
-        if (verb == RoutingVerb.DELETE && route instanceof RelationshipInstanceRoute) {
-            return RelationshipWriteOperation.DISCONNECT;
-        }
-        if (verb == RoutingVerb.POST && route instanceof RelationshipCollectionRoute) {
-            return bodyReferencesExistingRelatedItem(
-                            (RelationshipCollectionRoute) route, bodyFields)
-                    ? RelationshipWriteOperation.CONNECT_EXISTING
-                    : RelationshipWriteOperation.CREATE_AND_CONNECT;
-        }
-        return null;
+            final RoutingVerb verb,
+            final ThingRoute route,
+            final ApiBodyFields bodyFields,
+            final ThingifierRequestContext context,
+            final Set<RelationshipWriteOperation> allowedOperations) {
+        return new RelationshipWriteIntentResolver(runtime.schema())
+                .intentFor(verb, route, bodyFields, context, allowedOperations)
+                .operation();
     }
 
-    private boolean bodyReferencesExistingRelatedItem(
-            final RelationshipCollectionRoute route, final ApiBodyFields bodyFields) {
-        EntityDefinition targetEntity = targetEntityFor(route);
-        if (targetEntity == null) {
-            return false;
-        }
-
-        for (java.util.Map.Entry<String, String> entry : bodyFields.asFlattenedStringMap()) {
-            Field field = targetEntity.getField(entry.getKey());
-            if (field != null
-                    && (field.getType() == FieldType.AUTO_GUID
-                            || field.getType() == FieldType.AUTO_INCREMENT)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private EntityDefinition targetEntityFor(final RelationshipCollectionRoute route) {
-        for (RelationshipSpec relationship : route.parentEntity().relationships()) {
-            if (relationship.name().equals(route.relationshipName())) {
-                return runtime.schema()
-                        .definitionWithSingularOrPluralNamed(relationship.toEntityName());
-            }
-        }
-        return null;
-    }
-
+    /**
+     * Resolves allowed entity operations from API spec or global write-method config.
+     *
+     * @param verb routing verb being processed
+     * @param route mapped entity route
+     * @return allowed entity operations
+     */
     private Set<EntityWriteOperation> entityOperationsFor(
             final RoutingVerb verb, final ThingRoute route) {
         return runtime.apiSpec()
@@ -266,6 +379,12 @@ public final class WriteMethodPolicy {
                 .orElse(runtime.apiConfig().writeMethods().entities().operationsFor(verb));
     }
 
+    /**
+     * Resolves allowed PATCH styles from API spec or global write-method config.
+     *
+     * @param route mapped entity route
+     * @return accepted PATCH update styles
+     */
     public Set<EntityPatchUpdateStyle> entityPatchUpdateStylesFor(final ThingRoute route) {
         return runtime.apiSpec()
                 .entityPatchUpdateStylesFor(
@@ -273,7 +392,14 @@ public final class WriteMethodPolicy {
                 .orElse(runtime.apiConfig().writeMethods().entities().patchUpdateStyles());
     }
 
-    private Set<RelationshipWriteOperation> relationshipOperationsFor(
+    /**
+     * Resolves allowed relationship operations from API spec or global write-method config.
+     *
+     * @param verb routing verb being processed
+     * @param route mapped relationship route
+     * @return allowed relationship operations
+     */
+    public Set<RelationshipWriteOperation> relationshipOperationsFor(
             final RoutingVerb verb, final ThingRoute route) {
         return runtime.apiSpec()
                 .relationshipWriteOperationsFor(
@@ -281,6 +407,16 @@ public final class WriteMethodPolicy {
                 .orElse(runtime.apiConfig().writeMethods().relationships().operationsFor(verb));
     }
 
+    /**
+     * Builds an Allow header while excluding a rejected entity write operation.
+     *
+     * @param route mapped entity route
+     * @param bodyFields parsed request body fields
+     * @param context request context used for PUT create/update decisions
+     * @param blockedVerb verb currently being rejected
+     * @param blockedOperation operation currently being rejected
+     * @return comma-separated Allow header value
+     */
     private String allowHeaderFor(
             final ThingRoute route,
             final ApiBodyFields bodyFields,
@@ -290,37 +426,136 @@ public final class WriteMethodPolicy {
         List<String> allowed = new ArrayList<>();
         allowed.add("OPTIONS");
         if (route instanceof CollectionRoute) {
-            allowed.add("GET");
-            allowed.add("HEAD");
-            if (entityOperationsFor(RoutingVerb.POST, route)
-                    .contains(EntityWriteOperation.CREATE)) {
+            if (isMethodAllowedByApiSpec(RoutingVerb.GET, route)) {
+                allowed.add("GET");
+            }
+            if (isMethodAllowedByApiSpec(RoutingVerb.HEAD, route)) {
+                allowed.add("HEAD");
+            }
+            if (entityOperationsFor(RoutingVerb.POST, route).contains(EntityWriteOperation.CREATE)
+                    && isMethodAllowedByApiSpec(RoutingVerb.POST, route)) {
                 allowed.add("POST");
             }
             if (isEntityMethodAllowedFor(
                     RoutingVerb.PUT, route, bodyFields, context, blockedVerb, blockedOperation)) {
                 allowed.add("PUT");
             }
-            allowed.add("QUERY");
+            if (isMethodAllowedByApiSpec(RoutingVerb.QUERY, route)) {
+                allowed.add("QUERY");
+            }
         }
         if (route instanceof InstanceRoute) {
-            allowed.add("GET");
-            allowed.add("HEAD");
-            if (entityOperationsFor(RoutingVerb.POST, route)
-                    .contains(EntityWriteOperation.UPDATE)) {
+            if (isMethodAllowedByApiSpec(RoutingVerb.GET, route)) {
+                allowed.add("GET");
+            }
+            if (isMethodAllowedByApiSpec(RoutingVerb.HEAD, route)) {
+                allowed.add("HEAD");
+            }
+            if (entityOperationsFor(RoutingVerb.POST, route).contains(EntityWriteOperation.UPDATE)
+                    && isMethodAllowedByApiSpec(RoutingVerb.POST, route)) {
                 allowed.add("POST");
             }
             if (isEntityMethodAllowedFor(
                     RoutingVerb.PUT, route, bodyFields, context, blockedVerb, blockedOperation)) {
                 allowed.add("PUT");
             }
-            if (!entityPatchUpdateStylesFor(route).isEmpty()) {
+            if (!entityPatchUpdateStylesFor(route).isEmpty()
+                    && isMethodAllowedByApiSpec(RoutingVerb.PATCH, route)) {
                 allowed.add("PATCH");
             }
+            if (isMethodAllowedByApiSpec(RoutingVerb.DELETE, route)) {
+                allowed.add("DELETE");
+            }
+        }
+        return String.join(", ", allowed);
+    }
+
+    /**
+     * Builds an Allow header from all methods currently permitted for a generated route.
+     *
+     * @param route mapped route
+     * @param bodyFields parsed request body fields
+     * @param context request context used for PUT create/update decisions
+     * @return comma-separated Allow header value
+     */
+    private String allowHeaderFor(
+            final ThingRoute route,
+            final ApiBodyFields bodyFields,
+            final ThingifierRequestContext context) {
+        List<String> allowed = new ArrayList<>();
+        allowed.add("OPTIONS");
+        if (route instanceof CollectionRoute) {
+            if (isMethodAllowedByApiSpec(RoutingVerb.GET, route)) {
+                allowed.add("GET");
+            }
+            if (isMethodAllowedByApiSpec(RoutingVerb.HEAD, route)) {
+                allowed.add("HEAD");
+            }
+            if (entityOperationsFor(RoutingVerb.POST, route).contains(EntityWriteOperation.CREATE)
+                    && isMethodAllowedByApiSpec(RoutingVerb.POST, route)) {
+                allowed.add("POST");
+            }
+            if (isEntityMethodAllowedFor(RoutingVerb.PUT, route, bodyFields, context, null, null)) {
+                allowed.add("PUT");
+            }
+            if (isMethodAllowedByApiSpec(RoutingVerb.QUERY, route)) {
+                allowed.add("QUERY");
+            }
+        }
+        if (route instanceof InstanceRoute) {
+            if (isMethodAllowedByApiSpec(RoutingVerb.GET, route)) {
+                allowed.add("GET");
+            }
+            if (isMethodAllowedByApiSpec(RoutingVerb.HEAD, route)) {
+                allowed.add("HEAD");
+            }
+            if (entityOperationsFor(RoutingVerb.POST, route).contains(EntityWriteOperation.UPDATE)
+                    && isMethodAllowedByApiSpec(RoutingVerb.POST, route)) {
+                allowed.add("POST");
+            }
+            if (isEntityMethodAllowedFor(RoutingVerb.PUT, route, bodyFields, context, null, null)) {
+                allowed.add("PUT");
+            }
+            if (!entityPatchUpdateStylesFor(route).isEmpty()
+                    && isMethodAllowedByApiSpec(RoutingVerb.PATCH, route)) {
+                allowed.add("PATCH");
+            }
+            if (isMethodAllowedByApiSpec(RoutingVerb.DELETE, route)) {
+                allowed.add("DELETE");
+            }
+        }
+        if (route instanceof RelationshipCollectionRoute) {
+            if (isMethodAllowedByApiSpec(RoutingVerb.GET, route)) {
+                allowed.add("GET");
+            }
+            if (isMethodAllowedByApiSpec(RoutingVerb.HEAD, route)) {
+                allowed.add("HEAD");
+            }
+            if (isRelationshipMethodAllowedFor(RoutingVerb.POST, route, null, null)) {
+                allowed.add("POST");
+            }
+            if (isMethodAllowedByApiSpec(RoutingVerb.QUERY, route)) {
+                allowed.add("QUERY");
+            }
+        }
+        if (route instanceof RelationshipInstanceRoute
+                && isRelationshipMethodAllowedFor(RoutingVerb.DELETE, route, null, null)) {
             allowed.add("DELETE");
         }
         return String.join(", ", allowed);
     }
 
+    /**
+     * Reports whether a specific entity method is allowed for the route and current data.
+     *
+     * @param verb routing verb to check
+     * @param route mapped entity route
+     * @param bodyFields parsed request body fields
+     * @param context request context used for PUT create/update decisions
+     * @param blockedVerb verb currently being rejected, or null
+     * @param blockedOperation operation currently being rejected, or null
+     * @return true when the method should appear in Allow
+     */
     private boolean isEntityMethodAllowedFor(
             final RoutingVerb verb,
             final ThingRoute route,
@@ -329,6 +564,9 @@ public final class WriteMethodPolicy {
             final RoutingVerb blockedVerb,
             final EntityWriteOperation blockedOperation) {
         if (verb == RoutingVerb.PUT && !canPutRouteUseIdentifier(route)) {
+            return false;
+        }
+        if (!isMethodAllowedByApiSpec(verb, route)) {
             return false;
         }
         EntityWriteOperation operation =
@@ -341,6 +579,14 @@ public final class WriteMethodPolicy {
         return operation != null && entityOperationsFor(verb, route).contains(operation);
     }
 
+    /**
+     * Builds an Allow header while excluding a rejected relationship write operation.
+     *
+     * @param route mapped relationship route
+     * @param blockedVerb verb currently being rejected
+     * @param blockedOperation operation currently being rejected
+     * @return comma-separated Allow header value
+     */
     private String allowHeaderFor(
             final ThingRoute route,
             final RoutingVerb blockedVerb,
@@ -348,13 +594,19 @@ public final class WriteMethodPolicy {
         List<String> allowed = new ArrayList<>();
         allowed.add("OPTIONS");
         if (route instanceof RelationshipCollectionRoute) {
-            allowed.add("GET");
-            allowed.add("HEAD");
+            if (isMethodAllowedByApiSpec(RoutingVerb.GET, route)) {
+                allowed.add("GET");
+            }
+            if (isMethodAllowedByApiSpec(RoutingVerb.HEAD, route)) {
+                allowed.add("HEAD");
+            }
             if (isRelationshipMethodAllowedFor(
                     RoutingVerb.POST, route, blockedVerb, blockedOperation)) {
                 allowed.add("POST");
             }
-            allowed.add("QUERY");
+            if (isMethodAllowedByApiSpec(RoutingVerb.QUERY, route)) {
+                allowed.add("QUERY");
+            }
         }
         if (route instanceof RelationshipInstanceRoute) {
             if (isRelationshipMethodAllowedFor(
@@ -365,11 +617,23 @@ public final class WriteMethodPolicy {
         return String.join(", ", allowed);
     }
 
+    /**
+     * Reports whether a specific relationship method is allowed for the route.
+     *
+     * @param verb routing verb to check
+     * @param route mapped relationship route
+     * @param blockedVerb verb currently being rejected, or null
+     * @param blockedOperation operation currently being rejected, or null
+     * @return true when the method should appear in Allow
+     */
     private boolean isRelationshipMethodAllowedFor(
             final RoutingVerb verb,
             final ThingRoute route,
             final RoutingVerb blockedVerb,
             final RelationshipWriteOperation blockedOperation) {
+        if (!isMethodAllowedByApiSpec(verb, route)) {
+            return false;
+        }
         if (verb == RoutingVerb.POST && route instanceof RelationshipCollectionRoute) {
             return !relationshipOperationsFor(verb, route).isEmpty();
         }
@@ -377,7 +641,36 @@ public final class WriteMethodPolicy {
         RelationshipWriteOperation operation =
                 verb == blockedVerb
                         ? blockedOperation
-                        : relationshipOperationFor(verb, route, ApiBodyFields.empty());
+                        : relationshipOperationFor(
+                                verb,
+                                route,
+                                ApiBodyFields.empty(),
+                                null,
+                                relationshipOperationsFor(verb, route));
         return operation != null && relationshipOperationsFor(verb, route).contains(operation);
+    }
+
+    /**
+     * Reports whether API spec allows a generated method to be advertised.
+     *
+     * @param verb routing verb to check
+     * @param route mapped route
+     * @return true when the method is not configured as method-not-allowed
+     */
+    private boolean isMethodAllowedByApiSpec(final RoutingVerb verb, final ThingRoute route) {
+        return !isMethodNotAllowedByApiSpec(verb, route);
+    }
+
+    /**
+     * Reports whether API spec marks a generated method as 405 Method Not Allowed.
+     *
+     * @param verb routing verb to check
+     * @param route mapped route
+     * @return true when API spec marks the method unavailable
+     */
+    private boolean isMethodNotAllowedByApiSpec(final RoutingVerb verb, final ThingRoute route) {
+        return runtime.apiSpec()
+                .isMethodNotAllowed(
+                        verb, route.originalPath(), runtime.apiConfig().getApiEndPointPrefix());
     }
 }
