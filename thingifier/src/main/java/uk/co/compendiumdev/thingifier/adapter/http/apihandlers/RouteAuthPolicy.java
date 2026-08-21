@@ -12,18 +12,21 @@ import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.BasicAuthHeaderParser;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.BearerAuthHeaderParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.api.security.DataScopeCreationPolicy;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthenticationContext;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthenticationResult;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthenticator;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthorizationContext;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthorizationResult;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthorizer;
+import uk.co.compendiumdev.thingifier.api.security.ThingifierApiDataScopeSelection;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiRouteAuthDetails;
 import uk.co.compendiumdev.thingifier.api.spec.ApiRoutePathMatcher;
 import uk.co.compendiumdev.thingifier.api.spec.ThingifierApiRouteRule;
 import uk.co.compendiumdev.thingifier.application.schema.EntityTypeRef;
 import uk.co.compendiumdev.thingifier.application.schema.RelationshipSpec;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 /**
  * Enforces route-level authentication and authorization configured in the API spec.
@@ -208,7 +211,63 @@ public final class RouteAuthPolicy {
         }
 
         context.setAuthenticatedPrincipal(schemeName, authentication.principal());
+        final ApiResponse dataScopeResponse = applyDataScopeSelection(context, authentication);
+        if (dataScopeResponse != null) {
+            return dataScopeResponse;
+        }
         return rejectIfUnauthorizedByAuthorizer(rule, authenticationContext, authentication);
+    }
+
+    /**
+     * Applies a trusted data-scope selection returned by the authenticator.
+     *
+     * <p>This runs before authorizers so permission checks, validators, handlers, lifecycle hooks,
+     * and rendering all use the same selected request store. No selection preserves the context
+     * chosen before auth, including the historical session-header behavior.
+     *
+     * @param context active request context to update
+     * @param authentication successful authentication result
+     * @return error response when the selected scope cannot be resolved, otherwise null
+     */
+    private ApiResponse applyDataScopeSelection(
+            final ThingifierRequestContext context,
+            final ThingifierApiAuthenticationResult authentication) {
+        if (authentication.dataScopeSelection().isEmpty()) {
+            return null;
+        }
+
+        final ThingifierApiDataScopeSelection selection = authentication.dataScopeSelection().get();
+        if (requiresPreExistingScope(context, selection)) {
+            return ApiResponse.error404("Could not find data scope " + selection.dataScopeName());
+        }
+
+        final Optional<ThingStore> selectedStore =
+                runtime.storeForDataScope(selection.dataScopeName(), selection.creationPolicy());
+        if (selectedStore.isEmpty()) {
+            return ApiResponse.error404("Could not find data scope " + selection.dataScopeName());
+        }
+
+        if (requiresEmptyScopeAfterHeaderCreation(context, selection)) {
+            selectedStore.get().administration().clearAllData();
+        }
+        context.useDataScope(selection.dataScopeName(), selectedStore.get());
+        return null;
+    }
+
+    private boolean requiresPreExistingScope(
+            final ThingifierRequestContext context,
+            final ThingifierApiDataScopeSelection selection) {
+        return selection.creationPolicy() == DataScopeCreationPolicy.USE_EXISTING_ONLY
+                && selection.dataScopeName().equals(context.dataScopeName())
+                && context.wasDataScopeCreatedWhenContextCreated();
+    }
+
+    private boolean requiresEmptyScopeAfterHeaderCreation(
+            final ThingifierRequestContext context,
+            final ThingifierApiDataScopeSelection selection) {
+        return selection.creationPolicy() == DataScopeCreationPolicy.ENSURE_EXISTS
+                && selection.dataScopeName().equals(context.dataScopeName())
+                && context.wasDataScopeCreatedWhenContextCreated();
     }
 
     /**

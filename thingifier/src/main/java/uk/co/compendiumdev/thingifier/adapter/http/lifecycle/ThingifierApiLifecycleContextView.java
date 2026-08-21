@@ -166,6 +166,16 @@ public interface ThingifierApiLifecycleContextView {
     ThingifierRequestContext requestContext();
 
     /**
+     * Returns the active data scope for this request.
+     *
+     * <p>When an authenticator selects a data scope, hooks that run after auth see the trusted
+     * selected scope here.
+     *
+     * @return active data-scope name
+     */
+    String dataScopeName();
+
+    /**
      * Returns the active Thingifier store for the request.
      *
      * @return active store
