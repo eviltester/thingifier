@@ -125,6 +125,18 @@ public final class ThingifierApiAuthorizationContext {
     }
 
     /**
+     * Returns the active data scope selected for the authorized request.
+     *
+     * <p>If the authenticator returned a data-scope selection, this value reflects that trusted
+     * post-auth decision rather than any earlier session/header-selected scope.
+     *
+     * @return active data-scope name
+     */
+    public String dataScopeName() {
+        return authenticationContext.dataScopeName();
+    }
+
+    /**
      * Returns the active Thingifier store.
      *
      * @return request store

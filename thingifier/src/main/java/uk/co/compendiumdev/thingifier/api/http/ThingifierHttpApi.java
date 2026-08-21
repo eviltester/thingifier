@@ -254,7 +254,7 @@ public final class ThingifierHttpApi {
         }
 
         if (httpResponse == null) {
-            httpResponse = validateEntityViewInput(request, effectiveVerb);
+            httpResponse = validateEntityViewInput(request, effectiveVerb, lifecycle);
         }
 
         // TODO: consider 'processing' hooks which can be used to override the generic processing
@@ -536,10 +536,13 @@ public final class ThingifierHttpApi {
      *
      * @param request HTTP API request
      * @param verb effective HTTP API verb
+     * @param lifecycle lifecycle context carrying any auth-selected data scope
      * @return error response when disallowed input fields are present, otherwise null
      */
     private HttpApiResponse validateEntityViewInput(
-            final HttpApiRequest request, final HttpVerb verb) {
+            final HttpApiRequest request,
+            final HttpVerb verb,
+            final ThingifierApiLifecycleContext lifecycle) {
         if (verb != HttpVerb.POST && verb != HttpVerb.PUT && verb != HttpVerb.PATCH) {
             return null;
         }
@@ -577,7 +580,7 @@ public final class ThingifierHttpApi {
 
         final EntityViewDefinition view = entity.getViewNamed(viewName);
         final List<String> disallowedFields = new ArrayList<>();
-        for (ApiBodyField field : entityViewInputFields(request, verb, entity)) {
+        for (ApiBodyField field : entityViewInputFields(request, verb, entity, lifecycle)) {
             if (entity.hasFieldNameDefined(field.name()) && !view.isInputAllowed(field.name())) {
                 disallowedFields.add(field.name());
             }
@@ -605,12 +608,16 @@ public final class ThingifierHttpApi {
      * @param request HTTP API request
      * @param verb effective HTTP API verb
      * @param entity target entity definition
+     * @param lifecycle lifecycle context carrying any auth-selected data scope
      * @return fields that may be checked against the input view
      */
     private List<ApiBodyField> entityViewInputFields(
-            final HttpApiRequest request, final HttpVerb verb, final EntityDefinition entity) {
+            final HttpApiRequest request,
+            final HttpVerb verb,
+            final EntityDefinition entity,
+            final ThingifierApiLifecycleContext lifecycle) {
         if (verb == HttpVerb.PATCH) {
-            return patchInputFields(request, entity);
+            return patchInputFields(request, entity, lifecycle);
         }
 
         return ApiRequestEnvelope.from(request, verb, xmlEntityNamesFor(request.getPath()))
@@ -623,10 +630,13 @@ public final class ThingifierHttpApi {
      *
      * @param request HTTP API request
      * @param entity target entity definition
+     * @param lifecycle lifecycle context carrying any auth-selected data scope
      * @return fields touched by the patch document
      */
     private List<ApiBodyField> patchInputFields(
-            final HttpApiRequest request, final EntityDefinition entity) {
+            final HttpApiRequest request,
+            final EntityDefinition entity,
+            final ThingifierApiLifecycleContext lifecycle) {
         final Optional<EntityPatchUpdateStyle> style =
                 EntityPatchUpdateStyle.fromContentType(request.getContentTypeHeader());
         if (style.isEmpty()) {
@@ -634,7 +644,7 @@ public final class ThingifierHttpApi {
         }
 
         if (style.get() == EntityPatchUpdateStyle.JSON_PATCH_RFC6902) {
-            return jsonPatchInputFields(request, entity);
+            return jsonPatchInputFields(request, entity, lifecycle);
         }
 
         return objectPatchInputFields(request.getBody());
@@ -663,10 +673,13 @@ public final class ThingifierHttpApi {
      *
      * @param request HTTP API request
      * @param entity target entity definition
+     * @param lifecycle lifecycle context carrying any auth-selected data scope
      * @return fields referenced or produced by the patch document
      */
     private List<ApiBodyField> jsonPatchInputFields(
-            final HttpApiRequest request, final EntityDefinition entity) {
+            final HttpApiRequest request,
+            final EntityDefinition entity,
+            final ThingifierApiLifecycleContext lifecycle) {
         final List<ApiBodyField> inputFields = new ArrayList<>();
         final JsonNode operations;
         try {
@@ -689,7 +702,8 @@ public final class ThingifierHttpApi {
             addRootReplacementFields(inputFields, operation);
         }
 
-        rootResultFieldsForJsonPatch(request, entity, operations).ifPresent(inputFields::addAll);
+        rootResultFieldsForJsonPatch(request, entity, operations, lifecycle)
+                .ifPresent(inputFields::addAll);
 
         return inputFields;
     }
@@ -733,17 +747,19 @@ public final class ThingifierHttpApi {
      * @param request HTTP API request
      * @param entity target entity definition
      * @param operations JSON Patch operation array
+     * @param lifecycle lifecycle context carrying any auth-selected data scope
      * @return resulting top-level fields when they can be calculated
      */
     private Optional<List<ApiBodyField>> rootResultFieldsForJsonPatch(
             final HttpApiRequest request,
             final EntityDefinition entity,
-            final JsonNode operations) {
+            final JsonNode operations,
+            final ThingifierApiLifecycleContext lifecycle) {
         if (!hasRootReplacementOperation(operations)) {
             return Optional.empty();
         }
 
-        final EntityInstance instance = targetInstanceFor(request, entity);
+        final EntityInstance instance = targetInstanceFor(request, entity, lifecycle);
         if (instance == null) {
             return Optional.empty();
         }
@@ -814,17 +830,24 @@ public final class ThingifierHttpApi {
      *
      * @param request HTTP API request
      * @param entity target entity definition
+     * @param lifecycle lifecycle context carrying any auth-selected data scope
      * @return matching instance, or null when the route is not an instance route
      */
     private EntityInstance targetInstanceFor(
-            final HttpApiRequest request, final EntityDefinition entity) {
+            final HttpApiRequest request,
+            final EntityDefinition entity,
+            final ThingifierApiLifecycleContext lifecycle) {
         final SchemaCatalog schema = new ThingifierSchemaCatalog(thingifier);
         final ThingRoute route = new ThingRouteMapper(schema).map(request.getPath());
         if (!(route instanceof InstanceRoute)) {
             return null;
         }
 
-        return ThingifierRequestContext.from(thingifier, request.getHeaders())
+        final ThingifierRequestContext requestContext =
+                lifecycle == null
+                        ? ThingifierRequestContext.from(thingifier, request.getHeaders())
+                        : lifecycle.requestContext();
+        return requestContext
                 .store()
                 .entityQueries()
                 .findByQueryIdentifier(entity, ((InstanceRoute) route).identifier());

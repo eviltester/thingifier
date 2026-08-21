@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleHookRegistry;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
@@ -25,6 +26,8 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.F
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
+import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
+import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 class ThingifierApiAuthPolicyTest {
 
@@ -651,6 +654,338 @@ class ThingifierApiAuthPolicyTest {
     }
 
     @Test
+    void bearerAuthenticatorSelectsDataScopeForWrite() {
+        final Thingifier thingifier = todoModel();
+        ensureDataScopeExists(thingifier, "tenant-one");
+        thingifier
+                .apiSpec()
+                .authenticator(
+                        "tenantToken",
+                        context ->
+                                ThingifierApiAuthenticationResult.authenticated("tenant-principal")
+                                        .useDataScope("tenant-one"));
+        thingifier.apiSpec().route(RoutingVerb.POST, "/todos").secureWithBearerAuth("tenantToken");
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"tenant todo\"}"),
+                                headersWithBearer("valid-token"));
+
+        Assertions.assertEquals(201, response.getStatusCode());
+        Assertions.assertEquals(
+                0, todoCountInScope(thingifier, EntityRelModel.DEFAULT_DATABASE_NAME));
+        Assertions.assertEquals(1, todoCountInScope(thingifier, "tenant-one"));
+    }
+
+    @Test
+    void basicAuthenticatorSelectsDataScopeForWrite() {
+        final Thingifier thingifier = todoModel();
+        ensureDataScopeExists(thingifier, "tenant-one");
+        thingifier
+                .apiSpec()
+                .authenticator(
+                        "adminPassword",
+                        context ->
+                                ThingifierApiAuthenticationResult.authenticated("basic-principal")
+                                        .useDataScope("tenant-one"));
+        thingifier.apiSpec().route(RoutingVerb.POST, "/todos").secureWithBasicAuth("adminPassword");
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"tenant todo\"}"),
+                                headersWithBasic("admin", "password"));
+
+        Assertions.assertEquals(201, response.getStatusCode());
+        Assertions.assertEquals(
+                0, todoCountInScope(thingifier, EntityRelModel.DEFAULT_DATABASE_NAME));
+        Assertions.assertEquals(1, todoCountInScope(thingifier, "tenant-one"));
+    }
+
+    @Test
+    void authorizerReceivesAuthSelectedDataScope() {
+        final Thingifier thingifier = todoModel();
+        ensureDataScopeExists(thingifier, "tenant-one");
+        final AtomicReference<String> seenDataScope = new AtomicReference<>();
+        thingifier
+                .apiSpec()
+                .authenticator(
+                        "tenantToken",
+                        context ->
+                                ThingifierApiAuthenticationResult.authenticated("tenant-principal")
+                                        .useDataScope("tenant-one"));
+        thingifier
+                .apiSpec()
+                .route(RoutingVerb.POST, "/todos")
+                .secureWithBearerAuth("tenantToken")
+                .authorizeWith(
+                        context -> {
+                            seenDataScope.set(context.dataScopeName());
+                            return ThingifierApiAuthorizationResult.authorized();
+                        });
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"tenant todo\"}"),
+                                headersWithBearer("valid-token"));
+
+        Assertions.assertEquals(201, response.getStatusCode());
+        Assertions.assertEquals("tenant-one", seenDataScope.get());
+    }
+
+    @Test
+    void explicitDefaultDataScopeOverridesSessionHeader() {
+        final Thingifier thingifier = todoModel();
+        thingifier
+                .apiSpec()
+                .authenticator(
+                        "tenantToken",
+                        context ->
+                                ThingifierApiAuthenticationResult.authenticated("tenant-principal")
+                                        .useDefaultDataScope());
+        thingifier.apiSpec().route(RoutingVerb.POST, "/todos").secureWithBearerAuth("tenantToken");
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"default todo\"}"),
+                                headersWithSessionAndBearer("tenant-one", "valid-token"));
+
+        Assertions.assertEquals(201, response.getStatusCode());
+        Assertions.assertEquals(
+                1, todoCountInScope(thingifier, EntityRelModel.DEFAULT_DATABASE_NAME));
+        Assertions.assertEquals(0, todoCountInScope(thingifier, "tenant-one"));
+    }
+
+    @Test
+    void useExistingOnlyRejectsMissingDataScope() {
+        final Thingifier thingifier = todoModel();
+        thingifier
+                .apiSpec()
+                .authenticator(
+                        "tenantToken",
+                        context ->
+                                ThingifierApiAuthenticationResult.authenticated("tenant-principal")
+                                        .useDataScope("missing-tenant"));
+        thingifier.apiSpec().route(RoutingVerb.POST, "/todos").secureWithBearerAuth("tenantToken");
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"blocked\"}"),
+                                headersWithBearer("valid-token"));
+
+        Assertions.assertEquals(404, response.getStatusCode());
+        Assertions.assertEquals(
+                0, todoCountInScope(thingifier, EntityRelModel.DEFAULT_DATABASE_NAME));
+        Assertions.assertNull(thingifier.getStore("missing-tenant"));
+    }
+
+    @Test
+    void useExistingOnlyRejectsHeaderCreatedDataScope() {
+        final Thingifier thingifier = todoModel();
+        thingifier
+                .apiSpec()
+                .authenticator(
+                        "tenantToken",
+                        context ->
+                                ThingifierApiAuthenticationResult.authenticated("tenant-principal")
+                                        .useDataScope("header-tenant"));
+        thingifier.apiSpec().route(RoutingVerb.POST, "/todos").secureWithBearerAuth("tenantToken");
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"blocked\"}"),
+                                headersWithSessionAndBearer("header-tenant", "valid-token"));
+
+        Assertions.assertEquals(404, response.getStatusCode());
+        Assertions.assertEquals(0, todoCountInScope(thingifier, "header-tenant"));
+    }
+
+    @Test
+    void ensureExistsCreatesUnpopulatedDataScope() {
+        final Thingifier thingifier = todoModel();
+        setSeedDataGenerator(thingifier, "seed todo");
+        thingifier
+                .apiSpec()
+                .authenticator(
+                        "tenantToken",
+                        context ->
+                                ThingifierApiAuthenticationResult.authenticated("tenant-principal")
+                                        .useDataScope(
+                                                "tenant-one",
+                                                DataScopeCreationPolicy.ENSURE_EXISTS));
+        thingifier.apiSpec().route(RoutingVerb.POST, "/todos").secureWithBearerAuth("tenantToken");
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"created todo\"}"),
+                                headersWithBearer("valid-token"));
+
+        Assertions.assertEquals(201, response.getStatusCode());
+        Assertions.assertEquals(1, todoCountInScope(thingifier, "tenant-one"));
+        Assertions.assertEquals("created todo", firstTodoTitleInScope(thingifier, "tenant-one"));
+    }
+
+    @Test
+    void ensureCreatedAndPopulatedCreatesSeededDataScope() {
+        final Thingifier thingifier = todoModel();
+        setSeedDataGenerator(thingifier, "seed todo");
+        thingifier
+                .apiSpec()
+                .authenticator(
+                        "tenantToken",
+                        context ->
+                                ThingifierApiAuthenticationResult.authenticated("tenant-principal")
+                                        .useDataScope(
+                                                "tenant-one",
+                                                DataScopeCreationPolicy
+                                                        .ENSURE_CREATED_AND_POPULATED));
+        thingifier.apiSpec().route(RoutingVerb.GET, "/todos").secureWithBearerAuth("tenantToken");
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .get("todos", new QueryFilterParams(), headersWithBearer("valid-token"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(1, response.getReturnedInstanceCollection().size());
+        Assertions.assertEquals(
+                "seed todo",
+                response.getReturnedInstanceCollection().get(0).getFieldValue("title").asString());
+    }
+
+    @Test
+    void validatorReceivesAuthSelectedStore() {
+        final Thingifier thingifier = todoModel();
+        ensureDataScopeExists(thingifier, "tenant-one");
+        final AtomicReference<ThingStore> seenStore = new AtomicReference<>();
+        thingifier
+                .getDefinitionNamed("todo")
+                .withDomainValidation(
+                        context -> {
+                            seenStore.set(context.store());
+                            return new ValidationReport();
+                        });
+        thingifier
+                .apiSpec()
+                .authenticator(
+                        "tenantToken",
+                        context ->
+                                ThingifierApiAuthenticationResult.authenticated("tenant-principal")
+                                        .useDataScope("tenant-one"));
+        thingifier.apiSpec().route(RoutingVerb.POST, "/todos").secureWithBearerAuth("tenantToken");
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"tenant todo\"}"),
+                                headersWithBearer("valid-token"));
+
+        Assertions.assertEquals(201, response.getStatusCode());
+        Assertions.assertSame(thingifier.getStore("tenant-one"), seenStore.get());
+    }
+
+    @Test
+    void bodyParsedHookReceivesAuthSelectedDataScope() {
+        final Thingifier thingifier = todoModel();
+        thingifier.apiConfig().setFrom(new ThingifierApiConfig("/api"));
+        ensureDataScopeExists(thingifier, "tenant-one");
+        final AtomicReference<String> seenDataScope = new AtomicReference<>();
+        final ThingifierApiLifecycleHookRegistry hooks = new ThingifierApiLifecycleHookRegistry();
+        hooks.registerBodyParsedHook(context -> seenDataScope.set(context.dataScopeName()));
+        thingifier
+                .apiSpec()
+                .authenticator(
+                        "tenantToken",
+                        context ->
+                                ThingifierApiAuthenticationResult.authenticated("tenant-principal")
+                                        .useDataScope("tenant-one"));
+        thingifier
+                .apiSpec()
+                .route(RoutingVerb.POST, "/api/todos")
+                .secureWithBearerAuth("tenantToken");
+
+        final HttpApiResponse response =
+                ThingifierHttpApi.withHookRegistries(thingifier, null, hooks)
+                        .post(
+                                jsonPostRequest("/api/todos", "{\"title\":\"tenant todo\"}")
+                                        .addHeader("Authorization", "Bearer valid-token"));
+
+        Assertions.assertEquals(201, response.getStatusCode());
+        Assertions.assertEquals("tenant-one", seenDataScope.get());
+    }
+
+    @Test
+    void sessionHeaderScopeAppliesWhenAuthenticationDoesNotSelectScope() {
+        final Thingifier thingifier = todoModel();
+        thingifier
+                .apiSpec()
+                .authenticator(
+                        "tenantToken",
+                        context ->
+                                ThingifierApiAuthenticationResult.authenticated(
+                                        "tenant-principal"));
+        thingifier.apiSpec().route(RoutingVerb.POST, "/todos").secureWithBearerAuth("tenantToken");
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"tenant todo\"}"),
+                                headersWithSessionAndBearer("tenant-one", "valid-token"));
+
+        Assertions.assertEquals(201, response.getStatusCode());
+        Assertions.assertEquals(
+                0, todoCountInScope(thingifier, EntityRelModel.DEFAULT_DATABASE_NAME));
+        Assertions.assertEquals(1, todoCountInScope(thingifier, "tenant-one"));
+    }
+
+    @Test
+    void rejectedAuthenticationLeavesTargetScopeUnused() {
+        final Thingifier thingifier = todoModel();
+        ensureDataScopeExists(thingifier, "tenant-one");
+        thingifier
+                .apiSpec()
+                .authenticator(
+                        "tenantToken",
+                        context -> ThingifierApiAuthenticationResult.rejected(403, "Forbidden"));
+        thingifier.apiSpec().route(RoutingVerb.POST, "/todos").secureWithBearerAuth("tenantToken");
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"blocked\"}"),
+                                headersWithBearer("valid-token"));
+
+        Assertions.assertEquals(403, response.getStatusCode());
+        Assertions.assertEquals(0, todoCountInScope(thingifier, "tenant-one"));
+    }
+
+    @Test
     void missingAuthenticatorReturnsConfigurationError() {
         final Thingifier thingifier = todoModel();
         thingifier.apiSpec().route(RoutingVerb.POST, "/todos").secureWithBearerAuth("cartToken");
@@ -747,6 +1082,31 @@ class ThingifierApiAuthPolicyTest {
                 .create(EntityInstanceDraft.forEntity(todo).withField("title", title));
     }
 
+    private void ensureDataScopeExists(final Thingifier thingifier, final String dataScopeName) {
+        thingifier.getERmodel().createInstanceDatabaseIfNotExisting(dataScopeName);
+    }
+
+    private void setSeedDataGenerator(final Thingifier thingifier, final String title) {
+        thingifier.setDataGenerator(
+                (schema, store) -> {
+                    final EntityDefinition todo = schema.getEntityDefinitionNamed("todo");
+                    store.entities()
+                            .create(EntityInstanceDraft.forEntity(todo).withField("title", title));
+                });
+    }
+
+    private int todoCountInScope(final Thingifier thingifier, final String dataScopeName) {
+        return thingifier.listThingInstancesNamed("todos", dataScopeName).size();
+    }
+
+    private String firstTodoTitleInScope(final Thingifier thingifier, final String dataScopeName) {
+        return thingifier
+                .listThingInstancesNamed("todos", dataScopeName)
+                .get(0)
+                .getFieldValue("title")
+                .asString();
+    }
+
     private BodyParser parser(final Thingifier thingifier, final String body) {
         return new BodyParser(
                 new HttpApiRequest("/request")
@@ -761,6 +1121,13 @@ class ThingifierApiAuthPolicyTest {
 
     private HttpHeadersBlock headersWithBasic(final String username, final String password) {
         return headersWithAuthorization(basicAuthorization(username, password));
+    }
+
+    private HttpHeadersBlock headersWithSessionAndBearer(
+            final String dataScopeName, final String token) {
+        final HttpHeadersBlock headers = headersWithBearer(token);
+        headers.put(ThingifierHttpApi.HTTP_SESSION_HEADER_NAME, dataScopeName);
+        return headers;
     }
 
     private String basicAuthorization(final String username, final String password) {

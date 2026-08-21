@@ -153,6 +153,19 @@ public final class ThingifierApiAuthenticationContext {
     }
 
     /**
+     * Returns the active data scope for this request.
+     *
+     * <p>During authentication this is the context selected before the authenticator returned. When
+     * the authentication result selects a different data scope, authorizers and later lifecycle
+     * phases see the updated value through the same request context.
+     *
+     * @return active data-scope name
+     */
+    public String dataScopeName() {
+        return requestContext.dataScopeName();
+    }
+
+    /**
      * Returns the active Thingifier store.
      *
      * @return request store

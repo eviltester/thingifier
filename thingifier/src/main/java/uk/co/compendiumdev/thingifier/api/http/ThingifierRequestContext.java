@@ -24,10 +24,11 @@ import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
  */
 public final class ThingifierRequestContext {
 
-    private final String databaseName;
-    private final ThingStore store;
+    private String databaseName;
+    private ThingStore store;
     private final HttpHeadersBlock headers;
     private final Map<String, Object> authenticatedPrincipals;
+    private boolean dataScopeCreatedWhenContextCreated;
 
     /**
      * Creates a request context for one selected store.
@@ -37,11 +38,15 @@ public final class ThingifierRequestContext {
      * @param headers request headers used to create the context
      */
     private ThingifierRequestContext(
-            final String databaseName, final ThingStore store, final HttpHeadersBlock headers) {
+            final String databaseName,
+            final ThingStore store,
+            final HttpHeadersBlock headers,
+            final boolean dataScopeCreatedWhenContextCreated) {
         this.databaseName = databaseName;
         this.store = store;
         this.headers = headers;
         this.authenticatedPrincipals = new HashMap<>();
+        this.dataScopeCreatedWhenContextCreated = dataScopeCreatedWhenContextCreated;
     }
 
     /**
@@ -59,9 +64,10 @@ public final class ThingifierRequestContext {
         HttpHeadersBlock safeHeaders =
                 requestHeaders == null ? new HttpHeadersBlock() : requestHeaders;
         String databaseName = databaseNameFrom(safeHeaders);
+        boolean dataScopeCreated = thingifier.getStore(databaseName) == null;
         thingifier.ensureCreatedAndPopulatedInstanceDatabaseNamed(databaseName);
         return new ThingifierRequestContext(
-                databaseName, thingifier.getStore(databaseName), safeHeaders);
+                databaseName, thingifier.getStore(databaseName), safeHeaders, dataScopeCreated);
     }
 
     /**
@@ -85,6 +91,54 @@ public final class ThingifierRequestContext {
      */
     public String databaseName() {
         return databaseName;
+    }
+
+    /**
+     * Returns the active data-scope name for the request.
+     *
+     * <p>This is the public auth and lifecycle wording for the same isolation boundary historically
+     * exposed as {@link #databaseName()}. Auth-selected data scopes update this value before
+     * authorizers and generated handlers continue.
+     *
+     * @return active data-scope name
+     */
+    public String dataScopeName() {
+        return databaseName;
+    }
+
+    /**
+     * Switches the request to a trusted data scope selected by authentication.
+     *
+     * <p>The context object is shared by direct handlers, HTTP lifecycle hooks, authorizers, and
+     * response rendering. Updating it in place makes the selected scope visible to every later
+     * phase without losing headers or already authenticated principals.
+     *
+     * @param dataScopeName trusted data-scope name
+     * @param store store backing the selected scope
+     * @throws IllegalArgumentException when the name is blank or the store is missing
+     */
+    public void useDataScope(final String dataScopeName, final ThingStore store) {
+        if (dataScopeName == null || dataScopeName.trim().isEmpty()) {
+            throw new IllegalArgumentException("dataScopeName is required");
+        }
+        if (store == null) {
+            throw new IllegalArgumentException("store is required");
+        }
+        this.databaseName = dataScopeName.trim();
+        this.store = store;
+        this.dataScopeCreatedWhenContextCreated = false;
+    }
+
+    /**
+     * Reports whether the initial request context had to create the selected scope.
+     *
+     * <p>Auth-selected scope enforcement uses this to avoid treating an untrusted header-created
+     * store as pre-existing when the authenticator requested {@code USE_EXISTING_ONLY}.
+     *
+     * @return true when context creation created the initial data scope
+     */
+    public boolean wasDataScopeCreatedWhenContextCreated() {
+        return dataScopeCreatedWhenContextCreated;
     }
 
     /**

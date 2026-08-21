@@ -255,6 +255,11 @@ public final class ThingifierApiLifecycleContext
     }
 
     @Override
+    public String dataScopeName() {
+        return requestContext().dataScopeName();
+    }
+
+    @Override
     public ThingStore store() {
         return requestContext().store();
     }
