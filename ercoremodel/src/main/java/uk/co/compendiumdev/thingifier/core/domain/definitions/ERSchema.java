@@ -2,19 +2,23 @@ package uk.co.compendiumdev.thingifier.core.domain.definitions;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.GlobalValidator;
 
 public class ERSchema {
 
     private final ConcurrentHashMap<String, RelationshipDefinition> relationships;
     private final ConcurrentHashMap<String, EntityDefinition> entityDefinitions;
+    private final List<GlobalValidator> globalValidators;
 
     public ERSchema() {
         relationships = new ConcurrentHashMap<>();
         entityDefinitions = new ConcurrentHashMap<>();
+        globalValidators = new ArrayList<>();
     }
 
     public EntityDefinition defineEntity(
@@ -31,6 +35,41 @@ public class ERSchema {
 
     public Collection<EntityDefinition> getEntityDefinitions() {
         return entityDefinitions.values();
+    }
+
+    /**
+     * Adds a schema-wide validator that runs for every entity write.
+     *
+     * <p>Global validators are for cross-cutting rules that are not owned by one entity. Use {@link
+     * EntityDefinition#withDomainValidation} when the rule belongs to a specific entity but needs
+     * access to the active schema or store.
+     *
+     * @param validationRule validator to add to the schema
+     * @return this schema for fluent model setup
+     */
+    public ERSchema withGlobalValidation(final GlobalValidator validationRule) {
+        globalValidators.add(validationRule);
+        return this;
+    }
+
+    /**
+     * Adds schema-wide validators that run for every entity write.
+     *
+     * @param validationRule validators to add to the schema
+     * @return this schema for fluent model setup
+     */
+    public ERSchema withGlobalValidation(final GlobalValidator... validationRule) {
+        Collections.addAll(globalValidators, validationRule);
+        return this;
+    }
+
+    /**
+     * Returns the schema-wide global validators.
+     *
+     * @return immutable list of global validators
+     */
+    public List<GlobalValidator> globalValidators() {
+        return Collections.unmodifiableList(globalValidators);
     }
 
     public RelationshipDefinition defineRelationship(

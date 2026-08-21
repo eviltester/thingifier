@@ -441,7 +441,8 @@ public final class WorkspaceSchemaUpgradeService {
         for (EntityDefinitionSpec entitySpec : targetDefinition.entities()) {
             EntityDefinition entity = targetThingifier.getDefinitionNamed(entitySpec.name());
             for (EntityInstance instance : store.entityQueries().list(entity)) {
-                ValidationReport fieldValidation = instance.validateFieldValues(List.of(), true);
+                ValidationReport fieldValidation =
+                        instance.validateFieldValuesForProtectedWrite(List.of());
                 if (!fieldValidation.isValid()) {
                     result.addBlockingError(
                             "entities." + entitySpec.name(),

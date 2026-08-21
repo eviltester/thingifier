@@ -92,11 +92,67 @@ public class EntityInstance {
     */
 
     private ValidationReport validateFields() {
-        return validateFieldValues(new ArrayList<>(), false);
+        return validateFieldValuesForNormalWrite(new ArrayList<>());
     }
 
-    public ValidationReport validateFieldValues(List<String> excluding, boolean amAllowedToSetIds) {
-        return instanceFields.validateFields(excluding, amAllowedToSetIds);
+    /**
+     * Validates this instance's field values as a user-supplied write.
+     *
+     * <p>Use this for ordinary candidate validation where callers must not provide protected ID
+     * values. It runs built-in field checks before custom field validators.
+     *
+     * @param excluding field names to skip during validation
+     * @return validation report for field-level validation
+     */
+    public ValidationReport validateFieldValuesForNormalWrite(List<String> excluding) {
+        return instanceFields.validateFieldsForNormalWrite(excluding);
+    }
+
+    /**
+     * Validates this instance's field values as a trusted repository/system write.
+     *
+     * <p>Use this when a candidate already contains generated or restored protected IDs. It still
+     * preserves built-in-before-custom field validation ordering.
+     *
+     * @param excluding field names to skip during validation
+     * @return validation report for field-level validation
+     */
+    public ValidationReport validateFieldValuesForProtectedWrite(List<String> excluding) {
+        return instanceFields.validateFieldsForProtectedWrite(excluding);
+    }
+
+    /**
+     * Runs only built-in and standard field validation for a user-supplied write.
+     *
+     * <p>The repository write validator uses this as the first stage of the larger write pipeline.
+     *
+     * @param excluding field names to skip during validation
+     * @return validation report for built-in field checks
+     */
+    public ValidationReport validateBuiltInFieldValuesForNormalWrite(List<String> excluding) {
+        return instanceFields.validateBuiltInFieldsForNormalWrite(excluding);
+    }
+
+    /**
+     * Runs only built-in and standard field validation for a trusted repository/system write.
+     *
+     * @param excluding field names to skip during validation
+     * @return validation report for built-in field checks
+     */
+    public ValidationReport validateBuiltInFieldValuesForProtectedWrite(List<String> excluding) {
+        return instanceFields.validateBuiltInFieldsForProtectedWrite(excluding);
+    }
+
+    /**
+     * Runs only code-defined custom field validators for this instance.
+     *
+     * <p>This should be called only after built-in field validation has succeeded.
+     *
+     * @param excluding field names to skip during validation
+     * @return validation report for custom field validators
+     */
+    public ValidationReport validateCustomFieldValues(List<String> excluding) {
+        return instanceFields.validateCustomFields(excluding);
     }
 
     public ValidationReport validate() {

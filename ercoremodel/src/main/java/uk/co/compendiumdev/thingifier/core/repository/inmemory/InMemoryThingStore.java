@@ -35,6 +35,7 @@ public class InMemoryThingStore implements ThingStore {
     private final EntityInstanceQuery entityQuery;
     private final RelationshipRepository relationshipRepository;
     private final RepositoryAdministration administration;
+    private ERSchema schema;
 
     public InMemoryThingStore(final String databaseKey) {
         this(databaseKey, new InMemoryEntityInstanceStore());
@@ -44,7 +45,9 @@ public class InMemoryThingStore implements ThingStore {
         this.databaseKey = databaseKey;
         this.instanceData = instanceData;
         this.relationships = new InMemoryRelationshipStore();
-        this.writeValidator = new EntityInstanceWriteValidator(this::checkFieldsForUniqueNess);
+        this.writeValidator =
+                new EntityInstanceWriteValidator(
+                        this::checkFieldsForUniqueNess, () -> schema, this);
         this.entityRepository = new InMemoryEntityInstanceRepository(this);
         this.entityQuery = new InMemoryEntityInstanceQuery(this);
         this.relationshipRepository = new InMemoryRelationshipRepository(this);
@@ -86,6 +89,7 @@ public class InMemoryThingStore implements ThingStore {
     }
 
     void refreshSchema(final ERSchema schema) {
+        this.schema = schema;
         createInstanceCollectionsFrom(schema);
     }
 
@@ -189,7 +193,7 @@ public class InMemoryThingStore implements ThingStore {
     EntityInstance patchInstance(final EntityInstance instance, final EntityInstanceDraft draft) {
         EntityInstance candidate =
                 MutableEntityInstance.fromExisting(instance).patch(draft).toEntityInstance();
-        writeValidator.assertValidForAmendment(candidate);
+        writeValidator.assertValidForAmendment(candidate, instance);
         return getInstanceCollectionForEntityNamed(instance.getEntity().getName())
                 .replaceInstance(candidate);
     }
@@ -197,7 +201,7 @@ public class InMemoryThingStore implements ThingStore {
     EntityInstance replaceInstance(final EntityInstance instance, final EntityInstanceDraft draft) {
         EntityInstance candidate =
                 MutableEntityInstance.fromExisting(instance).replace(draft).toEntityInstance();
-        writeValidator.assertValidForAmendment(candidate);
+        writeValidator.assertValidForReplacement(candidate, instance);
         return getInstanceCollectionForEntityNamed(instance.getEntity().getName())
                 .replaceInstance(candidate);
     }

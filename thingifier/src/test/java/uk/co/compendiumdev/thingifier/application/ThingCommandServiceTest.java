@@ -16,6 +16,7 @@ import uk.co.compendiumdev.thingifier.application.command.RelateThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.RelationshipReference;
 import uk.co.compendiumdev.thingifier.application.command.ReplaceThingCommand;
 import uk.co.compendiumdev.thingifier.application.command.ThingWriteCommand;
+import uk.co.compendiumdev.thingifier.application.command.UpdateConnectedRelationshipCommand;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -26,6 +27,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.Optio
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
+import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 public class ThingCommandServiceTest {
@@ -948,6 +950,46 @@ public class ThingCommandServiceTest {
     }
 
     @Test
+    public void createAndConnectRelationshipCommandRunsCustomValidationForCreatedChild() {
+        Thingifier thingifier = taskProjectThingifier();
+        EntityDefinition task = thingifier.getDefinitionNamed("task");
+        task.withInstanceValidation(
+                context -> {
+                    if ("Rejected title"
+                            .equals(context.candidate().getFieldValue("title").asString())) {
+                        return invalidReport("relationship target create rejected");
+                    }
+                    return new ValidationReport();
+                });
+        ThingStore store = storeFor(thingifier);
+        EntityDefinition project = thingifier.getDefinitionNamed("project");
+        EntityInstance projectInstance =
+                store.entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(project)
+                                        .withField("title", "Project"));
+        int taskCount = store.entityQueries().count(task);
+
+        ThingCommandResult result =
+                serviceFor(thingifier, store)
+                        .execute(
+                                new CreateAndConnectRelationshipCommand(
+                                        project.getName(),
+                                        projectInstance.getPrimaryKeyValue(),
+                                        "tasks",
+                                        task.getName(),
+                                        fields("title", "Rejected title"),
+                                        List.of()));
+
+        Assertions.assertTrue(result.isError());
+        Assertions.assertTrue(
+                result.getCombinedErrorMessage().contains("relationship target create rejected"));
+        Assertions.assertEquals(taskCount, store.entityQueries().count(task));
+        Assertions.assertTrue(
+                store.relationships().listRelated(projectInstance, "tasks").isEmpty());
+    }
+
+    @Test
     public void relateCommandConnectsExistingTargetWithoutCreatingChild() {
         Thingifier thingifier = taskProjectThingifier();
         ThingStore store = storeFor(thingifier);
@@ -1067,6 +1109,54 @@ public class ThingCommandServiceTest {
         Assertions.assertEquals(
                 result.getInstance(),
                 store.relationships().listRelated(projectInstance, "tasks").get(0));
+    }
+
+    @Test
+    public void updateConnectedRelationshipCommandRunsCustomValidationForUpdatedChild() {
+        Thingifier thingifier = taskProjectThingifier();
+        EntityDefinition task = thingifier.getDefinitionNamed("task");
+        task.withInstanceValidation(
+                context -> {
+                    if ("Rejected update"
+                            .equals(context.candidate().getFieldValue("title").asString())) {
+                        return invalidReport("relationship target update rejected");
+                    }
+                    return new ValidationReport();
+                });
+        ThingStore store = storeFor(thingifier);
+        EntityDefinition project = thingifier.getDefinitionNamed("project");
+        EntityInstance taskInstance =
+                store.entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(task)
+                                        .withField("title", "Existing task"));
+        EntityInstance projectInstance =
+                store.entities()
+                        .create(
+                                EntityInstanceDraft.forEntity(project)
+                                        .withField("title", "Project"));
+        store.relationships().connect(projectInstance, "tasks", taskInstance);
+        List<NamedValue> childFields =
+                fields("guid", taskInstance.getPrimaryKeyValue(), "title", "Rejected update");
+
+        ThingCommandResult result =
+                serviceFor(thingifier, store)
+                        .execute(
+                                new UpdateConnectedRelationshipCommand(
+                                        project.getName(),
+                                        projectInstance.getPrimaryKeyValue(),
+                                        "tasks",
+                                        childFields,
+                                        BodyFieldValue.fromNamedValues(childFields),
+                                        List.of()));
+
+        EntityInstance unchanged =
+                store.entityQueries()
+                        .findByQueryIdentifier(task, taskInstance.getPrimaryKeyValue());
+        Assertions.assertTrue(result.isError());
+        Assertions.assertTrue(
+                result.getCombinedErrorMessage().contains("relationship target update rejected"));
+        Assertions.assertEquals("Existing task", unchanged.getFieldValue("title").asString());
     }
 
     private Thingifier taskProjectThingifier() {
@@ -1210,9 +1300,22 @@ public class ThingCommandServiceTest {
         return List.of(new NamedValue(name, value));
     }
 
+    private List<NamedValue> fields(
+            final String firstName,
+            final String firstValue,
+            final String secondName,
+            final String secondValue) {
+        return List.of(
+                new NamedValue(firstName, firstValue), new NamedValue(secondName, secondValue));
+    }
+
     private BodyFieldValue bodyField(
             final String name, final String value, final BodyFieldValue.SourceType sourceType) {
         return new BodyFieldValue(name, value, sourceType);
+    }
+
+    private ValidationReport invalidReport(final String message) {
+        return new ValidationReport().setValid(false).addErrorMessage(message);
     }
 
     private static final class UnsupportedThingWriteCommand implements ThingWriteCommand {}

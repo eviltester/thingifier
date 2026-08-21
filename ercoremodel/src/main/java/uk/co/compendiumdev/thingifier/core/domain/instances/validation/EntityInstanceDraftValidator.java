@@ -79,7 +79,11 @@ public final class EntityInstanceDraftValidator {
 
         FieldValue fieldValue = FieldValue.is(field, value);
         try {
-            report.combine(field.validate(fieldValue, protectedWrite));
+            if (protectedWrite) {
+                report.combine(field.validateBuiltInForProtectedWrite(fieldValue));
+            } else {
+                report.combine(field.validateBuiltInForNormalWrite(fieldValue));
+            }
             validateProtectedAutoIncrement(field, fieldValue, report);
             validateProtectedAutoGuid(field, fieldValue, report);
         } catch (IllegalArgumentException e) {

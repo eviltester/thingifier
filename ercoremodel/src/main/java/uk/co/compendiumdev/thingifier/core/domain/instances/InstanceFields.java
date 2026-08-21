@@ -220,19 +220,104 @@ public class InstanceFields {
         throw new RuntimeException("Could not find field: " + fieldName);
     }
 
-    // todo: not sure about the amAllowedToSetIds would prefer a different
-    // way to configure the validation rules or exceptions to the rules
-    public ValidationReport validateFields(
-            final List<String> excluding, final boolean amAllowedToSetIds) {
-        ValidationReport report = new ValidationReport();
+    /**
+     * Validates all field values for a user-supplied write.
+     *
+     * <p>Normal writes reject supplied protected IDs. Built-in checks run first and custom field
+     * validators only run if every built-in field check passes.
+     *
+     * @param excluding field names to skip during validation
+     * @return validation report for the first failing field-validation stage, or valid when all
+     *     pass
+     */
+    public ValidationReport validateFieldsForNormalWrite(final List<String> excluding) {
+        ValidationReport report = validateBuiltInFieldsForNormalWrite(excluding);
+        if (!report.isValid()) {
+            return report;
+        }
+        report.combine(validateCustomFields(excluding));
+        return report;
+    }
 
-        // Field validation
+    /**
+     * Validates all field values for a trusted repository/system write.
+     *
+     * <p>Protected writes allow generated or restored ID values while preserving the same
+     * built-in-before-custom ordering used for normal writes.
+     *
+     * @param excluding field names to skip during validation
+     * @return validation report for the first failing field-validation stage, or valid when all
+     *     pass
+     */
+    public ValidationReport validateFieldsForProtectedWrite(final List<String> excluding) {
+        ValidationReport report = validateBuiltInFieldsForProtectedWrite(excluding);
+        if (!report.isValid()) {
+            return report;
+        }
+        report.combine(validateCustomFields(excluding));
+        return report;
+    }
+
+    /**
+     * Runs only built-in and standard field validation for a user-supplied write.
+     *
+     * @param excluding field names to skip during validation
+     * @return validation report for built-in field checks
+     */
+    public ValidationReport validateBuiltInFieldsForNormalWrite(final List<String> excluding) {
+        return validateBuiltInFields(excluding, IdWritePolicy.REJECT_SUPPLIED_IDS);
+    }
+
+    /**
+     * Runs only built-in and standard field validation for a trusted repository/system write.
+     *
+     * @param excluding field names to skip during validation
+     * @return validation report for built-in field checks
+     */
+    public ValidationReport validateBuiltInFieldsForProtectedWrite(final List<String> excluding) {
+        return validateBuiltInFields(excluding, IdWritePolicy.ALLOW_SUPPLIED_IDS);
+    }
+
+    private ValidationReport validateBuiltInFields(
+            final List<String> excluding, final IdWritePolicy idWritePolicy) {
+        ValidationReport report = new ValidationReport();
 
         for (String fieldName : objectDefinition.getFieldNames()) {
             if (!excluding.contains(fieldName)) {
                 Field field = objectDefinition.getField(fieldName);
-                ValidationReport validity =
-                        field.validate(getAssignedValue(fieldName), amAllowedToSetIds);
+                ValidationReport validity = validateBuiltIn(field, fieldName, idWritePolicy);
+                report.combine(validity);
+            }
+        }
+
+        return report;
+    }
+
+    private ValidationReport validateBuiltIn(
+            final Field field, final String fieldName, final IdWritePolicy idWritePolicy) {
+        if (idWritePolicy == IdWritePolicy.ALLOW_SUPPLIED_IDS) {
+            return field.validateBuiltInForProtectedWrite(getAssignedValue(fieldName));
+        }
+        return field.validateBuiltInForNormalWrite(getAssignedValue(fieldName));
+    }
+
+    /**
+     * Runs only code-defined custom field validators.
+     *
+     * <p>This method assumes built-in validation has already passed. The repository write validator
+     * calls it as its own stage so later instance, entity domain, and global validators are skipped
+     * when custom field validation fails.
+     *
+     * @param excluding field names to skip during validation
+     * @return validation report for custom field validators
+     */
+    public ValidationReport validateCustomFields(final List<String> excluding) {
+        ValidationReport report = new ValidationReport();
+
+        for (String fieldName : objectDefinition.getFieldNames()) {
+            if (!excluding.contains(fieldName)) {
+                Field field = objectDefinition.getField(fieldName);
+                ValidationReport validity = field.validateCustom(getAssignedValue(fieldName));
                 report.combine(validity);
             }
         }
@@ -242,5 +327,10 @@ public class InstanceFields {
 
     public boolean hasAssignedValue(String fieldName) {
         return values.containsKey(fieldName.toLowerCase());
+    }
+
+    private enum IdWritePolicy {
+        REJECT_SUPPLIED_IDS,
+        ALLOW_SUPPLIED_IDS
     }
 }

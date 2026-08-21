@@ -30,7 +30,7 @@ class AutoIncrementIdFieldTest {
         // e.g. for cloning, and for setting objects
         final Field field = Field.is("id", FieldType.AUTO_INCREMENT);
 
-        final ValidationReport report = field.validate(FieldValue.is(field, "1"), true);
+        final ValidationReport report = field.validateForProtectedWrite(FieldValue.is(field, "1"));
         Assertions.assertTrue(report.isValid());
     }
 

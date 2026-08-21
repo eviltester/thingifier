@@ -4,6 +4,8 @@ import java.util.*;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.EntityDomainValidator;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.InstanceValidator;
 import uk.co.compendiumdev.thingifier.core.domain.instances.InstanceFields;
 
 public class EntityDefinition {
@@ -19,6 +21,8 @@ public class EntityDefinition {
     private final DefinedFields fields;
     private final DefinedRelationships definedRelationships;
     private final Map<String, EntityViewDefinition> views;
+    private final List<InstanceValidator> instanceValidators;
+    private final List<EntityDomainValidator> domainValidators;
 
     private static final int NO_INSTANCE_LIMIT = -1;
 
@@ -33,6 +37,8 @@ public class EntityDefinition {
         definedRelationships = new DefinedRelationships();
         fields = new DefinedFields();
         views = new HashMap<>();
+        instanceValidators = new ArrayList<>();
+        domainValidators = new ArrayList<>();
         this.maxInstanceCount = maxInstanceCount;
         this.description = "";
 
@@ -87,6 +93,77 @@ public class EntityDefinition {
     public EntityDefinition addFields(Field... theseFields) {
         fields.addFields(theseFields);
         return this;
+    }
+
+    /**
+     * Adds a cross-field validator that only needs the candidate instance.
+     *
+     * <p>Instance validators run after field validation and uniqueness pass. They are intentionally
+     * scoped to one candidate instance; use {@link #withDomainValidation(EntityDomainValidator)}
+     * when a rule for this entity needs the active schema or store.
+     *
+     * @param validationRule validator to add to this entity definition
+     * @return this entity definition for fluent model setup
+     */
+    public EntityDefinition withInstanceValidation(final InstanceValidator validationRule) {
+        instanceValidators.add(validationRule);
+        return this;
+    }
+
+    /**
+     * Adds cross-field validators that only need the candidate instance.
+     *
+     * @param validationRule validators to add to this entity definition
+     * @return this entity definition for fluent model setup
+     */
+    public EntityDefinition withInstanceValidation(final InstanceValidator... validationRule) {
+        instanceValidators.addAll(Arrays.asList(validationRule));
+        return this;
+    }
+
+    /**
+     * Returns the instance validators attached to this entity.
+     *
+     * @return immutable list of instance validators
+     */
+    public List<InstanceValidator> instanceValidators() {
+        return Collections.unmodifiableList(instanceValidators);
+    }
+
+    /**
+     * Adds an entity domain validator for rules that belong to this entity but need domain access.
+     *
+     * <p>Entity domain validators run after field, uniqueness, and instance validation have passed.
+     * They receive the active schema and store, but only execute for writes to this entity
+     * definition. This is the right home for entity-owned rules that must compare against other
+     * instances or relationships.
+     *
+     * @param validationRule validator to add to this entity definition
+     * @return this entity definition for fluent model setup
+     */
+    public EntityDefinition withDomainValidation(final EntityDomainValidator validationRule) {
+        domainValidators.add(validationRule);
+        return this;
+    }
+
+    /**
+     * Adds entity domain validators for rules that belong to this entity but need domain access.
+     *
+     * @param validationRule validators to add to this entity definition
+     * @return this entity definition for fluent model setup
+     */
+    public EntityDefinition withDomainValidation(final EntityDomainValidator... validationRule) {
+        domainValidators.addAll(Arrays.asList(validationRule));
+        return this;
+    }
+
+    /**
+     * Returns the entity domain validators attached to this entity.
+     *
+     * @return immutable list of entity domain validators
+     */
+    public List<EntityDomainValidator> domainValidators() {
+        return Collections.unmodifiableList(domainValidators);
     }
 
     public Field getField(String fieldName) {

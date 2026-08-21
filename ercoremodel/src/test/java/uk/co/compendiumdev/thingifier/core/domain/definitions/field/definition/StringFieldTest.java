@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.instance.FieldValue;
@@ -96,6 +97,44 @@ class StringFieldTest {
     }
 
     @Test
+    void customValidationRunsAfterStandardRulesPass() {
+        final AtomicInteger calls = new AtomicInteger();
+        final Field field =
+                Field.is("field", FieldType.STRING)
+                        .withValidation(VRule.notEmpty())
+                        .withCustomValidation(
+                                value -> {
+                                    calls.incrementAndGet();
+                                    return invalidReport("custom field rejected");
+                                });
+
+        final ValidationReport report = field.validate(FieldValue.is(field, "value"));
+
+        Assertions.assertFalse(report.isValid());
+        Assertions.assertEquals(1, calls.get());
+        Assertions.assertTrue(report.getCombinedErrorMessages().contains("custom field rejected"));
+    }
+
+    @Test
+    void customValidationIsSkippedWhenStandardRulesFail() {
+        final AtomicInteger calls = new AtomicInteger();
+        final Field field =
+                Field.is("field", FieldType.STRING)
+                        .withValidation(VRule.notEmpty())
+                        .withCustomValidation(
+                                value -> {
+                                    calls.incrementAndGet();
+                                    return invalidReport("custom field rejected");
+                                });
+
+        final ValidationReport report = field.validate(FieldValue.is(field, ""));
+
+        Assertions.assertFalse(report.isValid());
+        Assertions.assertEquals(0, calls.get());
+        Assertions.assertFalse(report.getCombinedErrorMessages().contains("custom field rejected"));
+    }
+
+    @Test
     void byDefaultTheStringHasNoValidationRules() {
 
         final Field field = Field.is("field", FieldType.STRING);
@@ -112,5 +151,9 @@ class StringFieldTest {
         Assertions.assertEquals("1234", field.getActualValueToAdd(FieldValue.is(field, "12345")));
 
         Assertions.assertEquals("123", field.getActualValueToAdd(FieldValue.is(field, "123")));
+    }
+
+    private ValidationReport invalidReport(final String message) {
+        return new ValidationReport().setValid(false).addErrorMessage(message);
     }
 }

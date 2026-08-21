@@ -208,7 +208,8 @@ class InstanceFieldsTest {
         Assertions.assertEquals("bob", instance.getFieldValue("int").asString());
 
         // but validation should fail
-        final ValidationReport validation = instance.validateFields(new ArrayList<>(), false);
+        final ValidationReport validation =
+                instance.validateFieldsForNormalWrite(new ArrayList<>());
         Assertions.assertFalse(validation.isValid());
     }
 

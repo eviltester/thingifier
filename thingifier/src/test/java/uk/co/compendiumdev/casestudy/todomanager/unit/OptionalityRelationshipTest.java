@@ -62,7 +62,8 @@ public class OptionalityRelationshipTest {
                                                 "I need to tidy up my room because it is a mess"));
         Assertions.assertEquals("Tidy up my room", tidy.getFieldValue("title").asString());
 
-        Assertions.assertTrue(tidy.validateFieldValues(new ArrayList<>(), true).isValid());
+        Assertions.assertTrue(
+                tidy.validateFieldValuesForProtectedWrite(new ArrayList<>()).isValid());
     }
 
     @Test

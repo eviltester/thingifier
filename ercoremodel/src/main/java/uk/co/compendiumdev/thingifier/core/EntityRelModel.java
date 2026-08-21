@@ -6,6 +6,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.ERSchema;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.GlobalValidator;
 import uk.co.compendiumdev.thingifier.core.reporting.ERModelReport;
 import uk.co.compendiumdev.thingifier.core.reporting.RepositoryJsonExporter;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
@@ -61,6 +62,31 @@ public class EntityRelModel implements AutoCloseable {
 
     public ERSchema getSchema() {
         return schema;
+    }
+
+    /**
+     * Adds a schema-wide validator that runs for every entity write in this model.
+     *
+     * <p>This is a convenience delegate to the underlying schema. Use entity-level domain
+     * validation when the rule is owned by one entity definition.
+     *
+     * @param validationRule validator to add to the schema
+     * @return this model for fluent setup
+     */
+    public EntityRelModel withGlobalValidation(final GlobalValidator validationRule) {
+        schema.withGlobalValidation(validationRule);
+        return this;
+    }
+
+    /**
+     * Adds schema-wide validators that run for every entity write in this model.
+     *
+     * @param validationRule validators to add to the schema
+     * @return this model for fluent setup
+     */
+    public EntityRelModel withGlobalValidation(final GlobalValidator... validationRule) {
+        schema.withGlobalValidation(validationRule);
+        return this;
     }
 
     public String exportInstanceDataAsJson(final String databaseKey) {

@@ -5,8 +5,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.application.schema.definition.ThingifierModelDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldRelationshipReference;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipVectorDefinition;
+import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 
 class ThingifierYamlExporterTest {
 
@@ -95,6 +99,30 @@ class ThingifierYamlExporterTest {
         Assertions.assertTrue(yaml.contains("source:"));
     }
 
+    @Test
+    void exporterOmitsCodeOnlyCustomValidators() {
+        Thingifier thingifier = new Thingifier();
+        EntityDefinition item = thingifier.defineThing("item", "items");
+        item.addAsPrimaryKeyField(Field.is("id", FieldType.AUTO_INCREMENT));
+        item.addField(
+                Field.is("title", FieldType.STRING)
+                        .withCustomValidation(value -> invalidReport("not exportable")));
+        item.withInstanceValidation(context -> invalidReport("not exportable"));
+        item.withDomainValidation(context -> invalidReport("not exportable"));
+        thingifier.withGlobalValidation(context -> invalidReport("not exportable"));
+
+        String yaml = new ThingifierYamlExporter().export(thingifier);
+        Thingifier loaded = new ThingifierYamlLoader().loadThingifier(yaml);
+
+        Assertions.assertFalse(yaml.contains("not exportable"));
+        Assertions.assertFalse(yaml.contains("custom"));
+        Assertions.assertTrue(
+                loaded.getDefinitionNamed("item").getField("title").customValidators().isEmpty());
+        Assertions.assertTrue(loaded.getDefinitionNamed("item").instanceValidators().isEmpty());
+        Assertions.assertTrue(loaded.getDefinitionNamed("item").domainValidators().isEmpty());
+        Assertions.assertTrue(loaded.getERmodel().getSchema().globalValidators().isEmpty());
+    }
+
     private InputStream resource(final String resourceName) {
         InputStream stream = getClass().getResourceAsStream("/models/" + resourceName);
         Assertions.assertNotNull(stream, resourceName);
@@ -133,5 +161,9 @@ class ThingifierYamlExporterTest {
                 + "    optionality: optional\n"
                 + "    deleteTargetWhenDisconnected: true\n"
                 + "    deleteTargetsWhenSourceDeleted: true\n";
+    }
+
+    private ValidationReport invalidReport(final String message) {
+        return new ValidationReport().setValid(false).addErrorMessage(message);
     }
 }
