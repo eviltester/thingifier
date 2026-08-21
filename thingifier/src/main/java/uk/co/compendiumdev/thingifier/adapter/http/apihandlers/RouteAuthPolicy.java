@@ -9,6 +9,7 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
+import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.BasicAuthHeaderParser;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.BearerAuthHeaderParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthenticationContext;
@@ -27,7 +28,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 /**
  * Enforces route-level authentication and authorization configured in the API spec.
  *
- * <p>The policy handles the generic HTTP bearer mechanics that belong in Thingifier and delegates
+ * <p>The policy handles the generic HTTP auth mechanics that belong in Thingifier and delegates
  * application decisions to registered authenticators and authorizers. It returns an {@link
  * ApiResponse} only when processing should stop.
  */
@@ -91,7 +92,36 @@ public final class RouteAuthPolicy {
         }
 
         final ThingifierApiRouteRule rule = matchingRule.get();
+        if (rule.hasBasicAuthEnforcement()) {
+            return rejectForBasicAuth(verb, path, context, route, rule);
+        }
+
+        return rejectForBearerAuth(verb, path, context, route, rule);
+    }
+
+    /**
+     * Enforces a named Bearer auth route rule.
+     *
+     * @param verb generated API verb
+     * @param path generated API path
+     * @param context active request context
+     * @param route mapped generated route
+     * @param rule matching route rule
+     * @return rejection response, or null when authentication and authorization succeed
+     */
+    private ApiResponse rejectForBearerAuth(
+            final RoutingVerb verb,
+            final String path,
+            final ThingifierRequestContext context,
+            final ThingRoute route,
+            final ThingifierApiRouteRule rule) {
         final String schemeName = rule.bearerAuthEnforcementSchemeName();
+        final BearerAuthHeaderParser bearer =
+                new BearerAuthHeaderParser(context.headers().get(AUTHORIZATION_HEADER));
+        if (!bearer.isValid()) {
+            return unauthorized(BEARER_CHALLENGE);
+        }
+
         final Optional<ThingifierApiAuthenticator> authenticator =
                 runtime.apiSpec().authenticatorFor(schemeName);
         if (authenticator.isEmpty()) {
@@ -99,20 +129,82 @@ public final class RouteAuthPolicy {
                     500, "No authenticator configured for bearer auth scheme " + schemeName);
         }
 
-        final BearerAuthHeaderParser bearer =
-                new BearerAuthHeaderParser(context.headers().get(AUTHORIZATION_HEADER));
-        if (!bearer.isValid()) {
-            return unauthorized();
+        final ThingifierApiAuthenticationContext authenticationContext =
+                new ThingifierApiAuthenticationContext(
+                        authDetails(schemeName, verb, path, context, route, rule),
+                        bearer.getToken());
+        return rejectAfterAuthentication(
+                rule,
+                context,
+                schemeName,
+                authenticator.get(),
+                authenticationContext,
+                BEARER_CHALLENGE);
+    }
+
+    /**
+     * Enforces a named Basic auth route rule.
+     *
+     * @param verb generated API verb
+     * @param path generated API path
+     * @param context active request context
+     * @param route mapped generated route
+     * @param rule matching route rule
+     * @return rejection response, or null when authentication and authorization succeed
+     */
+    private ApiResponse rejectForBasicAuth(
+            final RoutingVerb verb,
+            final String path,
+            final ThingifierRequestContext context,
+            final ThingRoute route,
+            final ThingifierApiRouteRule rule) {
+        final String schemeName = rule.basicAuthEnforcementSchemeName();
+        final String challenge = basicChallengeFor(schemeName);
+        final BasicAuthHeaderParser basic =
+                new BasicAuthHeaderParser(context.headers().get(AUTHORIZATION_HEADER));
+        if (!basic.isValid()) {
+            return unauthorized(challenge);
+        }
+
+        final Optional<ThingifierApiAuthenticator> authenticator =
+                runtime.apiSpec().authenticatorFor(schemeName);
+        if (authenticator.isEmpty()) {
+            return ApiResponse.error(
+                    500, "No authenticator configured for basic auth scheme " + schemeName);
         }
 
         final ThingifierApiAuthenticationContext authenticationContext =
                 new ThingifierApiAuthenticationContext(
                         authDetails(schemeName, verb, path, context, route, rule),
-                        bearer.getToken());
+                        "",
+                        basic.username(),
+                        basic.password());
+        return rejectAfterAuthentication(
+                rule, context, schemeName, authenticator.get(), authenticationContext, challenge);
+    }
+
+    /**
+     * Runs the shared authenticator/principal/authorizer flow after header parsing succeeds.
+     *
+     * @param rule matching route rule
+     * @param context active request context
+     * @param schemeName enforced security scheme name
+     * @param authenticator application authenticator for the scheme
+     * @param authenticationContext parsed auth context
+     * @param challenge default challenge for framework-generated 401 responses
+     * @return rejection response, or null when auth allows request processing
+     */
+    private ApiResponse rejectAfterAuthentication(
+            final ThingifierApiRouteRule rule,
+            final ThingifierRequestContext context,
+            final String schemeName,
+            final ThingifierApiAuthenticator authenticator,
+            final ThingifierApiAuthenticationContext authenticationContext,
+            final String challenge) {
         final ThingifierApiAuthenticationResult authentication =
-                authenticator.get().authenticate(authenticationContext);
+                authenticator.authenticate(authenticationContext);
         if (authentication == null || !authentication.isAuthenticated()) {
-            return authenticationRejected(authentication);
+            return authenticationRejected(authentication, challenge);
         }
 
         context.setAuthenticatedPrincipal(schemeName, authentication.principal());
@@ -123,10 +215,12 @@ public final class RouteAuthPolicy {
      * Reports whether a route rule has enforceable auth policy.
      *
      * @param rule matching route rule
-     * @return true when bearer auth should be enforced for this request
+     * @return true when named auth should be enforced for this request
      */
     private boolean requiresAuth(final ThingifierApiRouteRule rule) {
-        return !rule.isDisabled() && !rule.isMethodNotAllowed() && rule.hasBearerAuthEnforcement();
+        return !rule.isDisabled()
+                && !rule.isMethodNotAllowed()
+                && (rule.hasBasicAuthEnforcement() || rule.hasBearerAuthEnforcement());
     }
 
     /**
@@ -156,7 +250,7 @@ public final class RouteAuthPolicy {
     /**
      * Creates the callback context details for the protected route.
      *
-     * @param schemeName bearer scheme name
+     * @param schemeName auth scheme name
      * @param verb generated API verb
      * @param path generated API path
      * @param context request context
@@ -196,15 +290,19 @@ public final class RouteAuthPolicy {
      * Converts an authentication failure into a response.
      *
      * @param authentication failed authentication result, possibly null
-     * @return rejection response with a bearer challenge for 401 responses
+     * @param challenge default challenge for framework-generated 401 responses
+     * @return rejection response with a challenge when appropriate
      */
     private ApiResponse authenticationRejected(
-            final ThingifierApiAuthenticationResult authentication) {
-        final ApiResponse response =
-                authentication == null || authentication.rejectionResponse() == null
-                        ? unauthorized()
-                        : authentication.rejectionResponse();
-        return challengeIfUnauthorized(response);
+            final ThingifierApiAuthenticationResult authentication, final String challenge) {
+        if (authentication == null || authentication.rejectionResponse() == null) {
+            return unauthorized(challenge);
+        }
+        final ApiResponse response = authentication.rejectionResponse();
+        if (authentication.hasCustomRejectionResponse()) {
+            return response;
+        }
+        return challengeIfUnauthorized(response, challenge);
     }
 
     /**
@@ -222,27 +320,47 @@ public final class RouteAuthPolicy {
     }
 
     /**
-     * Creates the standard bearer unauthorized response.
+     * Creates a standard unauthorized response.
      *
      * @return 401 response with a WWW-Authenticate challenge
      */
-    private ApiResponse unauthorized() {
-        return ApiResponse.error(401, "Unauthorized")
-                .setHeader(WWW_AUTHENTICATE_HEADER, BEARER_CHALLENGE);
+    private ApiResponse unauthorized(final String challenge) {
+        return ApiResponse.error(401, "Unauthorized").setHeader(WWW_AUTHENTICATE_HEADER, challenge);
     }
 
     /**
-     * Ensures authenticator-supplied 401 responses include the bearer challenge header.
+     * Ensures standard 401 responses include the enforced scheme challenge header.
      *
      * @param response response returned by an authenticator
+     * @param challenge default challenge for the enforced scheme
      * @return same response with the challenge header when appropriate
      */
-    private ApiResponse challengeIfUnauthorized(final ApiResponse response) {
+    private ApiResponse challengeIfUnauthorized(
+            final ApiResponse response, final String challenge) {
         if (response.getStatusCode() == 401
                 && response.getHeaderValue(WWW_AUTHENTICATE_HEADER).isEmpty()) {
-            response.setHeader(WWW_AUTHENTICATE_HEADER, BEARER_CHALLENGE);
+            response.setHeader(WWW_AUTHENTICATE_HEADER, challenge);
         }
         return response;
+    }
+
+    /**
+     * Builds the Basic challenge header for a named scheme.
+     *
+     * @param schemeName Basic auth scheme name
+     * @return challenge header value with configured realm
+     */
+    private String basicChallengeFor(final String schemeName) {
+        return "Basic realm=\""
+                + escapedRealm(runtime.apiSpec().security().basicRealm(schemeName))
+                + "\"";
+    }
+
+    private String escapedRealm(final String realm) {
+        return realm.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\r", "")
+                .replace("\n", "");
     }
 
     /**

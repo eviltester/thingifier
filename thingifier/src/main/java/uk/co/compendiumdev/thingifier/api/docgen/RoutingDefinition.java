@@ -33,6 +33,7 @@ public class RoutingDefinition {
     private HashMap<String, String> customHeaders;
     private HashMap<String, String> responseHeaders;
     private boolean usesBasicAuth = false;
+    private String basicAuthSchemeName = SecuritySchemeNames.DEFAULT_BASIC_AUTH_SCHEME;
     private boolean usesBearerAuth = false;
     private String bearerAuthSchemeName = SecuritySchemeNames.DEFAULT_BEARER_AUTH_SCHEME;
     private boolean hiddenFromDocumentation = false;
@@ -600,7 +601,18 @@ public class RoutingDefinition {
      * @return this definition so route metadata can be chained
      */
     public RoutingDefinition secureWithBasicAuth() {
+        return secureWithBasicAuth(SecuritySchemeNames.DEFAULT_BASIC_AUTH_SCHEME);
+    }
+
+    /**
+     * Marks the route as requiring a named Basic auth scheme in generated documentation.
+     *
+     * @param schemeName Basic security scheme name
+     * @return this definition so route metadata can be chained
+     */
+    public RoutingDefinition secureWithBasicAuth(final String schemeName) {
         usesBasicAuth = true;
+        basicAuthSchemeName = SecuritySchemeNames.requireValid(schemeName);
         return this;
     }
 
@@ -611,6 +623,15 @@ public class RoutingDefinition {
      */
     public boolean isSecuredByBasicAuth() {
         return usesBasicAuth;
+    }
+
+    /**
+     * Returns the Basic auth security scheme name used in generated documentation.
+     *
+     * @return Basic security scheme name
+     */
+    public String basicAuthSchemeName() {
+        return basicAuthSchemeName;
     }
 
     /**

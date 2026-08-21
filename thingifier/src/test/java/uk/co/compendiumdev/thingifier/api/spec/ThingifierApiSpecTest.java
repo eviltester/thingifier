@@ -19,6 +19,7 @@ import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.api.security.ThingifierApiSecuritySpec;
 import uk.co.compendiumdev.thingifier.apiconfig.ThingifierApiConfig;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.Cardinality;
@@ -63,6 +64,59 @@ class ThingifierApiSpecTest {
         Assertions.assertTrue(route.isSecuredByBearerAuth());
         Assertions.assertEquals("create a task through the project API", route.getDocumentation());
         Assertions.assertEquals("create_todo", route.getRequestPayload());
+    }
+
+    @Test
+    void namedBasicRouteRecordsDocumentationAndRuntimeEnforcement() {
+        final Thingifier thingifier = model();
+        final ThingifierApiRouteRule rule =
+                thingifier
+                        .apiSpec()
+                        .route(RoutingVerb.POST, "/api/todos")
+                        .secureWithBasicAuth("adminPassword");
+
+        Assertions.assertTrue(rule.isSecuredByBasicAuth());
+        Assertions.assertEquals("adminPassword", rule.basicAuthSchemeName());
+        Assertions.assertTrue(rule.hasBasicAuthEnforcement());
+        Assertions.assertEquals("adminPassword", rule.basicAuthEnforcementSchemeName());
+    }
+
+    @Test
+    void basicSecuritySpecStoresConfiguredRealm() {
+        final ThingifierApiSecuritySpec securitySpec = new ThingifierApiSecuritySpec();
+
+        securitySpec.basic("adminPassword", "User Visible Realm");
+
+        Assertions.assertTrue(securitySpec.hasBasic("adminPassword"));
+        Assertions.assertEquals("User Visible Realm", securitySpec.basicRealm("adminPassword"));
+    }
+
+    @Test
+    void namedBasicAuthClearsBearerEnforcementOnRoute() {
+        final Thingifier thingifier = model();
+        final ThingifierApiRouteRule rule =
+                thingifier
+                        .apiSpec()
+                        .route(RoutingVerb.POST, "/api/todos")
+                        .secureWithBearerAuth("cartToken")
+                        .secureWithBasicAuth("adminPassword");
+
+        Assertions.assertTrue(rule.hasBasicAuthEnforcement());
+        Assertions.assertFalse(rule.hasBearerAuthEnforcement());
+    }
+
+    @Test
+    void namedBearerAuthClearsBasicEnforcementOnRoute() {
+        final Thingifier thingifier = model();
+        final ThingifierApiRouteRule rule =
+                thingifier
+                        .apiSpec()
+                        .route(RoutingVerb.POST, "/api/todos")
+                        .secureWithBasicAuth("adminPassword")
+                        .secureWithBearerAuth("cartToken");
+
+        Assertions.assertFalse(rule.hasBasicAuthEnforcement());
+        Assertions.assertTrue(rule.hasBearerAuthEnforcement());
     }
 
     @Test

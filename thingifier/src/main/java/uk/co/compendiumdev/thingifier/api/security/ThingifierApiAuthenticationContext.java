@@ -24,6 +24,8 @@ public final class ThingifierApiAuthenticationContext {
     private final HttpHeadersBlock headers;
     private final ThingifierRequestContext requestContext;
     private final String bearerToken;
+    private final String basicUsername;
+    private final String basicPassword;
     private final EntityDefinition targetEntity;
     private final String targetIdentifier;
     private final EntityDefinition parentEntity;
@@ -39,6 +41,26 @@ public final class ThingifierApiAuthenticationContext {
      */
     public ThingifierApiAuthenticationContext(
             final ThingifierApiRouteAuthDetails details, final String bearerToken) {
+        this(details, bearerToken, "", "");
+    }
+
+    /**
+     * Creates an immutable authentication context with parsed auth credentials.
+     *
+     * <p>Only the fields relevant to the enforced scheme are populated. Bearer routes receive a
+     * bearer token, and Basic routes receive username/password values. Keeping one context type
+     * lets applications use the same authenticator interface for every scheme.
+     *
+     * @param details reusable route and request details
+     * @param bearerToken parsed bearer token from the Authorization header
+     * @param basicUsername parsed Basic username from the Authorization header
+     * @param basicPassword parsed Basic password from the Authorization header
+     */
+    public ThingifierApiAuthenticationContext(
+            final ThingifierApiRouteAuthDetails details,
+            final String bearerToken,
+            final String basicUsername,
+            final String basicPassword) {
         this.schemeName = details.schemeName();
         this.verb = details.verb();
         this.path = details.path();
@@ -47,6 +69,8 @@ public final class ThingifierApiAuthenticationContext {
         this.headers = details.headers();
         this.requestContext = details.requestContext();
         this.bearerToken = bearerToken == null ? "" : bearerToken;
+        this.basicUsername = basicUsername == null ? "" : basicUsername;
+        this.basicPassword = basicPassword == null ? "" : basicPassword;
         this.targetEntity = details.targetEntity();
         this.targetIdentifier = details.targetIdentifier();
         this.parentEntity = details.parentEntity();
@@ -144,6 +168,24 @@ public final class ThingifierApiAuthenticationContext {
      */
     public String bearerToken() {
         return bearerToken;
+    }
+
+    /**
+     * Returns the parsed Basic username.
+     *
+     * @return Basic username, or an empty string when the enforced scheme is not Basic
+     */
+    public String basicUsername() {
+        return basicUsername;
+    }
+
+    /**
+     * Returns the parsed Basic password.
+     *
+     * @return Basic password, or an empty string when the enforced scheme is not Basic
+     */
+    public String basicPassword() {
+        return basicPassword;
     }
 
     /**

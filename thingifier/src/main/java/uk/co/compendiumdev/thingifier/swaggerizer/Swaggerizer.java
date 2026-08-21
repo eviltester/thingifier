@@ -136,6 +136,9 @@ public class Swaggerizer {
         for (String bearerSchemeName : thingifier.apiSpec().security().bearerSchemes()) {
             addHttpSecurityScheme(components, bearerSchemeName, "bearer", null);
         }
+        for (String basicSchemeName : thingifier.apiSpec().security().basicSchemes()) {
+            addHttpSecurityScheme(components, basicSchemeName, "basic", null);
+        }
 
         if (routes != null) {
 
@@ -245,9 +248,10 @@ public class Swaggerizer {
                             }
 
                             if (subroute.isSecuredByBasicAuth()) {
-                                addHttpSecurityScheme(components, "basicAuth", "basic", null);
+                                final String basicSchemeName = subroute.basicAuthSchemeName();
+                                addHttpSecurityScheme(components, basicSchemeName, "basic", null);
                                 operation.addSecurityItem(
-                                        new SecurityRequirement().addList("basicAuth"));
+                                        new SecurityRequirement().addList(basicSchemeName));
                             }
 
                             if (subroute.isSecuredByBearerAuth()) {

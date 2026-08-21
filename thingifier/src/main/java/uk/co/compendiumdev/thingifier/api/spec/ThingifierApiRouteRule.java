@@ -30,6 +30,8 @@ public final class ThingifierApiRouteRule {
     private boolean disabled;
     private boolean methodNotAllowed;
     private boolean usesBasicAuth;
+    private String basicAuthSchemeName;
+    private String enforcedBasicAuthSchemeName;
     private boolean usesBearerAuth;
     private String bearerAuthSchemeName;
     private String enforcedBearerAuthSchemeName;
@@ -50,6 +52,8 @@ public final class ThingifierApiRouteRule {
         this.disabled = false;
         this.methodNotAllowed = false;
         this.usesBasicAuth = false;
+        this.basicAuthSchemeName = SecuritySchemeNames.DEFAULT_BASIC_AUTH_SCHEME;
+        this.enforcedBasicAuthSchemeName = null;
         this.usesBearerAuth = false;
         this.bearerAuthSchemeName = SecuritySchemeNames.DEFAULT_BEARER_AUTH_SCHEME;
         this.enforcedBearerAuthSchemeName = null;
@@ -162,10 +166,36 @@ public final class ThingifierApiRouteRule {
     /**
      * Marks the route as requiring Basic authentication in generated documentation.
      *
+     * <p>This historical form is documentation-only. Use {@link #secureWithBasicAuth(String)} when
+     * Thingifier should also enforce a named Basic policy at runtime.
+     *
      * @return this rule so route API configuration can be chained
      */
     public ThingifierApiRouteRule secureWithBasicAuth() {
         usesBasicAuth = true;
+        basicAuthSchemeName = SecuritySchemeNames.DEFAULT_BASIC_AUTH_SCHEME;
+        return this;
+    }
+
+    /**
+     * Marks the route as requiring a named Basic authentication scheme and runtime enforcement.
+     *
+     * <p>The scheme name is used in generated documentation, authenticator lookup, and the
+     * authenticated-principal slot on the request context. The Basic realm is configured on {@link
+     * uk.co.compendiumdev.thingifier.api.security.ThingifierApiSecuritySpec#basic(String, String)}.
+     * If both named Basic and named Bearer auth are configured on one route, the most recent named
+     * call selects the runtime enforcement scheme.
+     *
+     * @param schemeName named Basic scheme, for example {@code adminPassword}
+     * @return this rule so route API configuration can be chained
+     */
+    public ThingifierApiRouteRule secureWithBasicAuth(final String schemeName) {
+        final String normalizedSchemeName = SecuritySchemeNames.requireValid(schemeName);
+        usesBasicAuth = true;
+        usesBearerAuth = false;
+        basicAuthSchemeName = normalizedSchemeName;
+        enforcedBasicAuthSchemeName = normalizedSchemeName;
+        enforcedBearerAuthSchemeName = null;
         return this;
     }
 
@@ -197,8 +227,10 @@ public final class ThingifierApiRouteRule {
      */
     public ThingifierApiRouteRule secureWithBearerAuth(final String schemeName) {
         final String normalizedSchemeName = SecuritySchemeNames.requireValid(schemeName);
+        usesBasicAuth = false;
         usesBearerAuth = true;
         bearerAuthSchemeName = normalizedSchemeName;
+        enforcedBasicAuthSchemeName = null;
         enforcedBearerAuthSchemeName = normalizedSchemeName;
         return this;
     }
@@ -264,6 +296,42 @@ public final class ThingifierApiRouteRule {
      */
     public List<ThingifierApiAuthorizer> authorizers() {
         return List.copyOf(authorizers);
+    }
+
+    /**
+     * Reports whether this route is documented as Basic secured.
+     *
+     * @return true when Basic auth should appear in generated documentation
+     */
+    public boolean isSecuredByBasicAuth() {
+        return usesBasicAuth;
+    }
+
+    /**
+     * Returns the Basic scheme name used in generated documentation.
+     *
+     * @return Basic auth scheme name
+     */
+    public String basicAuthSchemeName() {
+        return basicAuthSchemeName;
+    }
+
+    /**
+     * Reports whether this route should enforce Basic auth at runtime.
+     *
+     * @return true when the route has a named Basic enforcement scheme
+     */
+    public boolean hasBasicAuthEnforcement() {
+        return enforcedBasicAuthSchemeName != null;
+    }
+
+    /**
+     * Returns the Basic scheme name used for runtime enforcement.
+     *
+     * @return Basic enforcement scheme name, or null for documentation-only Basic routes
+     */
+    public String basicAuthEnforcementSchemeName() {
+        return enforcedBasicAuthSchemeName;
     }
 
     /**
@@ -506,7 +574,7 @@ public final class ThingifierApiRouteRule {
             route.replaceStatus(RoutingStatus.returnValue(405));
         }
         if (usesBasicAuth) {
-            route.secureWithBasicAuth();
+            route.secureWithBasicAuth(basicAuthSchemeName);
         }
         if (usesBearerAuth) {
             route.secureWithBearerAuth(bearerAuthSchemeName);

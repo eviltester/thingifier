@@ -143,6 +143,24 @@ public final class ThingifierApiAuthorizationContext {
     }
 
     /**
+     * Returns the parsed Basic username from the authentication step.
+     *
+     * @return Basic username, or an empty string when the enforced scheme is not Basic
+     */
+    public String basicUsername() {
+        return authenticationContext.basicUsername();
+    }
+
+    /**
+     * Returns the parsed Basic password from the authentication step.
+     *
+     * @return Basic password, or an empty string when the enforced scheme is not Basic
+     */
+    public String basicPassword() {
+        return authenticationContext.basicPassword();
+    }
+
+    /**
      * Returns the target entity for entity or relationship routes.
      *
      * @return target entity, or null when no entity route matched

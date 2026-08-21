@@ -50,6 +50,39 @@ class SwaggerizerSecurityTest {
     }
 
     @Test
+    void basicSecuredRoutesAddHttpBasicSecuritySchemeAndOperationRequirement() {
+        final ThingifierApiDocumentationDefn apiDefn = new ThingifierApiDocumentationDefn();
+        apiDefn.addRouteToDocumentation(
+                new RoutingDefinition(
+                                RoutingVerb.POST,
+                                "/shop/login",
+                                RoutingStatus.returnedFromCall(),
+                                null)
+                        .addDocumentation("login")
+                        .addPossibleStatuses(200, 401, 403)
+                        .secureWithBasicAuth());
+
+        final OpenAPI openApi = new Swaggerizer(apiDefn).swagger();
+
+        final SecurityScheme basicAuth =
+                openApi.getComponents().getSecuritySchemes().get("basicAuth");
+        Assertions.assertNotNull(basicAuth);
+        Assertions.assertEquals(SecurityScheme.Type.HTTP, basicAuth.getType());
+        Assertions.assertEquals("basic", basicAuth.getScheme());
+        Assertions.assertNull(basicAuth.getBearerFormat());
+        Assertions.assertEquals(
+                "basicAuth",
+                openApi.getPaths()
+                        .get("/shop/login")
+                        .getPost()
+                        .getSecurity()
+                        .get(0)
+                        .keySet()
+                        .iterator()
+                        .next());
+    }
+
+    @Test
     void bearerSecuredGeneratedRoutesAddOperationRequirement() {
         final Thingifier thingifier = relationshipModel();
         thingifier

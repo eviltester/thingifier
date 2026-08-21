@@ -11,6 +11,9 @@ public final class SecuritySchemeNames {
     /** Default OpenAPI scheme name used by the historical no-argument bearer marker. */
     public static final String DEFAULT_BEARER_AUTH_SCHEME = "bearerAuth";
 
+    /** Default OpenAPI scheme name used by the historical no-argument Basic marker. */
+    public static final String DEFAULT_BASIC_AUTH_SCHEME = "basicAuth";
+
     private SecuritySchemeNames() {}
 
     /**
