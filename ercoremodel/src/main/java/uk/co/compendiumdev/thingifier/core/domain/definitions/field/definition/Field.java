@@ -21,6 +21,7 @@ public final class Field {
     // default value for the field
     private String defaultValue;
     private final List<ValidationRule> validationRules;
+    private final List<FieldValidator> customValidators;
     private boolean truncateStringIfTooLong;
 
     private final boolean allowedNullable;
@@ -43,6 +44,7 @@ public final class Field {
         this.name = name;
         this.type = type;
         validationRules = new ArrayList<>();
+        customValidators = new ArrayList<>();
 
         fieldIsOptional = true;
         if (type == FieldType.AUTO_INCREMENT || type == FieldType.AUTO_GUID) {
@@ -130,14 +132,97 @@ public final class Field {
         return this;
     }
 
-    // TODO: when all field values use field, then this could move to the value and out of the field
-    public ValidationReport validate(FieldValue value) {
-        boolean NOT_ALLOWED_TO_SET_IDs = false;
-        return validate(value, NOT_ALLOWED_TO_SET_IDs);
+    /**
+     * Adds a code-only custom validator for this field.
+     *
+     * <p>Custom validators run after built-in field checks and standard {@link ValidationRule}
+     * checks have passed. This keeps custom code focused on business rules and prevents it from
+     * seeing values that Thingifier already knows are structurally invalid.
+     *
+     * @param validationRule validator to add to this field
+     * @return this field for fluent model setup
+     */
+    public Field withCustomValidation(FieldValidator validationRule) {
+        customValidators.add(validationRule);
+        return this;
     }
 
-    // allowedToSetIds is a bit of hack - refactor other code so not required
-    public ValidationReport validate(FieldValue value, boolean allowedToSetIds) {
+    /**
+     * Adds code-only custom validators for this field.
+     *
+     * @param validationRule validators to add to this field
+     * @return this field for fluent model setup
+     */
+    public Field withCustomValidation(FieldValidator... validationRule) {
+        customValidators.addAll(Arrays.asList(validationRule));
+        return this;
+    }
+
+    /**
+     * Validates a field value for user-supplied writes.
+     *
+     * <p>This is the default field validation entry point. It rejects caller-supplied protected ID
+     * values and runs the complete field pipeline: built-in structural/type/object checks, standard
+     * {@link ValidationRule} checks, and then custom field validators.
+     *
+     * @param value value to validate, or null when the field is absent from the candidate
+     * @return validation report for the field value
+     */
+    public ValidationReport validate(FieldValue value) {
+        return validateWithIdPolicy(value, IdWritePolicy.REJECT_SUPPLIED_IDS);
+    }
+
+    /**
+     * Validates a field value for trusted repository/system writes.
+     *
+     * <p>Protected writes allow generated or restored ID values while still running the complete
+     * field pipeline. This is intended for internal materialization, imports, and repository paths
+     * that legitimately need to carry protected fields.
+     *
+     * @param value value to validate, or null when the field is absent from the candidate
+     * @return validation report for the field value
+     */
+    public ValidationReport validateForProtectedWrite(FieldValue value) {
+        return validateWithIdPolicy(value, IdWritePolicy.ALLOW_SUPPLIED_IDS);
+    }
+
+    private ValidationReport validateWithIdPolicy(FieldValue value, IdWritePolicy idWritePolicy) {
+        ValidationReport report = validateBuiltInWithIdPolicy(value, idWritePolicy);
+        if (!report.isValid()) {
+            return report;
+        }
+        report.combine(validateCustom(value));
+        return report;
+    }
+
+    /**
+     * Runs only built-in and standard field validation for a user-supplied write.
+     *
+     * <p>This is used by the repository write pipeline so uniqueness can be checked before custom
+     * field validators run.
+     *
+     * @param value value to validate, or null when the field is absent from the candidate
+     * @return validation report for built-in field checks
+     */
+    public ValidationReport validateBuiltInForNormalWrite(FieldValue value) {
+        return validateBuiltInWithIdPolicy(value, IdWritePolicy.REJECT_SUPPLIED_IDS);
+    }
+
+    /**
+     * Runs only built-in and standard field validation for a trusted repository/system write.
+     *
+     * <p>This supports validation of already generated or restored protected IDs without running
+     * custom validators before the ordered repository pipeline reaches that stage.
+     *
+     * @param value value to validate, or null when the field is absent from the candidate
+     * @return validation report for built-in field checks
+     */
+    public ValidationReport validateBuiltInForProtectedWrite(FieldValue value) {
+        return validateBuiltInWithIdPolicy(value, IdWritePolicy.ALLOW_SUPPLIED_IDS);
+    }
+
+    private ValidationReport validateBuiltInWithIdPolicy(
+            FieldValue value, IdWritePolicy idWritePolicy) {
 
         ValidationReport report = new ValidationReport();
 
@@ -148,7 +233,7 @@ public final class Field {
             return report;
         }
 
-        if (!allowedToSetIds) {
+        if (idWritePolicy == IdWritePolicy.REJECT_SUPPLIED_IDS) {
             if (type == FieldType.AUTO_INCREMENT) {
                 report.setValid(false);
                 report.addErrorMessage(
@@ -198,6 +283,32 @@ public final class Field {
         return report;
     }
 
+    /**
+     * Runs only code-defined custom validators for this field.
+     *
+     * <p>Callers should use this after built-in field validation has passed. The repository write
+     * pipeline keeps this separate so it can enforce stage ordering and short-circuit behavior.
+     *
+     * @param value value to validate, or null when the field is absent from the candidate
+     * @return validation report for custom field validators
+     */
+    public ValidationReport validateCustom(final FieldValue value) {
+        ValidationReport report = new ValidationReport();
+        if (value == null) {
+            return report;
+        }
+        if (type == FieldType.OBJECT && value.asObject() != null) {
+            report.combine(value.asObject().validateCustomFields(new ArrayList<>()));
+        }
+        for (FieldValidator validator : customValidators) {
+            ValidationReport validity = validator.validate(value);
+            if (validity != null) {
+                report.combine(validity);
+            }
+        }
+        return report;
+    }
+
     public List<ValidationRule> getAllValidationRules() {
         List<ValidationRule> rules = new ArrayList<>();
 
@@ -231,13 +342,25 @@ public final class Field {
     private void validateObjectValue(final FieldValue value, final ValidationReport report) {
         if (value != null && value.asObject() != null) {
             final ValidationReport objectValidity =
-                    value.asObject().validateFields(new ArrayList<>(), true);
+                    value.asObject().validateBuiltInFieldsForProtectedWrite(new ArrayList<>());
             report.combine(objectValidity);
         }
     }
 
     public List<ValidationRule> validationRules() {
         return validationRules;
+    }
+
+    /**
+     * Returns custom validators attached to this field.
+     *
+     * <p>These validators are intentionally excluded from model export/import because functions
+     * cannot safely round-trip through YAML or schema metadata.
+     *
+     * @return immutable list of custom field validators
+     */
+    public List<FieldValidator> customValidators() {
+        return Collections.unmodifiableList(customValidators);
     }
 
     public boolean isMandatory() {
@@ -504,5 +627,10 @@ public final class Field {
             }
         }
         return this;
+    }
+
+    private enum IdWritePolicy {
+        REJECT_SUPPLIED_IDS,
+        ALLOW_SUPPLIED_IDS
     }
 }

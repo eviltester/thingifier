@@ -12,6 +12,7 @@ import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.datapopulator.RepositoryDataPopulator;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.*;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.relationship.RelationshipDefinition;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.GlobalValidator;
 import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstance;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 import uk.co.compendiumdev.thingifier.htmlgui.ThingifierGuiConfig;
@@ -93,6 +94,32 @@ public final class Thingifier implements AutoCloseable {
     public EntityDefinition defineThing(
             final String thingName, final String pluralName, final int maximumNumberOfInstances) {
         return erm.createEntityDefinition(thingName, pluralName, maximumNumberOfInstances);
+    }
+
+    /**
+     * Adds a schema-wide validator that runs for every entity write.
+     *
+     * <p>This is a convenience delegate for application code that builds models through {@code
+     * Thingifier}. Use {@link EntityDefinition#withDomainValidation} when a rule belongs to one
+     * entity but needs wider domain access.
+     *
+     * @param validationRule validator to add to the underlying schema
+     * @return this thingifier for fluent setup
+     */
+    public Thingifier withGlobalValidation(final GlobalValidator validationRule) {
+        erm.withGlobalValidation(validationRule);
+        return this;
+    }
+
+    /**
+     * Adds schema-wide validators that run for every entity write.
+     *
+     * @param validationRule validators to add to the underlying schema
+     * @return this thingifier for fluent setup
+     */
+    public Thingifier withGlobalValidation(final GlobalValidator... validationRule) {
+        erm.withGlobalValidation(validationRule);
+        return this;
     }
 
     public boolean hasThingNamed(final String aName) {

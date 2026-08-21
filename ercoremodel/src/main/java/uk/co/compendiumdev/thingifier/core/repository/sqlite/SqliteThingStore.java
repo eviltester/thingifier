@@ -76,7 +76,9 @@ public class SqliteThingStore implements ThingStore {
         this.jdbcUrl = jdbcUrl;
         this.materializedInstances = new HashMap<>();
         this.countersByEntity = new HashMap<>();
-        this.writeValidator = new EntityInstanceWriteValidator(this::checkFieldsForUniqueNess);
+        this.writeValidator =
+                new EntityInstanceWriteValidator(
+                        this::checkFieldsForUniqueNess, () -> schema, this);
         this.relationshipRules = new RelationshipRules();
         this.entityRepository = new SqliteEntityInstanceRepository(this);
         this.entityQuery = new SqliteEntityInstanceQuery(this);
@@ -303,7 +305,7 @@ public class SqliteThingStore implements ThingStore {
         ensureSchemaReady();
         EntityInstance updated =
                 MutableEntityInstance.fromExisting(instance).patch(draft).toEntityInstance();
-        writeValidator.assertValidForAmendment(updated);
+        writeValidator.assertValidForAmendment(updated, instance);
         runInTransaction(
                 () -> {
                     persistInstance(updated);
@@ -317,7 +319,7 @@ public class SqliteThingStore implements ThingStore {
         ensureSchemaReady();
         EntityInstance updated =
                 MutableEntityInstance.fromExisting(instance).replace(draft).toEntityInstance();
-        writeValidator.assertValidForAmendment(updated);
+        writeValidator.assertValidForReplacement(updated, instance);
         runInTransaction(
                 () -> {
                     persistInstance(updated);

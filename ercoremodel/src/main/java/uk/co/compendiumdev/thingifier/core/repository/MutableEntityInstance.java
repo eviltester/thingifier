@@ -115,9 +115,25 @@ public final class MutableEntityInstance {
         return null;
     }
 
-    public ValidationReport validateFieldValues(
-            final List<String> excluding, final boolean allowedToSetIds) {
-        return fields.validateFields(excluding, allowedToSetIds);
+    /**
+     * Validates mutable field values as a user-supplied write before a repository snapshot is made.
+     *
+     * @param excluding field names to skip during validation
+     * @return validation report for field-level validation
+     */
+    public ValidationReport validateFieldValuesForNormalWrite(final List<String> excluding) {
+        return fields.validateFieldsForNormalWrite(excluding);
+    }
+
+    /**
+     * Validates mutable field values as a trusted repository/system write before a snapshot is
+     * made.
+     *
+     * @param excluding field names to skip during validation
+     * @return validation report for field-level validation
+     */
+    public ValidationReport validateFieldValuesForProtectedWrite(final List<String> excluding) {
+        return fields.validateFieldsForProtectedWrite(excluding);
     }
 
     public EntityInstance toEntityInstance() {
