@@ -14,14 +14,17 @@ public final class ThingifierApiAuthenticationResult {
     private final boolean authenticated;
     private final Object principal;
     private final ApiResponse rejectionResponse;
+    private final boolean customRejectionResponse;
 
     private ThingifierApiAuthenticationResult(
             final boolean authenticated,
             final Object principal,
-            final ApiResponse rejectionResponse) {
+            final ApiResponse rejectionResponse,
+            final boolean customRejectionResponse) {
         this.authenticated = authenticated;
         this.principal = principal;
         this.rejectionResponse = rejectionResponse;
+        this.customRejectionResponse = customRejectionResponse;
     }
 
     /**
@@ -31,7 +34,7 @@ public final class ThingifierApiAuthenticationResult {
      * @return successful authentication result
      */
     public static ThingifierApiAuthenticationResult authenticated(final Object principal) {
-        return new ThingifierApiAuthenticationResult(true, principal, null);
+        return new ThingifierApiAuthenticationResult(true, principal, null, false);
     }
 
     /**
@@ -62,17 +65,22 @@ public final class ThingifierApiAuthenticationResult {
      */
     public static ThingifierApiAuthenticationResult rejected(
             final int status, final String message) {
-        return rejected(ApiResponse.error(status, message));
+        return new ThingifierApiAuthenticationResult(
+                false, null, ApiResponse.error(status, message), false);
     }
 
     /**
      * Creates an authentication rejection with a complete response.
      *
+     * <p>Thingifier preserves custom rejection responses exactly. Use this when the application
+     * needs full control over the response body and challenge headers, for example to suppress a
+     * browser Basic auth dialog.
+     *
      * @param response response to return instead of continuing request processing
      * @return rejected authentication result
      */
     public static ThingifierApiAuthenticationResult rejected(final ApiResponse response) {
-        return new ThingifierApiAuthenticationResult(false, null, response);
+        return new ThingifierApiAuthenticationResult(false, null, response, true);
     }
 
     /**
@@ -100,5 +108,14 @@ public final class ThingifierApiAuthenticationResult {
      */
     public ApiResponse rejectionResponse() {
         return rejectionResponse;
+    }
+
+    /**
+     * Reports whether the rejection response was supplied directly by application code.
+     *
+     * @return true when Thingifier should not add default challenge headers
+     */
+    public boolean hasCustomRejectionResponse() {
+        return customRejectionResponse;
     }
 }

@@ -107,12 +107,13 @@ public final class ThingifierApiSpec {
     /**
      * Registers an authenticator for a named security scheme.
      *
-     * <p>Registering an authenticator makes a named scheme enforceable at runtime. The scheme is
-     * also declared as a bearer scheme for generated documentation because enforcement without a
-     * published security scheme would mislead API consumers.
+     * <p>Registering an authenticator makes a named scheme enforceable at runtime when a route rule
+     * selects that scheme with named Basic or Bearer auth. The route rule and security declaration
+     * decide which HTTP auth mechanism is documented and parsed; this callback only supplies the
+     * application-specific credential check.
      *
-     * @param schemeName named bearer scheme
-     * @param authenticator callback used to authenticate bearer tokens for the scheme
+     * @param schemeName named security scheme
+     * @param authenticator callback used to authenticate parsed credentials for the scheme
      * @return this spec so API configuration can be chained
      * @throws IllegalArgumentException when the scheme name is blank or the authenticator is null
      */
@@ -122,7 +123,6 @@ public final class ThingifierApiSpec {
         if (authenticator == null) {
             throw new IllegalArgumentException("authenticator is required");
         }
-        securitySpec.bearer(normalizedSchemeName);
         authenticators.put(normalizedSchemeName, authenticator);
         return this;
     }
@@ -380,7 +380,7 @@ public final class ThingifierApiSpec {
     /**
      * Finds the authenticator registered for a named security scheme.
      *
-     * @param schemeName named bearer scheme
+     * @param schemeName named security scheme
      * @return authenticator when configured
      */
     public Optional<ThingifierApiAuthenticator> authenticatorFor(final String schemeName) {
