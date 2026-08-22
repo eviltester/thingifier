@@ -44,6 +44,28 @@ public final class EntityPatchDocumentMapper {
                 ApiMappingError.withMessage(400, "Unsupported PATCH update style"));
     }
 
+    /**
+     * Returns parsed body fields for operation validators when the PATCH style has fields.
+     *
+     * <p>JSON Merge Patch and JSON Patch are document operations, so validators should inspect
+     * {@code rawBody()} for those. Partial JSON update is field-shaped, so exposing parsed fields
+     * keeps operation validators aligned with POST and PUT body validators.
+     *
+     * @param style selected PATCH update style
+     * @param route mapped route
+     * @param rawBody raw patch body
+     * @return parsed fields for partial JSON update, otherwise an empty field set
+     */
+    public ApiBodyFields bodyFieldsForContext(
+            final EntityPatchUpdateStyle style, final ThingRoute route, final String rawBody) {
+        if (!(route instanceof InstanceRoute)
+                || style != EntityPatchUpdateStyle.PARTIAL_JSON_UPDATE) {
+            return ApiBodyFields.empty();
+        }
+        ParseResult parsed = parseJsonObject(rawBody, true);
+        return parsed.error == null ? parsed.bodyFields() : ApiBodyFields.empty();
+    }
+
     private ThingWriteRequestMapping mapPartialJsonUpdate(
             final InstanceRoute route, final String rawBody) {
         ParseResult parsed = parseJsonObject(rawBody, true);

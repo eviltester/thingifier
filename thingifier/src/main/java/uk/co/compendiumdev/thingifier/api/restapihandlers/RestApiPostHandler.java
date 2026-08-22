@@ -1,7 +1,9 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ApiOperationValidationPolicy;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.DefaultThingifierApiRuntime;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingCommandResultApiMapper;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingWriteRequestMapper;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingWriteRequestMapping;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierApiRuntime;
@@ -15,6 +17,7 @@ import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
+import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
 /**
  * Handles generated Thingifier POST routes.
@@ -68,7 +71,13 @@ public class RestApiPostHandler {
      */
     public ApiResponse handle(
             final String url, final BodyParser args, final HttpHeadersBlock requestHeaders) {
-        return handle(url, args.bodyFields(), runtime.contextFrom(requestHeaders));
+        return handle(
+                url,
+                args.bodyFields(),
+                args.rawBody(),
+                new QueryFilterParams(),
+                runtime.contextFrom(requestHeaders),
+                null);
     }
 
     /**
@@ -81,7 +90,8 @@ public class RestApiPostHandler {
      */
     public ApiResponse handle(
             final String url, final BodyParser args, final ThingifierRequestContext context) {
-        return handle(url, args.bodyFields(), context);
+        return handle(
+                url, args.bodyFields(), args.rawBody(), new QueryFilterParams(), context, null);
     }
 
     /**
@@ -96,7 +106,7 @@ public class RestApiPostHandler {
             final String url,
             final ApiBodyFields bodyFields,
             final ThingifierRequestContext context) {
-        return handle(url, bodyFields, context, null);
+        return handle(url, bodyFields, "", new QueryFilterParams(), context, null);
     }
 
     /**
@@ -111,6 +121,33 @@ public class RestApiPostHandler {
     public ApiResponse handle(
             final String url,
             final ApiBodyFields bodyFields,
+            final ThingifierRequestContext context,
+            final ThingifierApiLifecycleContext lifecycle) {
+        return handle(
+                url,
+                bodyFields,
+                lifecycle == null ? "" : lifecycle.rawBody(),
+                lifecycle == null ? new QueryFilterParams() : lifecycle.queryParams(),
+                context,
+                lifecycle);
+    }
+
+    /**
+     * Handles a POST request with full request data for operation validation.
+     *
+     * @param url generated API path
+     * @param bodyFields parsed request body fields
+     * @param rawBody raw request body text
+     * @param queryParams parsed query parameters
+     * @param context request context containing the active store
+     * @param lifecycle lifecycle context, or null for direct processing
+     * @return API response for the POST
+     */
+    public ApiResponse handle(
+            final String url,
+            final ApiBodyFields bodyFields,
+            final String rawBody,
+            final QueryFilterParams queryParams,
             final ThingifierRequestContext context,
             final ThingifierApiLifecycleContext lifecycle) {
         ThingRoute route = routeFor(url, lifecycle);
@@ -128,6 +165,26 @@ public class RestApiPostHandler {
                         writePolicy.relationshipOperationsFor(RoutingVerb.POST, route),
                         context);
         ThingWriteRequestMapping mapping = mapper.mapPost(route, bodyFields);
+        if (mapping.isError()) {
+            return new ThingCommandResultApiMapper(runtime.apiConfig()).map(mapping.getError());
+        }
+
+        ApiResponse operationValidationResponse =
+                new ApiOperationValidationPolicy(runtime)
+                        .rejectIfInvalid(
+                                RoutingVerb.POST,
+                                url,
+                                route,
+                                context,
+                                bodyFields,
+                                rawBody,
+                                queryParams,
+                                writePolicy.operationTypeFor(
+                                        RoutingVerb.POST, route, bodyFields, context));
+        if (operationValidationResponse != null) {
+            return operationValidationResponse;
+        }
+
         return LifecycleWriteSupport.execute(
                 runtime,
                 lifecycleHooks,
