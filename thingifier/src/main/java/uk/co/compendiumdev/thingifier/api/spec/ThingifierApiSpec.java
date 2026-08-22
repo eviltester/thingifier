@@ -111,9 +111,9 @@ public final class ThingifierApiSpec {
      * Registers an authenticator for a named security scheme.
      *
      * <p>Registering an authenticator makes a named scheme enforceable at runtime when a route rule
-     * selects that scheme with named Basic or Bearer auth. The route rule and security declaration
-     * decide which HTTP auth mechanism is documented and parsed; this callback only supplies the
-     * application-specific credential check.
+     * selects that scheme with named Basic, Bearer, or API key auth. The route rule and security
+     * declaration decide which HTTP auth mechanism is documented and parsed; this callback only
+     * supplies the application-specific credential check.
      *
      * @param schemeName named security scheme
      * @param authenticator callback used to authenticate parsed credentials for the scheme

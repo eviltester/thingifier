@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinitionDocGenerator;
@@ -26,6 +27,7 @@ import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.docgen.ThingifierApiDocumentationDefn;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.AcceptHeaderParser;
+import uk.co.compendiumdev.thingifier.api.security.ThingifierApiSecuritySchemeType;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityViewDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -139,6 +141,12 @@ public class Swaggerizer {
         for (String basicSchemeName : thingifier.apiSpec().security().basicSchemes()) {
             addHttpSecurityScheme(components, basicSchemeName, "basic", null);
         }
+        for (String apiKeySchemeName : thingifier.apiSpec().security().apiKeySchemes()) {
+            addApiKeySecurityScheme(
+                    components,
+                    apiKeySchemeName,
+                    thingifier.apiSpec().security().apiKeyHeaderName(apiKeySchemeName));
+        }
 
         if (routes != null) {
 
@@ -247,19 +255,7 @@ public class Swaggerizer {
                                 operation.setRequestBody(requestBody);
                             }
 
-                            if (subroute.isSecuredByBasicAuth()) {
-                                final String basicSchemeName = subroute.basicAuthSchemeName();
-                                addHttpSecurityScheme(components, basicSchemeName, "basic", null);
-                                operation.addSecurityItem(
-                                        new SecurityRequirement().addList(basicSchemeName));
-                            }
-
-                            if (subroute.isSecuredByBearerAuth()) {
-                                final String bearerSchemeName = subroute.bearerAuthSchemeName();
-                                addHttpSecurityScheme(components, bearerSchemeName, "bearer", null);
-                                operation.addSecurityItem(
-                                        new SecurityRequirement().addList(bearerSchemeName));
-                            }
+                            addRouteSecuritySchemes(subroute, components, operation);
 
                             if (shouldDocumentSortParameter(thingifier, subroute)) {
                                 operationParameters.add(
@@ -585,6 +581,88 @@ public class Swaggerizer {
         }
     }
 
+    private void addRouteSecuritySchemes(
+            final RoutingDefinition subroute,
+            final Components components,
+            final Operation operation) {
+        if (subroute.hasAuthSchemeNames()) {
+            for (String schemeName : subroute.authSchemeNames()) {
+                addRouteSecurityScheme(subroute, components, operation, schemeName);
+            }
+            return;
+        }
+
+        addLegacyRouteSecuritySchemes(subroute, components, operation);
+    }
+
+    private void addLegacyRouteSecuritySchemes(
+            final RoutingDefinition subroute,
+            final Components components,
+            final Operation operation) {
+        if (subroute.isSecuredByBasicAuth()) {
+            final String basicSchemeName = subroute.basicAuthSchemeName();
+            addHttpSecurityScheme(components, basicSchemeName, "basic", null);
+            operation.addSecurityItem(new SecurityRequirement().addList(basicSchemeName));
+        }
+
+        if (subroute.isSecuredByBearerAuth()) {
+            final String bearerSchemeName = subroute.bearerAuthSchemeName();
+            addHttpSecurityScheme(components, bearerSchemeName, "bearer", null);
+            operation.addSecurityItem(new SecurityRequirement().addList(bearerSchemeName));
+        }
+
+        if (subroute.isSecuredByApiKeyAuth()) {
+            final String apiKeySchemeName = subroute.apiKeyAuthSchemeName();
+            addApiKeySecurityScheme(
+                    components, apiKeySchemeName, apiKeyHeaderNameFor(subroute, apiKeySchemeName));
+            operation.addSecurityItem(new SecurityRequirement().addList(apiKeySchemeName));
+        }
+    }
+
+    private void addRouteSecurityScheme(
+            final RoutingDefinition subroute,
+            final Components components,
+            final Operation operation,
+            final String schemeName) {
+        final Optional<ThingifierApiSecuritySchemeType> schemeType =
+                routeSecuritySchemeType(subroute, schemeName);
+        if (schemeType.isEmpty()) {
+            return;
+        }
+
+        switch (schemeType.get()) {
+            case BASIC:
+                addHttpSecurityScheme(components, schemeName, "basic", null);
+                break;
+            case BEARER:
+                addHttpSecurityScheme(components, schemeName, "bearer", null);
+                break;
+            case API_KEY:
+                addApiKeySecurityScheme(
+                        components, schemeName, apiKeyHeaderNameFor(subroute, schemeName));
+                break;
+            default:
+                return;
+        }
+        operation.addSecurityItem(new SecurityRequirement().addList(schemeName));
+    }
+
+    private Optional<ThingifierApiSecuritySchemeType> routeSecuritySchemeType(
+            final RoutingDefinition subroute, final String schemeName) {
+        if (subroute.isSecuredByBasicAuth() && subroute.basicAuthSchemeName().equals(schemeName)) {
+            return Optional.of(ThingifierApiSecuritySchemeType.BASIC);
+        }
+        if (subroute.isSecuredByBearerAuth()
+                && subroute.bearerAuthSchemeName().equals(schemeName)) {
+            return Optional.of(ThingifierApiSecuritySchemeType.BEARER);
+        }
+        if (subroute.isSecuredByApiKeyAuth()
+                && subroute.apiKeyAuthSchemeName().equals(schemeName)) {
+            return Optional.of(ThingifierApiSecuritySchemeType.API_KEY);
+        }
+        return apiDefn.getThingifier().apiSpec().security().schemeType(schemeName);
+    }
+
     private Content responseContentWith(final String jsonRef, final Schema<?> xmlSchema) {
         Content content = new Content();
         for (AcceptHeaderParser.ACCEPT_TYPE responseType :
@@ -624,6 +702,29 @@ public class Swaggerizer {
             securityScheme.bearerFormat(bearerFormat);
         }
         components.addSecuritySchemes(name, securityScheme);
+    }
+
+    private void addApiKeySecurityScheme(
+            final Components components, final String name, final String headerName) {
+        if (components.getSecuritySchemes() != null
+                && components.getSecuritySchemes().containsKey(name)) {
+            return;
+        }
+
+        final SecurityScheme securityScheme =
+                new SecurityScheme()
+                        .type(SecurityScheme.Type.APIKEY)
+                        .in(SecurityScheme.In.HEADER)
+                        .name(headerName);
+        components.addSecuritySchemes(name, securityScheme);
+    }
+
+    private String apiKeyHeaderNameFor(
+            final RoutingDefinition route, final String apiKeySchemeName) {
+        if (route.hasApiKeyHeaderName()) {
+            return route.apiKeyHeaderName();
+        }
+        return apiDefn.getThingifier().apiSpec().security().apiKeyHeaderName(apiKeySchemeName);
     }
 
     private ObjectSchema asJsonCollectionObjectSchema(EntityDefinition objectSchemaDefinition) {

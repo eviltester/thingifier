@@ -39,6 +39,10 @@ public final class ThingifierApiRouteRule {
     private boolean usesBearerAuth;
     private String bearerAuthSchemeName;
     private String enforcedBearerAuthSchemeName;
+    private boolean usesApiKeyAuth;
+    private String apiKeyAuthSchemeName;
+    private String enforcedApiKeyAuthSchemeName;
+    private final List<String> authEnforcementSchemeNames;
     private final List<ThingifierApiAuthorizer> authorizers;
     private final List<ApiOperationValidatorDefinition> apiOperationValidators;
     private RouteApiResponsePolicy successResponsePolicy;
@@ -68,6 +72,10 @@ public final class ThingifierApiRouteRule {
         this.usesBearerAuth = false;
         this.bearerAuthSchemeName = SecuritySchemeNames.DEFAULT_BEARER_AUTH_SCHEME;
         this.enforcedBearerAuthSchemeName = null;
+        this.usesApiKeyAuth = false;
+        this.apiKeyAuthSchemeName = SecuritySchemeNames.DEFAULT_API_KEY_AUTH_SCHEME;
+        this.enforcedApiKeyAuthSchemeName = null;
+        this.authEnforcementSchemeNames = new java.util.ArrayList<>();
         this.authorizers = new java.util.ArrayList<>();
         this.apiOperationValidators = new java.util.ArrayList<>();
         this.successResponsePolicy = null;
@@ -201,8 +209,8 @@ public final class ThingifierApiRouteRule {
      * <p>The scheme name is used in generated documentation, authenticator lookup, and the
      * authenticated-principal slot on the request context. The Basic realm is configured on {@link
      * uk.co.compendiumdev.thingifier.api.security.ThingifierApiSecuritySpec#basic(String, String)}.
-     * If both named Basic and named Bearer auth are configured on one route, the most recent named
-     * call selects the runtime enforcement scheme.
+     * This single-scheme convenience form replaces any previously configured runtime auth
+     * alternatives.
      *
      * @param schemeName named Basic scheme, for example {@code adminPassword}
      * @return this rule so route API configuration can be chained
@@ -211,9 +219,12 @@ public final class ThingifierApiRouteRule {
         final String normalizedSchemeName = SecuritySchemeNames.requireValid(schemeName);
         usesBasicAuth = true;
         usesBearerAuth = false;
+        usesApiKeyAuth = false;
         basicAuthSchemeName = normalizedSchemeName;
         enforcedBasicAuthSchemeName = normalizedSchemeName;
         enforcedBearerAuthSchemeName = null;
+        enforcedApiKeyAuthSchemeName = null;
+        replaceAuthEnforcementWith(normalizedSchemeName);
         return this;
     }
 
@@ -240,6 +251,9 @@ public final class ThingifierApiRouteRule {
      * through {@link ThingifierApiSpec#authenticator(String,
      * uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthenticator)}.
      *
+     * <p>This single-scheme convenience form replaces any previously configured runtime auth
+     * alternatives.
+     *
      * @param schemeName named bearer scheme, for example {@code cartToken}
      * @return this rule so route API configuration can be chained
      */
@@ -247,17 +261,76 @@ public final class ThingifierApiRouteRule {
         final String normalizedSchemeName = SecuritySchemeNames.requireValid(schemeName);
         usesBasicAuth = false;
         usesBearerAuth = true;
+        usesApiKeyAuth = false;
         bearerAuthSchemeName = normalizedSchemeName;
         enforcedBasicAuthSchemeName = null;
         enforcedBearerAuthSchemeName = normalizedSchemeName;
+        enforcedApiKeyAuthSchemeName = null;
+        replaceAuthEnforcementWith(normalizedSchemeName);
+        return this;
+    }
+
+    /**
+     * Marks the route as requiring a named API key authentication scheme.
+     *
+     * <p>API key auth is for public token headers such as {@code X-API-KEY} or {@code
+     * X-AUTH-TOKEN}. The scheme name is used for documentation, authenticator lookup, and the
+     * authenticated-principal slot on the request context. The header name is configured on {@link
+     * uk.co.compendiumdev.thingifier.api.security.ThingifierApiSecuritySpec#apiKey(String,
+     * String)}. This single-scheme convenience form replaces any previously configured runtime auth
+     * alternatives.
+     *
+     * @param schemeName named API key scheme, for example {@code authToken}
+     * @return this rule so route API configuration can be chained
+     */
+    public ThingifierApiRouteRule secureWithApiKey(final String schemeName) {
+        final String normalizedSchemeName = SecuritySchemeNames.requireValid(schemeName);
+        usesBasicAuth = false;
+        usesBearerAuth = false;
+        usesApiKeyAuth = true;
+        apiKeyAuthSchemeName = normalizedSchemeName;
+        enforcedBasicAuthSchemeName = null;
+        enforcedBearerAuthSchemeName = null;
+        enforcedApiKeyAuthSchemeName = normalizedSchemeName;
+        replaceAuthEnforcementWith(normalizedSchemeName);
+        return this;
+    }
+
+    /**
+     * Requires one of several named authentication schemes, tried in declaration order.
+     *
+     * <p>The named schemes must be declared on {@link
+     * uk.co.compendiumdev.thingifier.api.security.ThingifierApiSecuritySpec} so Thingifier knows
+     * whether each credential is Basic, Bearer, or API key. Runtime auth selects the first declared
+     * scheme whose credential source is present. If that credential is malformed or rejected,
+     * Thingifier stops immediately rather than falling through to later alternatives.
+     *
+     * @param schemeNames ordered security scheme names accepted by this route
+     * @return this rule so route API configuration can be chained
+     * @throws IllegalArgumentException when no scheme names are supplied or a name is blank
+     */
+    public ThingifierApiRouteRule secureWithAnyOf(final String... schemeNames) {
+        final List<String> normalizedSchemeNames = normalizedSchemeNames(schemeNames);
+        usesBasicAuth = false;
+        usesBearerAuth = false;
+        usesApiKeyAuth = false;
+        basicAuthSchemeName = SecuritySchemeNames.DEFAULT_BASIC_AUTH_SCHEME;
+        bearerAuthSchemeName = SecuritySchemeNames.DEFAULT_BEARER_AUTH_SCHEME;
+        apiKeyAuthSchemeName = SecuritySchemeNames.DEFAULT_API_KEY_AUTH_SCHEME;
+        enforcedBasicAuthSchemeName = null;
+        enforcedBearerAuthSchemeName = null;
+        enforcedApiKeyAuthSchemeName = null;
+        authEnforcementSchemeNames.clear();
+        authEnforcementSchemeNames.addAll(normalizedSchemeNames);
         return this;
     }
 
     /**
      * Adds a route-specific authorization callback.
      *
-     * <p>Authorizers run only after the named authenticator accepts the bearer token. Multiple
-     * authorizers are evaluated in registration order and the first rejection stops the request.
+     * <p>Authorizers run only after the named authenticator accepts the route's credential.
+     * Multiple authorizers are evaluated in registration order and the first rejection stops the
+     * request.
      *
      * @param authorizer authorization callback
      * @return this rule so route API configuration can be chained
@@ -305,6 +378,63 @@ public final class ThingifierApiRouteRule {
      */
     public String bearerAuthEnforcementSchemeName() {
         return enforcedBearerAuthSchemeName;
+    }
+
+    /**
+     * Reports whether this route is documented as API-key secured.
+     *
+     * @return true when API key auth should appear in generated documentation
+     */
+    public boolean isSecuredByApiKeyAuth() {
+        return usesApiKeyAuth;
+    }
+
+    /**
+     * Returns the API key scheme name used in generated documentation.
+     *
+     * @return API key auth scheme name
+     */
+    public String apiKeyAuthSchemeName() {
+        return apiKeyAuthSchemeName;
+    }
+
+    /**
+     * Reports whether this route should enforce API key auth at runtime.
+     *
+     * @return true when the route has a named API key enforcement scheme
+     */
+    public boolean hasApiKeyAuthEnforcement() {
+        return enforcedApiKeyAuthSchemeName != null;
+    }
+
+    /**
+     * Returns the API key scheme name used for runtime enforcement.
+     *
+     * @return API key enforcement scheme name, or null when API key auth is not enforced
+     */
+    public String apiKeyAuthEnforcementSchemeName() {
+        return enforcedApiKeyAuthSchemeName;
+    }
+
+    /**
+     * Reports whether this route has named runtime authentication enforcement.
+     *
+     * @return true when one or more auth schemes are enforced
+     */
+    public boolean hasAuthEnforcement() {
+        return !authEnforcementSchemeNames.isEmpty();
+    }
+
+    /**
+     * Returns runtime auth schemes in the order Thingifier should try them.
+     *
+     * <p>Single-scheme convenience methods return a one-item list. {@link
+     * #secureWithAnyOf(String...)} returns all configured alternatives in declaration order.
+     *
+     * @return immutable ordered auth scheme names
+     */
+    public List<String> authEnforcementSchemeNames() {
+        return List.copyOf(authEnforcementSchemeNames);
     }
 
     /**
@@ -822,6 +952,12 @@ public final class ThingifierApiRouteRule {
         if (usesBearerAuth) {
             route.secureWithBearerAuth(bearerAuthSchemeName);
         }
+        if (usesApiKeyAuth) {
+            route.secureWithApiKey(apiKeyAuthSchemeName);
+        }
+        if (hasAuthEnforcement() && !usesBasicAuth && !usesBearerAuth && !usesApiKeyAuth) {
+            route.secureWithAnyOf(authEnforcementSchemeNames.toArray(new String[0]));
+        }
         if (documentation != null) {
             route.addDocumentation(documentation);
         }
@@ -926,6 +1062,28 @@ public final class ThingifierApiRouteRule {
             Collections.addAll(selected, operations);
         }
         return selected;
+    }
+
+    private void replaceAuthEnforcementWith(final String schemeName) {
+        authEnforcementSchemeNames.clear();
+        authEnforcementSchemeNames.add(schemeName);
+    }
+
+    private List<String> normalizedSchemeNames(final String... schemeNames) {
+        if (schemeNames == null || schemeNames.length == 0) {
+            throw new IllegalArgumentException("secureWithAnyOf requires at least one scheme");
+        }
+        final List<String> normalizedSchemeNames = new java.util.ArrayList<>();
+        for (String schemeName : schemeNames) {
+            final String normalizedSchemeName = SecuritySchemeNames.requireValid(schemeName);
+            if (!normalizedSchemeNames.contains(normalizedSchemeName)) {
+                normalizedSchemeNames.add(normalizedSchemeName);
+            }
+        }
+        if (normalizedSchemeNames.isEmpty()) {
+            throw new IllegalArgumentException("secureWithAnyOf requires at least one scheme");
+        }
+        return normalizedSchemeNames;
     }
 
     private String requireText(final String value, final String label) {

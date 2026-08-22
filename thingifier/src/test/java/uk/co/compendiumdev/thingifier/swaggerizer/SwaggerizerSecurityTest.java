@@ -83,6 +83,84 @@ class SwaggerizerSecurityTest {
     }
 
     @Test
+    void apiKeySecuredRoutesAddHeaderApiKeySecuritySchemeAndOperationRequirement() {
+        final ThingifierApiDocumentationDefn apiDefn = new ThingifierApiDocumentationDefn();
+        apiDefn.addRouteToDocumentation(
+                new RoutingDefinition(
+                                RoutingVerb.GET,
+                                "/secret/token",
+                                RoutingStatus.returnedFromCall(),
+                                null)
+                        .addDocumentation("read a token")
+                        .addPossibleStatuses(200, 401, 403)
+                        .secureWithApiKey("authToken", "X-AUTH-TOKEN"));
+
+        final OpenAPI openApi = new Swaggerizer(apiDefn).swagger();
+
+        final SecurityScheme apiKeyAuth =
+                openApi.getComponents().getSecuritySchemes().get("authToken");
+        Assertions.assertNotNull(apiKeyAuth);
+        Assertions.assertEquals(SecurityScheme.Type.APIKEY, apiKeyAuth.getType());
+        Assertions.assertEquals(SecurityScheme.In.HEADER, apiKeyAuth.getIn());
+        Assertions.assertEquals("X-AUTH-TOKEN", apiKeyAuth.getName());
+        Assertions.assertEquals(
+                "authToken",
+                openApi.getPaths()
+                        .get("/secret/token")
+                        .getGet()
+                        .getSecurity()
+                        .get(0)
+                        .keySet()
+                        .iterator()
+                        .next());
+    }
+
+    @Test
+    void alternativeAuthRendersOpenApiSecurityRequirementsInDeclarationOrder() {
+        final Thingifier thingifier = relationshipModel();
+        thingifier.apiSpec().security().bearer("secretBearer");
+        thingifier.apiSpec().security().apiKey("secretApiKey", "X-AUTH-TOKEN");
+        thingifier
+                .apiSpec()
+                .route(RoutingVerb.POST, "/api/todos")
+                .secureWithAnyOf("secretBearer", "secretApiKey");
+        final ThingifierApiDocumentationDefn apiDefn = new ThingifierApiDocumentationDefn();
+        apiDefn.setThingifier(thingifier);
+        apiDefn.setPathPrefix("/api");
+
+        final OpenAPI openApi = new Swaggerizer(apiDefn).swagger();
+
+        final SecurityScheme bearer =
+                openApi.getComponents().getSecuritySchemes().get("secretBearer");
+        final SecurityScheme apiKey =
+                openApi.getComponents().getSecuritySchemes().get("secretApiKey");
+        Assertions.assertEquals(SecurityScheme.Type.HTTP, bearer.getType());
+        Assertions.assertEquals("bearer", bearer.getScheme());
+        Assertions.assertEquals(SecurityScheme.Type.APIKEY, apiKey.getType());
+        Assertions.assertEquals("X-AUTH-TOKEN", apiKey.getName());
+        Assertions.assertEquals(
+                "secretBearer",
+                openApi.getPaths()
+                        .get("/api/todos")
+                        .getPost()
+                        .getSecurity()
+                        .get(0)
+                        .keySet()
+                        .iterator()
+                        .next());
+        Assertions.assertEquals(
+                "secretApiKey",
+                openApi.getPaths()
+                        .get("/api/todos")
+                        .getPost()
+                        .getSecurity()
+                        .get(1)
+                        .keySet()
+                        .iterator()
+                        .next());
+    }
+
+    @Test
     void bearerSecuredGeneratedRoutesAddOperationRequirement() {
         final Thingifier thingifier = relationshipModel();
         thingifier

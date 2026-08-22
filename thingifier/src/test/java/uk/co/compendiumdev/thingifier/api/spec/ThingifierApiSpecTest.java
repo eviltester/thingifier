@@ -92,6 +92,48 @@ class ThingifierApiSpecTest {
     }
 
     @Test
+    void apiKeySecuritySpecStoresConfiguredHeader() {
+        final ThingifierApiSecuritySpec securitySpec = new ThingifierApiSecuritySpec();
+
+        securitySpec.apiKey("authToken", "X-AUTH-TOKEN");
+
+        Assertions.assertTrue(securitySpec.hasApiKey("authToken"));
+        Assertions.assertEquals("X-AUTH-TOKEN", securitySpec.apiKeyHeaderName("authToken"));
+    }
+
+    @Test
+    void namedApiKeyRouteRecordsDocumentationAndRuntimeEnforcement() {
+        final Thingifier thingifier = model();
+        final ThingifierApiRouteRule rule =
+                thingifier
+                        .apiSpec()
+                        .route(RoutingVerb.POST, "/api/todos")
+                        .secureWithApiKey("authToken");
+
+        Assertions.assertTrue(rule.isSecuredByApiKeyAuth());
+        Assertions.assertEquals("authToken", rule.apiKeyAuthSchemeName());
+        Assertions.assertTrue(rule.hasApiKeyAuthEnforcement());
+        Assertions.assertEquals("authToken", rule.apiKeyAuthEnforcementSchemeName());
+    }
+
+    @Test
+    void alternativeAuthRouteRecordsOrderedRuntimeSchemes() {
+        final Thingifier thingifier = model();
+        final ThingifierApiRouteRule rule =
+                thingifier
+                        .apiSpec()
+                        .route(RoutingVerb.POST, "/api/todos")
+                        .secureWithAnyOf("secretBearer", "secretApiKey");
+
+        Assertions.assertTrue(rule.hasAuthEnforcement());
+        Assertions.assertEquals(
+                java.util.List.of("secretBearer", "secretApiKey"),
+                rule.authEnforcementSchemeNames());
+        Assertions.assertFalse(rule.hasBearerAuthEnforcement());
+        Assertions.assertFalse(rule.hasApiKeyAuthEnforcement());
+    }
+
+    @Test
     void namedBasicAuthClearsBearerEnforcementOnRoute() {
         final Thingifier thingifier = model();
         final ThingifierApiRouteRule rule =
@@ -117,6 +159,50 @@ class ThingifierApiSpecTest {
 
         Assertions.assertFalse(rule.hasBasicAuthEnforcement());
         Assertions.assertTrue(rule.hasBearerAuthEnforcement());
+    }
+
+    @Test
+    void namedApiKeyAuthClearsOtherEnforcementOnRoute() {
+        final Thingifier thingifier = model();
+        final ThingifierApiRouteRule rule =
+                thingifier
+                        .apiSpec()
+                        .route(RoutingVerb.POST, "/api/todos")
+                        .secureWithBasicAuth("adminPassword")
+                        .secureWithBearerAuth("cartToken")
+                        .secureWithApiKey("authToken");
+
+        Assertions.assertFalse(rule.hasBasicAuthEnforcement());
+        Assertions.assertFalse(rule.hasBearerAuthEnforcement());
+        Assertions.assertTrue(rule.hasApiKeyAuthEnforcement());
+    }
+
+    @Test
+    void namedBearerAuthClearsApiKeyEnforcementOnRoute() {
+        final Thingifier thingifier = model();
+        final ThingifierApiRouteRule rule =
+                thingifier
+                        .apiSpec()
+                        .route(RoutingVerb.POST, "/api/todos")
+                        .secureWithApiKey("authToken")
+                        .secureWithBearerAuth("cartToken");
+
+        Assertions.assertFalse(rule.hasApiKeyAuthEnforcement());
+        Assertions.assertTrue(rule.hasBearerAuthEnforcement());
+    }
+
+    @Test
+    void namedBasicAuthClearsApiKeyEnforcementOnRoute() {
+        final Thingifier thingifier = model();
+        final ThingifierApiRouteRule rule =
+                thingifier
+                        .apiSpec()
+                        .route(RoutingVerb.POST, "/api/todos")
+                        .secureWithApiKey("authToken")
+                        .secureWithBasicAuth("adminPassword");
+
+        Assertions.assertFalse(rule.hasApiKeyAuthEnforcement());
+        Assertions.assertTrue(rule.hasBasicAuthEnforcement());
     }
 
     @Test

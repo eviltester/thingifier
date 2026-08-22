@@ -23,9 +23,12 @@ public final class ThingifierApiAuthenticationContext {
     private final ThingRoute route;
     private final HttpHeadersBlock headers;
     private final ThingifierRequestContext requestContext;
+    private final String authCredential;
+    private final String authCredentialSource;
     private final String bearerToken;
     private final String basicUsername;
     private final String basicPassword;
+    private final String apiKey;
     private final EntityDefinition targetEntity;
     private final String targetIdentifier;
     private final EntityDefinition parentEntity;
@@ -41,15 +44,16 @@ public final class ThingifierApiAuthenticationContext {
      */
     public ThingifierApiAuthenticationContext(
             final ThingifierApiRouteAuthDetails details, final String bearerToken) {
-        this(details, bearerToken, "", "");
+        this(details, bearerToken, "", "", "", bearerToken, "Authorization");
     }
 
     /**
      * Creates an immutable authentication context with parsed auth credentials.
      *
      * <p>Only the fields relevant to the enforced scheme are populated. Bearer routes receive a
-     * bearer token, and Basic routes receive username/password values. Keeping one context type
-     * lets applications use the same authenticator interface for every scheme.
+     * bearer token, Basic routes receive username/password values, and API key routes use {@link
+     * #apiKey(ThingifierApiRouteAuthDetails, String, String)}. Keeping one context type lets
+     * applications use the same authenticator interface for every scheme.
      *
      * @param details reusable route and request details
      * @param bearerToken parsed bearer token from the Authorization header
@@ -61,6 +65,37 @@ public final class ThingifierApiAuthenticationContext {
             final String bearerToken,
             final String basicUsername,
             final String basicPassword) {
+        this(details, bearerToken, basicUsername, basicPassword, "", "", "Authorization");
+    }
+
+    /**
+     * Creates an immutable authentication context for an API key header.
+     *
+     * <p>API key values are public API credentials read from a configured request header. The
+     * source name is preserved so authenticators can distinguish schemes that intentionally share a
+     * callback but use different headers.
+     *
+     * @param details reusable route and request details
+     * @param apiKey parsed API key credential
+     * @param headerName request header that supplied the credential
+     * @return authentication context populated for API key auth
+     */
+    public static ThingifierApiAuthenticationContext apiKey(
+            final ThingifierApiRouteAuthDetails details,
+            final String apiKey,
+            final String headerName) {
+        return new ThingifierApiAuthenticationContext(
+                details, "", "", "", apiKey, apiKey, headerName);
+    }
+
+    private ThingifierApiAuthenticationContext(
+            final ThingifierApiRouteAuthDetails details,
+            final String bearerToken,
+            final String basicUsername,
+            final String basicPassword,
+            final String apiKey,
+            final String authCredential,
+            final String authCredentialSource) {
         this.schemeName = details.schemeName();
         this.verb = details.verb();
         this.path = details.path();
@@ -68,9 +103,12 @@ public final class ThingifierApiAuthenticationContext {
         this.route = details.route();
         this.headers = details.headers();
         this.requestContext = details.requestContext();
+        this.authCredential = authCredential == null ? "" : authCredential;
+        this.authCredentialSource = authCredentialSource == null ? "" : authCredentialSource;
         this.bearerToken = bearerToken == null ? "" : bearerToken;
         this.basicUsername = basicUsername == null ? "" : basicUsername;
         this.basicPassword = basicPassword == null ? "" : basicPassword;
+        this.apiKey = apiKey == null ? "" : apiKey;
         this.targetEntity = details.targetEntity();
         this.targetIdentifier = details.targetIdentifier();
         this.parentEntity = details.parentEntity();
@@ -86,6 +124,18 @@ public final class ThingifierApiAuthenticationContext {
      */
     public String schemeName() {
         return schemeName;
+    }
+
+    /**
+     * Returns the security scheme name that selected the authenticator.
+     *
+     * <p>This alias mirrors the public API wording used by generic authenticators. It returns the
+     * same value as {@link #schemeName()}.
+     *
+     * @return security scheme name
+     */
+    public String authSchemeName() {
+        return schemeName();
     }
 
     /**
@@ -175,6 +225,31 @@ public final class ThingifierApiAuthenticationContext {
     }
 
     /**
+     * Returns the parsed credential for token-style authentication schemes.
+     *
+     * <p>Bearer and API key routes populate this with the bearer token or API key. Basic auth
+     * exposes its credential pair through {@link #basicUsername()} and {@link #basicPassword()}
+     * instead of combining them into one string.
+     *
+     * @return parsed token-style credential, or an empty string for Basic auth
+     */
+    public String authCredential() {
+        return authCredential;
+    }
+
+    /**
+     * Returns where the parsed credential came from.
+     *
+     * <p>Bearer and Basic use {@code Authorization}. API key auth returns the configured public
+     * header name, for example {@code X-AUTH-TOKEN}.
+     *
+     * @return credential source header name, or an empty string when unavailable
+     */
+    public String authCredentialSource() {
+        return authCredentialSource;
+    }
+
+    /**
      * Returns the parsed bearer token.
      *
      * @return bearer token without the Authorization scheme prefix
@@ -199,6 +274,15 @@ public final class ThingifierApiAuthenticationContext {
      */
     public String basicPassword() {
         return basicPassword;
+    }
+
+    /**
+     * Returns the parsed API key credential.
+     *
+     * @return API key value, or an empty string when the enforced scheme is not API key auth
+     */
+    public String apiKey() {
+        return apiKey;
     }
 
     /**

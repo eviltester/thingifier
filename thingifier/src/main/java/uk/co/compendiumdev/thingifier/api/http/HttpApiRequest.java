@@ -166,12 +166,7 @@ public final class HttpApiRequest {
 
     public HttpApiRequest addHeader(final String headerName, final String headerValue) {
         final String trimmedHeaderValue = headerValue.trim();
-        // Authorization parameters are case-sensitive, e.g. Basic credentials are Base64.
-        final String value =
-                "authorization".equalsIgnoreCase(headerName)
-                        ? trimmedHeaderValue
-                        : trimmedHeaderValue.toLowerCase();
-        this.headers.put(headerName, value);
+        this.headers.put(headerName, trimmedHeaderValue);
         return this;
     }
 
