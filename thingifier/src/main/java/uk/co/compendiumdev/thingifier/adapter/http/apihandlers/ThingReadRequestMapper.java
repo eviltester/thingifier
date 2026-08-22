@@ -29,8 +29,9 @@ public final class ThingReadRequestMapper {
         if (route instanceof InstanceRoute) {
             InstanceRoute instance = (InstanceRoute) route;
             String identifierCandidate = instance.identifier();
-            if (schema.hasRelationshipNamed(identifierCandidate)
-                    || entityForTerm(identifierCandidate) != null) {
+            if (!instance.hasFixedIdentifier()
+                    && (schema.hasRelationshipNamed(identifierCandidate)
+                            || entityForTerm(identifierCandidate) != null)) {
                 return notFound(route.originalPath());
             }
 

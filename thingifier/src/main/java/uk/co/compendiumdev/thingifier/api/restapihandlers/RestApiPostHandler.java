@@ -7,7 +7,6 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingWriteRequest
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierApiRuntime;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.WriteMethodPolicy;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
-import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
 import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleContext;
 import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleHookRegistry;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
@@ -114,7 +113,7 @@ public class RestApiPostHandler {
             final ApiBodyFields bodyFields,
             final ThingifierRequestContext context,
             final ThingifierApiLifecycleContext lifecycle) {
-        ThingRoute route = new ThingRouteMapper(runtime.schema()).map(url);
+        ThingRoute route = routeFor(url, lifecycle);
         WriteMethodPolicy writePolicy = new WriteMethodPolicy(runtime);
         ApiResponse policyResponse =
                 writePolicy.rejectIfNotAllowed(RoutingVerb.POST, route, bodyFields, context);
@@ -136,5 +135,9 @@ public class RestApiPostHandler {
                 mapping,
                 context,
                 () -> mapper.mapPost(route, lifecycle.bodyFields()));
+    }
+
+    private ThingRoute routeFor(final String url, final ThingifierApiLifecycleContext lifecycle) {
+        return lifecycle == null ? runtime.routeFor(RoutingVerb.POST, url) : lifecycle.route();
     }
 }

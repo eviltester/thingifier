@@ -7,7 +7,6 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingWriteRequest
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierApiRuntime;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.WriteMethodPolicy;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
-import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
 import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleContext;
 import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleHookRegistry;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
@@ -92,7 +91,7 @@ public class RestApiDeleteHandler {
             final String url,
             final ThingifierRequestContext context,
             final ThingifierApiLifecycleContext lifecycle) {
-        ThingRoute route = new ThingRouteMapper(runtime.schema()).map(url);
+        ThingRoute route = routeFor(url, lifecycle);
         ApiResponse policyResponse =
                 new WriteMethodPolicy(runtime)
                         .rejectIfNotAllowed(
@@ -110,5 +109,9 @@ public class RestApiDeleteHandler {
                 mapping,
                 context,
                 () -> new ThingWriteRequestMapper(runtime.schema()).mapDelete(route));
+    }
+
+    private ThingRoute routeFor(final String url, final ThingifierApiLifecycleContext lifecycle) {
+        return lifecycle == null ? runtime.routeFor(RoutingVerb.DELETE, url) : lifecycle.route();
     }
 }

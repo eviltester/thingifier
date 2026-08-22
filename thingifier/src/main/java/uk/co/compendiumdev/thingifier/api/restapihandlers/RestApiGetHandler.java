@@ -9,9 +9,9 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierApiRunt
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.CollectionRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.RelationshipCollectionRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
-import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
 import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleContext;
 import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleHookRegistry;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
@@ -90,7 +90,27 @@ public class RestApiGetHandler {
             final String url,
             final QueryFilterParams queryParams,
             final ThingifierRequestContext context) {
-        return handle(url, queryParams, context, null);
+        return handle(RoutingVerb.GET, url, queryParams, context, null);
+    }
+
+    /**
+     * Handles a GET-compatible request using an explicit routing verb.
+     *
+     * <p>HEAD uses the same repository lookup as GET but may have a different route rule, so direct
+     * callers can supply the verb that selected the public route.
+     *
+     * @param verb routing verb used to resolve route rules
+     * @param url generated or fixed public API path
+     * @param queryParams query filters to apply
+     * @param context request context containing the active store
+     * @return API response for the read
+     */
+    public ApiResponse handle(
+            final RoutingVerb verb,
+            final String url,
+            final QueryFilterParams queryParams,
+            final ThingifierRequestContext context) {
+        return handle(verb, url, queryParams, context, null);
     }
 
     /**
@@ -107,9 +127,19 @@ public class RestApiGetHandler {
             final QueryFilterParams queryParams,
             final ThingifierRequestContext context,
             final ThingifierApiLifecycleContext lifecycle) {
+        final RoutingVerb verb = lifecycle == null ? RoutingVerb.GET : lifecycle.routingVerb();
+        return handle(verb, url, queryParams, context, lifecycle);
+    }
+
+    private ApiResponse handle(
+            final RoutingVerb verb,
+            final String url,
+            final QueryFilterParams queryParams,
+            final ThingifierRequestContext context,
+            final ThingifierApiLifecycleContext lifecycle) {
         ThingReadResultApiMapper apiMapper = new ThingReadResultApiMapper(runtime.apiConfig());
 
-        ThingRoute route = new ThingRouteMapper(runtime.schema()).map(url);
+        ThingRoute route = lifecycle == null ? runtime.routeFor(verb, url) : lifecycle.route();
         EffectiveQueryParams effectiveQueryParams =
                 EffectiveQueryParams.forGet(runtime.apiConfig(), route, queryParams, url);
         if (effectiveQueryParams.isError()) {

@@ -3,8 +3,10 @@ package uk.co.compendiumdev.thingifier.api;
 import java.util.function.Supplier;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.DefaultThingifierApiRuntime;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.FixedRouteResourcePreparer;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.RouteAuthPolicy;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierApiRuntime;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleContext;
 import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleHookRegistry;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
@@ -126,8 +128,9 @@ public class ThingifierRestAPIHandler {
     public ApiResponse get(
             final ApiRequestEnvelope request, final ThingifierApiLifecycleContext lifecycle) {
         ThingifierRequestContext context = contextFrom(request.headers(), lifecycle);
+        final RoutingVerb verb = lifecycle == null ? RoutingVerb.GET : lifecycle.routingVerb();
         return withAuthorizedResponsePolicy(
-                RoutingVerb.GET,
+                verb,
                 request.path(),
                 context,
                 lifecycle,
@@ -151,7 +154,8 @@ public class ThingifierRestAPIHandler {
                 context,
                 null,
                 () -> {
-                    final ApiResponse response = get.handle(url, queryParams, context);
+                    final ApiResponse response =
+                            get.handle(RoutingVerb.HEAD, url, queryParams, context);
                     response.clearBody();
                     return response;
                 });
@@ -528,6 +532,13 @@ public class ThingifierRestAPIHandler {
                 lifecycle == null ? authPolicy.rejectIfNotAuthorized(verb, url, context) : null;
         if (authResponse != null) {
             return withResponsePolicy(verb, url, authResponse, context);
+        }
+        final ThingRoute route =
+                lifecycle == null ? runtime.routeFor(verb, url) : lifecycle.route();
+        final ApiResponse fixedResourceResponse =
+                new FixedRouteResourcePreparer(runtime).prepare(verb, url, route, context);
+        if (fixedResourceResponse != null) {
+            return withResponsePolicy(verb, url, fixedResourceResponse, context);
         }
         return withResponsePolicy(verb, url, action.get(), context);
     }

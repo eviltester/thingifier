@@ -76,7 +76,7 @@ public class ApiRoutingDefinitionDocGenerator {
             // e.g. set a field as 'usedForIndividualRouting'
             Field uniqueIdField = getUniqueIdField(entityDefn);
             if (uniqueIdField != null) {
-                uniqueIdentifier = uniqueReferenceText.get(uniqueIdField.getType());
+                uniqueIdentifier = uniqueReferenceText.getOrDefault(uniqueIdField.getType(), ":id");
                 uniqueIdFieldName = uniqueIdField.getName();
             }
 
@@ -377,6 +377,7 @@ public class ApiRoutingDefinitionDocGenerator {
             }
         }
 
+        thingifier.apiSpec().addFixedRouteDefinitionsTo(defn, apiPathPrefix);
         new WriteMethodRoutePolicy(thingifier).applyTo(defn, apiPathPrefix);
         thingifier.apiSpec().applyTo(defn, apiPathPrefix);
         return defn;
@@ -426,7 +427,7 @@ public class ApiRoutingDefinitionDocGenerator {
 
         Field uniqueIdField = getUniqueIdField(thingDefn);
         if (uniqueIdField != null) {
-            uniqueIdentifier = uniqueReferenceText.get(uniqueIdField.getType());
+            uniqueIdentifier = uniqueReferenceText.getOrDefault(uniqueIdField.getType(), ":id");
             uniqueIdFieldName = uniqueIdField.getName();
         }
 
