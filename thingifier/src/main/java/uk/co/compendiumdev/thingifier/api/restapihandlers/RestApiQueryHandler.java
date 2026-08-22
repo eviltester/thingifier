@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ApiMappingError;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ApiOperationValidationPolicy;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingReadRequestMapper;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingReadRequestMapping;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingReadResultApiMapper;
@@ -17,6 +18,7 @@ import uk.co.compendiumdev.thingifier.api.ermodelconversion.JsonThing;
 import uk.co.compendiumdev.thingifier.api.http.ApiRequestEnvelope;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityViewDefinition;
@@ -138,6 +140,21 @@ public final class RestApiQueryHandler {
             return mapping.response;
         }
 
+        ApiResponse operationValidationResponse =
+                new ApiOperationValidationPolicy(runtime)
+                        .rejectIfInvalid(
+                                RoutingVerb.QUERY,
+                                url,
+                                route,
+                                context,
+                                ApiBodyFields.empty(),
+                                queryBody,
+                                mapping.queryParams,
+                                "QUERY");
+        if (operationValidationResponse != null) {
+            return operationValidationResponse;
+        }
+
         if (lifecycle == null) {
             return executeMappedQuery(url, mapping, queryBodyFormat, queryBody, context, apiMapper);
         }
@@ -248,7 +265,7 @@ public final class RestApiQueryHandler {
         if (mapping.isError()) {
             return QueryMapping.response(apiMapper.map(mapping.getError()));
         }
-        return QueryMapping.mapping(mapping);
+        return QueryMapping.mapping(mapping, effectiveQueryParams.queryParams());
     }
 
     /**
@@ -426,16 +443,22 @@ public final class RestApiQueryHandler {
     private static final class QueryMapping {
 
         private final ThingReadRequestMapping mapping;
+        private final QueryFilterParams queryParams;
         private final ApiResponse response;
 
         /**
          * Creates a query mapping value that holds either a mapped request or an early response.
          *
          * @param mapping mapped read request, or null when response is populated
+         * @param queryParams effective query params used to build the mapped request
          * @param response early API response, or null when mapping is populated
          */
-        private QueryMapping(final ThingReadRequestMapping mapping, final ApiResponse response) {
+        private QueryMapping(
+                final ThingReadRequestMapping mapping,
+                final QueryFilterParams queryParams,
+                final ApiResponse response) {
             this.mapping = mapping;
+            this.queryParams = queryParams == null ? new QueryFilterParams() : queryParams;
             this.response = response;
         }
 
@@ -445,8 +468,9 @@ public final class RestApiQueryHandler {
          * @param mapping mapped read request
          * @return query mapping wrapper
          */
-        private static QueryMapping mapping(final ThingReadRequestMapping mapping) {
-            return new QueryMapping(mapping, null);
+        private static QueryMapping mapping(
+                final ThingReadRequestMapping mapping, final QueryFilterParams queryParams) {
+            return new QueryMapping(mapping, queryParams, null);
         }
 
         /**
@@ -456,7 +480,7 @@ public final class RestApiQueryHandler {
          * @return query mapping wrapper containing the response
          */
         private static QueryMapping response(final ApiResponse response) {
-            return new QueryMapping(null, response);
+            return new QueryMapping(null, null, response);
         }
     }
 }

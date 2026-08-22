@@ -3,8 +3,10 @@ package uk.co.compendiumdev.thingifier.api.restapihandlers;
 import java.util.Optional;
 import java.util.Set;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ApiOperationValidationPolicy;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.DefaultThingifierApiRuntime;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.EntityPatchDocumentMapper;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingCommandResultApiMapper;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingWriteRequestMapping;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierApiRuntime;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.WriteMethodPolicy;
@@ -14,9 +16,11 @@ import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecy
 import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleHookRegistry;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle;
+import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
 /**
  * Handles generated Thingifier PATCH routes.
@@ -74,7 +78,7 @@ public class RestApiPatchHandler {
             final String rawBody,
             final HttpHeadersBlock requestHeaders,
             final ThingifierRequestContext context) {
-        return handle(url, rawBody, requestHeaders, context, null);
+        return handle(url, rawBody, requestHeaders, new QueryFilterParams(), context, null);
     }
 
     /**
@@ -93,14 +97,37 @@ public class RestApiPatchHandler {
             final HttpHeadersBlock requestHeaders,
             final ThingifierRequestContext context,
             final ThingifierApiLifecycleContext lifecycle) {
+        return handle(
+                url,
+                rawBody,
+                requestHeaders,
+                lifecycle == null ? new QueryFilterParams() : lifecycle.queryParams(),
+                context,
+                lifecycle);
+    }
+
+    /**
+     * Handles a PATCH request with full request data for operation validation.
+     *
+     * @param url generated API path
+     * @param rawBody raw patch body
+     * @param requestHeaders request headers used for content type policy
+     * @param queryParams parsed query parameters
+     * @param context request context containing the active store
+     * @param lifecycle lifecycle context, or null for direct processing
+     * @return API response for the PATCH
+     */
+    public ApiResponse handle(
+            final String url,
+            final String rawBody,
+            final HttpHeadersBlock requestHeaders,
+            final QueryFilterParams queryParams,
+            final ThingifierRequestContext context,
+            final ThingifierApiLifecycleContext lifecycle) {
         ThingRoute route = routeFor(url, lifecycle);
         WriteMethodPolicy policy = new WriteMethodPolicy(runtime);
         ApiResponse policyResponse =
-                policy.rejectIfNotAllowed(
-                        RoutingVerb.PATCH,
-                        route,
-                        uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields.empty(),
-                        context);
+                policy.rejectIfNotAllowed(RoutingVerb.PATCH, route, ApiBodyFields.empty(), context);
         if (policyResponse != null) {
             return policyResponse;
         }
@@ -114,12 +141,31 @@ public class RestApiPatchHandler {
             }
         }
 
-        ThingWriteRequestMapping mapping =
-                new EntityPatchDocumentMapper(runtime.schema())
-                        .map(
-                                style.orElse(EntityPatchUpdateStyle.PARTIAL_JSON_UPDATE),
+        EntityPatchDocumentMapper mapper = new EntityPatchDocumentMapper(runtime.schema());
+        EntityPatchUpdateStyle selectedStyle =
+                style.orElse(EntityPatchUpdateStyle.PARTIAL_JSON_UPDATE);
+        ThingWriteRequestMapping mapping = mapper.map(selectedStyle, route, rawBody);
+        if (mapping.isError()) {
+            return new ThingCommandResultApiMapper(runtime.apiConfig()).map(mapping.getError());
+        }
+
+        ApiBodyFields bodyFields = mapper.bodyFieldsForContext(selectedStyle, route, rawBody);
+        ApiResponse operationValidationResponse =
+                new ApiOperationValidationPolicy(runtime)
+                        .rejectIfInvalid(
+                                RoutingVerb.PATCH,
+                                url,
                                 route,
-                                rawBody);
+                                context,
+                                bodyFields,
+                                rawBody,
+                                queryParams,
+                                policy.operationTypeFor(
+                                        RoutingVerb.PATCH, route, bodyFields, context));
+        if (operationValidationResponse != null) {
+            return operationValidationResponse;
+        }
+
         return LifecycleWriteSupport.execute(
                 runtime,
                 lifecycleHooks,

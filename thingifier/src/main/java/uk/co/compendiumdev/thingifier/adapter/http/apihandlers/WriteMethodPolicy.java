@@ -408,6 +408,51 @@ public final class WriteMethodPolicy {
     }
 
     /**
+     * Resolves the concrete write operation represented by the current route and payload.
+     *
+     * <p>Operation validators receive this value so they can reason about the public API operation
+     * after Thingifier has applied the same create/update/connect intent rules used by write-policy
+     * enforcement.
+     *
+     * @param verb routing verb being processed
+     * @param route mapped generated route
+     * @param bodyFields parsed request body fields
+     * @param context request context used to inspect existing data when needed
+     * @return operation label such as CREATE, UPDATE, CREATE_AND_CONNECT, DISCONNECT, or DELETE
+     */
+    public String operationTypeFor(
+            final RoutingVerb verb,
+            final ThingRoute route,
+            final ApiBodyFields bodyFields,
+            final ThingifierRequestContext context) {
+        if (route instanceof CollectionRoute || route instanceof InstanceRoute) {
+            if (verb == RoutingVerb.DELETE && route instanceof InstanceRoute) {
+                return "DELETE";
+            }
+            EntityWriteOperation operation = entityOperationFor(verb, route, bodyFields, context);
+            if (operation != null) {
+                return operation.name();
+            }
+        }
+
+        if (route instanceof RelationshipCollectionRoute
+                || route instanceof RelationshipInstanceRoute) {
+            RelationshipWriteOperation operation =
+                    relationshipOperationFor(
+                            verb,
+                            route,
+                            bodyFields,
+                            context,
+                            relationshipOperationsFor(verb, route));
+            if (operation != null) {
+                return operation.name();
+            }
+        }
+
+        return verb.name();
+    }
+
+    /**
      * Builds an Allow header while excluding a rejected entity write operation.
      *
      * @param route mapped entity route

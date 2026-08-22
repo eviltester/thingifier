@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.restapihandlers;
 
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ApiOperationValidationPolicy;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.DefaultThingifierApiRuntime;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingReadRequestMapper;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingReadRequestMapping;
@@ -14,6 +15,7 @@ import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecy
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
+import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.application.query.ThingReadQuery;
@@ -153,6 +155,21 @@ public class RestApiGetHandler {
             return apiMapper.map(mapping.getError());
         }
 
+        ApiResponse operationValidationResponse =
+                new ApiOperationValidationPolicy(runtime)
+                        .rejectIfInvalid(
+                                verb,
+                                url,
+                                route,
+                                context,
+                                ApiBodyFields.empty(),
+                                "",
+                                effectiveQueryParams.queryParams(),
+                                readOperationType(verb));
+        if (operationValidationResponse != null) {
+            return operationValidationResponse;
+        }
+
         if (lifecycle == null) {
             RepositoryQueryResult queryResults =
                     runtime.queryService().execute(mapping.getQuery(), context.store());
@@ -237,5 +254,9 @@ public class RestApiGetHandler {
                     ThingifierHttpApi.SUPPORTED_QUERY_CONTENT_TYPES);
         }
         return response;
+    }
+
+    private String readOperationType(final RoutingVerb verb) {
+        return verb == RoutingVerb.QUERY ? "QUERY" : "READ";
     }
 }

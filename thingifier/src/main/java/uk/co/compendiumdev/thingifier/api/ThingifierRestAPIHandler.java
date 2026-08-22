@@ -267,7 +267,7 @@ public class ThingifierRestAPIHandler {
                 request.path(),
                 context,
                 lifecycle,
-                () -> delete.handle(request.path(), context, lifecycle));
+                () -> delete.handle(request.path(), request.queryParams(), context, lifecycle));
     }
 
     /**
@@ -285,7 +285,14 @@ public class ThingifierRestAPIHandler {
                 url,
                 context,
                 null,
-                () -> post.handle(url, args.bodyFields(), context));
+                () ->
+                        post.handle(
+                                url,
+                                args.bodyFields(),
+                                args.rawBody(),
+                                new QueryFilterParams(),
+                                context,
+                                null));
     }
 
     /**
@@ -313,7 +320,14 @@ public class ThingifierRestAPIHandler {
                 request.path(),
                 context,
                 lifecycle,
-                () -> post.handle(request.path(), request.bodyFields(), context, lifecycle));
+                () ->
+                        post.handle(
+                                request.path(),
+                                request.bodyFields(),
+                                request.body(),
+                                request.queryParams(),
+                                context,
+                                lifecycle));
     }
 
     /**
@@ -347,7 +361,14 @@ public class ThingifierRestAPIHandler {
                 url,
                 context,
                 null,
-                () -> put.handle(url, args.bodyFields(), context));
+                () ->
+                        put.handle(
+                                url,
+                                args.bodyFields(),
+                                args.rawBody(),
+                                new QueryFilterParams(),
+                                context,
+                                null));
     }
 
     /**
@@ -375,7 +396,14 @@ public class ThingifierRestAPIHandler {
                 request.path(),
                 context,
                 lifecycle,
-                () -> put.handle(request.path(), request.bodyFields(), context, lifecycle));
+                () ->
+                        put.handle(
+                                request.path(),
+                                request.bodyFields(),
+                                request.body(),
+                                request.queryParams(),
+                                context,
+                                lifecycle));
     }
 
     /**
@@ -460,6 +488,7 @@ public class ThingifierRestAPIHandler {
                                 request.path(),
                                 request.body(),
                                 request.headers(),
+                                request.queryParams(),
                                 context,
                                 lifecycle));
     }

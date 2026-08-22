@@ -11,6 +11,8 @@ import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.security.SecuritySchemeNames;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthorizer;
+import uk.co.compendiumdev.thingifier.api.validation.ApiOperationValidator;
+import uk.co.compendiumdev.thingifier.api.validation.ApiOperationValidatorDefinition;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation;
 import uk.co.compendiumdev.thingifier.apiconfig.RelationshipWriteOperation;
@@ -36,6 +38,7 @@ public final class ThingifierApiRouteRule {
     private String bearerAuthSchemeName;
     private String enforcedBearerAuthSchemeName;
     private final List<ThingifierApiAuthorizer> authorizers;
+    private final List<ApiOperationValidatorDefinition> apiOperationValidators;
     private String documentation;
     private String requestPayload;
     private String requestEntityView;
@@ -61,6 +64,7 @@ public final class ThingifierApiRouteRule {
         this.bearerAuthSchemeName = SecuritySchemeNames.DEFAULT_BEARER_AUTH_SCHEME;
         this.enforcedBearerAuthSchemeName = null;
         this.authorizers = new java.util.ArrayList<>();
+        this.apiOperationValidators = new java.util.ArrayList<>();
         this.documentation = null;
         this.requestPayload = null;
         this.requestEntityView = null;
@@ -513,6 +517,46 @@ public final class ThingifierApiRouteRule {
      */
     public ThingifierApiRouteRule relationshipCan(final RelationshipWriteOperation... operations) {
         return relationshipWriteOperations(operations);
+    }
+
+    /**
+     * Adds a request-aware validator for this public API operation.
+     *
+     * <p>Use operation validators when the rule belongs to the route contract rather than the
+     * entity model. They run after authentication, data-scope selection, request parsing, fixed
+     * route preparation, declarative write policy, and command/query mapping have succeeded, but
+     * before entity field/instance/domain/global validation and before mutation.
+     *
+     * @param name stable validator name for diagnostics and future tooling
+     * @param validator callback used to accept or reject this operation
+     * @return this rule so route API configuration can be chained
+     * @throws IllegalArgumentException when the name is blank or the validator is null
+     */
+    public ThingifierApiRouteRule withApiOperationValidator(
+            final String name, final ApiOperationValidator validator) {
+        apiOperationValidators.add(new ApiOperationValidatorDefinition(name, validator));
+        return this;
+    }
+
+    /**
+     * Reports whether this route has request-aware operation validators.
+     *
+     * @return true when validators are registered
+     */
+    public boolean hasApiOperationValidators() {
+        return !apiOperationValidators.isEmpty();
+    }
+
+    /**
+     * Returns the operation validators in declaration order.
+     *
+     * <p>Validators are intentionally runtime-only for v1. They are not serialized to YAML or
+     * emitted into OpenAPI because Java callbacks cannot safely round-trip through those formats.
+     *
+     * @return immutable list of validator registrations
+     */
+    public List<ApiOperationValidatorDefinition> apiOperationValidators() {
+        return Collections.unmodifiableList(apiOperationValidators);
     }
 
     /**
