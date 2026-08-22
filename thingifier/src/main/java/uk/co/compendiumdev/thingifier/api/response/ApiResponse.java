@@ -22,7 +22,7 @@ public final class ApiResponse {
     // TODO: instance GUID or instance-id should actually be the primary key
     public static final String PRIMARY_KEY_HEADER = "X-Thing-Instance-Primary-Key";
 
-    private final int statusCode;
+    private int statusCode;
     private boolean hasBody;
     // instead of storing a json as the body, store the things to return
     // let getBody do the conversion to json or xml
@@ -32,6 +32,7 @@ public final class ApiResponse {
     private boolean isCollection;
     // isErrorResponse true, return the stored collection of error messages
     private boolean isErrorResponse;
+    private boolean isValidationErrorResponse;
     private Collection<String> errorMessages;
 
     private HttpHeadersBlock headers;
@@ -53,6 +54,7 @@ public final class ApiResponse {
         draftToReturn = null;
         isCollection = false;
         isErrorResponse = false;
+        isValidationErrorResponse = false;
         errorMessages = new ArrayList<>();
         hasBody = false;
         body = null;
@@ -87,6 +89,20 @@ public final class ApiResponse {
      */
     public int getStatusCode() {
         return this.statusCode;
+    }
+
+    /**
+     * Replaces the HTTP-style status code while preserving the structured response body.
+     *
+     * <p>Route-level response policies use this when the same generated Thingifier operation should
+     * keep its returned entity/error payload but expose a route-specific status code.
+     *
+     * @param newStatusCode status code to expose through adapters
+     * @return this response so additional response policy actions can be chained
+     */
+    public ApiResponse withStatusCode(final int newStatusCode) {
+        this.statusCode = newStatusCode;
+        return this;
     }
 
     /**
@@ -277,12 +293,54 @@ public final class ApiResponse {
     }
 
     /**
+     * Creates a validation-style error response with one message.
+     *
+     * <p>The validation marker lets route response policies distinguish model/API validation
+     * failures from other errors that happen to share a status code.
+     *
+     * @param statusCode HTTP-style error status code
+     * @param errorMessage validation message to render in the error body
+     * @return validation error response
+     */
+    public static ApiResponse validationError(final int statusCode, final String errorMessage) {
+        Collection<String> localErrorMessages = new ArrayList<>();
+        localErrorMessages.add(errorMessage);
+        return validationError(statusCode, localErrorMessages);
+    }
+
+    /**
+     * Creates a validation-style error response with multiple messages.
+     *
+     * @param statusCode HTTP-style error status code
+     * @param errorMessages validation messages to render in the error body
+     * @return validation error response
+     */
+    public static ApiResponse validationError(
+            final int statusCode, final Collection<String> errorMessages) {
+        ApiResponse response = error(statusCode, errorMessages);
+        response.isValidationErrorResponse = true;
+        return response;
+    }
+
+    /**
      * Reports whether this response body should be rendered as errors.
      *
      * @return true when this is an error response
      */
     public boolean isErrorResponse() {
         return isErrorResponse;
+    }
+
+    /**
+     * Reports whether this error represents validation of the request or candidate operation.
+     *
+     * <p>This deliberately narrows route-level {@code onValidationError()} policies to responses
+     * produced by Thingifier validation rather than every response using status 422.
+     *
+     * @return true when this response was marked as a validation error
+     */
+    public boolean isValidationErrorResponse() {
+        return isValidationErrorResponse;
     }
 
     /**
@@ -310,6 +368,15 @@ public final class ApiResponse {
         }
 
         return thingsToReturn.get(0);
+    }
+
+    /**
+     * Reports whether the response contains exactly one persisted instance.
+     *
+     * @return true when {@link #getReturnedInstance()} can be called safely
+     */
+    public boolean hasReturnedInstance() {
+        return !isCollection && draftToReturn == null && thingsToReturn.size() == 1;
     }
 
     /**

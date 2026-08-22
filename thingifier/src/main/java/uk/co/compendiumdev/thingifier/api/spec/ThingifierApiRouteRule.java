@@ -5,10 +5,12 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
+import uk.co.compendiumdev.thingifier.api.response.RouteApiResponsePolicy;
 import uk.co.compendiumdev.thingifier.api.security.SecuritySchemeNames;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthorizer;
 import uk.co.compendiumdev.thingifier.api.validation.ApiOperationValidator;
@@ -39,6 +41,9 @@ public final class ThingifierApiRouteRule {
     private String enforcedBearerAuthSchemeName;
     private final List<ThingifierApiAuthorizer> authorizers;
     private final List<ApiOperationValidatorDefinition> apiOperationValidators;
+    private RouteApiResponsePolicy successResponsePolicy;
+    private final Map<Integer, RouteApiResponsePolicy> errorResponsePolicies;
+    private RouteApiResponsePolicy validationErrorResponsePolicy;
     private String documentation;
     private String requestPayload;
     private String requestEntityView;
@@ -65,6 +70,9 @@ public final class ThingifierApiRouteRule {
         this.enforcedBearerAuthSchemeName = null;
         this.authorizers = new java.util.ArrayList<>();
         this.apiOperationValidators = new java.util.ArrayList<>();
+        this.successResponsePolicy = null;
+        this.errorResponsePolicies = new HashMap<>();
+        this.validationErrorResponsePolicy = null;
         this.documentation = null;
         this.requestPayload = null;
         this.requestEntityView = null;
@@ -560,6 +568,85 @@ public final class ThingifierApiRouteRule {
     }
 
     /**
+     * Configures response shaping for non-error responses returned by this route.
+     *
+     * <p>Route response policies let endpoint contracts adjust status codes, headers, bodies, and
+     * response views without replacing the generated Thingifier operation. The policy is route
+     * scoped, so other routes mapping to the same entity are not affected.
+     *
+     * @return mutable route response policy for successful outcomes
+     */
+    public RouteApiResponsePolicy onSuccess() {
+        if (successResponsePolicy == null) {
+            successResponsePolicy = new RouteApiResponsePolicy();
+        }
+        return successResponsePolicy;
+    }
+
+    /**
+     * Configures response shaping for generated error responses with one status code.
+     *
+     * @param statusCode error status code to match
+     * @return mutable route response policy for the status-specific error outcome
+     */
+    public RouteApiResponsePolicy onError(final int statusCode) {
+        return errorResponsePolicies.computeIfAbsent(
+                statusCode, ignored -> new RouteApiResponsePolicy());
+    }
+
+    /**
+     * Configures response shaping for Thingifier validation-style failures on this route.
+     *
+     * <p>This policy is checked before status-specific error policies so validation errors can have
+     * one route-specific shape regardless of the final status code exposed by the policy.
+     *
+     * @return mutable route response policy for validation errors
+     */
+    public RouteApiResponsePolicy onValidationError() {
+        if (validationErrorResponsePolicy == null) {
+            validationErrorResponsePolicy = new RouteApiResponsePolicy();
+        }
+        return validationErrorResponsePolicy;
+    }
+
+    /**
+     * Returns the success response policy when configured.
+     *
+     * @return success policy
+     */
+    public Optional<RouteApiResponsePolicy> successResponsePolicy() {
+        return Optional.ofNullable(successResponsePolicy);
+    }
+
+    /**
+     * Returns the validation error response policy when configured.
+     *
+     * @return validation error policy
+     */
+    public Optional<RouteApiResponsePolicy> validationErrorResponsePolicy() {
+        return Optional.ofNullable(validationErrorResponsePolicy);
+    }
+
+    /**
+     * Returns the error response policy for a status code.
+     *
+     * @param statusCode generated error status code
+     * @return status-specific error policy
+     */
+    public Optional<RouteApiResponsePolicy> errorResponsePolicyFor(final int statusCode) {
+        return Optional.ofNullable(errorResponsePolicies.get(statusCode));
+    }
+
+    /**
+     * Returns all status-specific error response policies.
+     *
+     * @return immutable map of error status to policy
+     */
+    public Map<Integer, RouteApiResponsePolicy> errorResponsePolicies() {
+        return Collections.unmodifiableMap(errorResponsePolicies);
+    }
+
+    /**
      * Uses the same entity view for request validation and successful responses on this route.
      *
      * <p>This route-level view overrides entity defaults and is kept for concise route contracts.
@@ -763,6 +850,36 @@ public final class ThingifierApiRouteRule {
         }
         if (hasFixedIdentifierMapping()) {
             route.mapToFixedEntity(mappedEntityName, fixedIdentifier, fixedResourcePolicy);
+        }
+        applyResponsePolicyMetadataTo(route);
+    }
+
+    private void applyResponsePolicyMetadataTo(final RoutingDefinition route) {
+        successResponsePolicy().ifPresent(policy -> applyPolicyMetadata(route, policy));
+        validationErrorResponsePolicy()
+                .ifPresent(
+                        policy -> {
+                            route.addPossibleStatus(RoutingStatus.returnValue(422));
+                            applyPolicyMetadata(route, policy);
+                        });
+        for (Map.Entry<Integer, RouteApiResponsePolicy> entry : errorResponsePolicies.entrySet()) {
+            route.addPossibleStatus(RoutingStatus.returnValue(entry.getKey()));
+            applyPolicyMetadata(route, entry.getValue());
+        }
+    }
+
+    private void applyPolicyMetadata(
+            final RoutingDefinition route, final RouteApiResponsePolicy policy) {
+        if (policy.statusCode() != null) {
+            route.addPossibleStatus(RoutingStatus.returnValue(policy.statusCode()));
+        }
+        for (RouteApiResponsePolicy.HeaderValue header : policy.staticHeaders()) {
+            route.addResponseHeader(header.name(), header.value());
+        }
+        for (RouteApiResponsePolicy.InstanceFieldHeader header : policy.instanceFieldHeaders()) {
+            route.addResponseHeader(
+                    header.headerName(),
+                    "Value from returned instance field " + header.fieldName());
         }
     }
 
