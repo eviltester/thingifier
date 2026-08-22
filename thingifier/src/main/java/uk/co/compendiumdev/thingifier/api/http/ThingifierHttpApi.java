@@ -12,15 +12,12 @@ import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.adapter.hooks.ScopedHook;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.DefaultThingifierApiRuntime;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.RouteAuthPolicy;
-import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.SchemaCatalog;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierApiRuntime;
-import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierSchemaCatalog;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.CollectionRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.InstanceRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.RelationshipCollectionRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.RelationshipInstanceRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
-import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
 import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleContext;
 import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleHookRegistry;
 import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiHookRegistry;
@@ -264,7 +261,9 @@ public final class ThingifierHttpApi {
             if (lifecycle != null) {
                 ApiRequestEnvelope parsedEnvelope =
                         ApiRequestEnvelope.from(
-                                request, effectiveVerb, xmlEntityNamesFor(request.getPath()));
+                                request,
+                                effectiveVerb,
+                                xmlEntityNamesFor(request.getPath(), effectiveVerb));
                 lifecycle.applyParsedEnvelope(parsedEnvelope);
                 lifecycleHooks.runBodyParsedHooks(lifecycle);
                 if (lifecycle.shouldShortCircuit()) {
@@ -293,7 +292,7 @@ public final class ThingifierHttpApi {
     private ThingifierApiLifecycleContext lifecycleContextFor(
             final HttpApiRequest request, final HttpVerb effectiveVerb) {
         ThingifierApiRuntime runtime = new DefaultThingifierApiRuntime(thingifier);
-        ThingRoute route = new ThingRouteMapper(runtime.schema()).map(request.getPath());
+        ThingRoute route = runtime.routeFor(routingVerbFor(effectiveVerb), request.getPath());
         return new ThingifierApiLifecycleContext(
                 runtime,
                 request,
@@ -342,7 +341,7 @@ public final class ThingifierHttpApi {
                         apiResponse,
                         jsonThing,
                         thingifier.apiConfig(),
-                        xmlEntityNamesFor(request.getPath()));
+                        xmlEntityNamesFor(request.getPath(), effectiveVerb));
 
         if (effectiveVerb == HttpVerb.HEAD) {
             final int bodyLength = httpResponse.getBody().getBytes(StandardCharsets.UTF_8).length;
@@ -354,7 +353,7 @@ public final class ThingifierHttpApi {
                             apiResponse,
                             jsonThing,
                             thingifier.apiConfig(),
-                            xmlEntityNamesFor(request.getPath()));
+                            xmlEntityNamesFor(request.getPath(), effectiveVerb));
         }
         return httpResponse;
     }
@@ -403,7 +402,7 @@ public final class ThingifierHttpApi {
                 ApiResponse.error404("Could not find any instances with " + request.getPath()),
                 jsonThing,
                 thingifier.apiConfig(),
-                xmlEntityNamesFor(request.getPath()));
+                xmlEntityNamesFor(request.getPath(), HttpVerb.GET));
     }
 
     /**
@@ -418,7 +417,7 @@ public final class ThingifierHttpApi {
 
         final HttpApiRequestValidator requestValidator =
                 new HttpApiRequestValidator(
-                        thingifier.apiConfig(), xmlEntityNamesFor(request.getPath()));
+                        thingifier.apiConfig(), xmlEntityNamesFor(request.getPath(), verb));
 
         HttpApiResponse httpResponse = null;
 
@@ -430,7 +429,7 @@ public final class ThingifierHttpApi {
                             requestValidator.getErrorApiResponse(),
                             jsonThing,
                             thingifier.apiConfig(),
-                            xmlEntityNamesFor(request.getPath()));
+                            xmlEntityNamesFor(request.getPath(), verb));
         }
 
         return httpResponse;
@@ -450,7 +449,7 @@ public final class ThingifierHttpApi {
 
         ApiResponse apiResponse = null;
         ApiRequestEnvelope envelope =
-                ApiRequestEnvelope.from(request, verb, xmlEntityNamesFor(request.getPath()));
+                ApiRequestEnvelope.from(request, verb, xmlEntityNamesFor(request.getPath(), verb));
 
         switch (verb) {
             case GET:
@@ -547,7 +546,7 @@ public final class ThingifierHttpApi {
             return null;
         }
 
-        final EntityDefinition entity = targetEntityFor(request.getPath());
+        final EntityDefinition entity = targetEntityFor(request.getPath(), routingVerbFor(verb));
         if (entity == null) {
             return null;
         }
@@ -575,7 +574,7 @@ public final class ThingifierHttpApi {
                                     viewName, entity.getName())),
                     jsonThing,
                     thingifier.apiConfig(),
-                    xmlEntityNamesFor(request.getPath()));
+                    xmlEntityNamesFor(request.getPath(), verb));
         }
 
         final EntityViewDefinition view = entity.getViewNamed(viewName);
@@ -599,7 +598,7 @@ public final class ThingifierHttpApi {
                                 viewName, String.join(", ", disallowedFields))),
                 jsonThing,
                 thingifier.apiConfig(),
-                xmlEntityNamesFor(request.getPath()));
+                xmlEntityNamesFor(request.getPath(), verb));
     }
 
     /**
@@ -620,7 +619,7 @@ public final class ThingifierHttpApi {
             return patchInputFields(request, entity, lifecycle);
         }
 
-        return ApiRequestEnvelope.from(request, verb, xmlEntityNamesFor(request.getPath()))
+        return ApiRequestEnvelope.from(request, verb, xmlEntityNamesFor(request.getPath(), verb))
                 .bodyFields()
                 .topLevelFields();
     }
@@ -759,7 +758,8 @@ public final class ThingifierHttpApi {
             return Optional.empty();
         }
 
-        final EntityInstance instance = targetInstanceFor(request, entity, lifecycle);
+        final EntityInstance instance =
+                targetInstanceFor(request, entity, RoutingVerb.PATCH, lifecycle);
         if (instance == null) {
             return Optional.empty();
         }
@@ -836,9 +836,13 @@ public final class ThingifierHttpApi {
     private EntityInstance targetInstanceFor(
             final HttpApiRequest request,
             final EntityDefinition entity,
+            final RoutingVerb verb,
             final ThingifierApiLifecycleContext lifecycle) {
-        final SchemaCatalog schema = new ThingifierSchemaCatalog(thingifier);
-        final ThingRoute route = new ThingRouteMapper(schema).map(request.getPath());
+        final ThingRoute route =
+                lifecycle == null
+                        ? new DefaultThingifierApiRuntime(thingifier)
+                                .routeFor(verb, request.getPath())
+                        : lifecycle.route();
         if (!(route instanceof InstanceRoute)) {
             return null;
         }
@@ -952,27 +956,29 @@ public final class ThingifierHttpApi {
     }
 
     /**
-     * Resolves the entity targeted by a generated route path.
+     * Resolves the entity targeted by a generated or fixed route path.
      *
-     * @param path generated API path
+     * @param path public API path
+     * @param verb routing verb used to check fixed-route declarations
      * @return target or related entity, or null when the path does not map to a Thingifier entity
      */
-    private EntityDefinition targetEntityFor(final String path) {
-        final SchemaCatalog schema = new ThingifierSchemaCatalog(thingifier);
-        final ThingRoute route = new ThingRouteMapper(schema).map(path);
+    private EntityDefinition targetEntityFor(final String path, final RoutingVerb verb) {
+        final ThingifierApiRuntime runtime = new DefaultThingifierApiRuntime(thingifier);
+        final ThingRoute route = runtime.routeFor(verb, path);
         if (route instanceof CollectionRoute) {
-            return schema.definitionWithSingularOrPluralNamed(
-                    ((CollectionRoute) route).entity().name());
+            return runtime.schema()
+                    .definitionWithSingularOrPluralNamed(((CollectionRoute) route).entity().name());
         }
         if (route instanceof InstanceRoute) {
-            return schema.definitionWithSingularOrPluralNamed(
-                    ((InstanceRoute) route).entity().name());
+            return runtime.schema()
+                    .definitionWithSingularOrPluralNamed(((InstanceRoute) route).entity().name());
         }
         if (route instanceof RelationshipCollectionRoute) {
             final RelationshipCollectionRoute relationship = (RelationshipCollectionRoute) route;
             for (RelationshipSpec spec : relationship.parentEntity().relationships()) {
                 if (spec.name().equals(relationship.relationshipName())) {
-                    return schema.definitionWithSingularOrPluralNamed(spec.toEntityName());
+                    return runtime.schema()
+                            .definitionWithSingularOrPluralNamed(spec.toEntityName());
                 }
             }
         }
@@ -980,7 +986,8 @@ public final class ThingifierHttpApi {
             final RelationshipInstanceRoute relationship = (RelationshipInstanceRoute) route;
             for (RelationshipSpec spec : relationship.parentEntity().relationships()) {
                 if (spec.name().equals(relationship.relationshipName())) {
-                    return schema.definitionWithSingularOrPluralNamed(spec.toEntityName());
+                    return runtime.schema()
+                            .definitionWithSingularOrPluralNamed(spec.toEntityName());
                 }
             }
         }
@@ -990,11 +997,12 @@ public final class ThingifierHttpApi {
     /**
      * Returns XML entity names that should be accepted or emitted for a path.
      *
-     * @param path generated API path
+     * @param path public API path
+     * @param verb HTTP verb used to check fixed-route declarations
      * @return singular and plural entity names, or an empty list when no entity route matches
      */
-    private List<String> xmlEntityNamesFor(final String path) {
-        final EntityDefinition entity = targetEntityFor(path);
+    private List<String> xmlEntityNamesFor(final String path, final HttpVerb verb) {
+        final EntityDefinition entity = targetEntityFor(path, routingVerbFor(verb));
         if (entity == null) {
             return List.of();
         }
@@ -1093,7 +1101,7 @@ public final class ThingifierHttpApi {
                             apiResponse,
                             jsonThing,
                             thingifier.apiConfig(),
-                            xmlEntityNamesFor(request.getPath()));
+                            xmlEntityNamesFor(request.getPath(), HttpVerb.GET));
         }
 
         return runTheHttpApiResponseHooksOn(request, httpResponse, HttpVerb.GET);

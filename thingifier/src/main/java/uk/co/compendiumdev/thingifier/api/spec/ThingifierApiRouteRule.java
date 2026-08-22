@@ -41,6 +41,9 @@ public final class ThingifierApiRouteRule {
     private String requestEntityView;
     private String defaultEntityView;
     private Map<Integer, String> responseEntityViews;
+    private String mappedEntityName;
+    private String fixedIdentifier;
+    private FixedResourcePolicy fixedResourcePolicy;
     private EnumSet<EntityWriteOperation> entityWriteOperations;
     private EnumSet<EntityPatchUpdateStyle> entityPatchUpdateStyles;
     private EnumSet<RelationshipWriteOperation> relationshipWriteOperations;
@@ -63,6 +66,9 @@ public final class ThingifierApiRouteRule {
         this.requestEntityView = null;
         this.defaultEntityView = null;
         this.responseEntityViews = new HashMap<>();
+        this.mappedEntityName = null;
+        this.fixedIdentifier = null;
+        this.fixedResourcePolicy = FixedResourcePolicy.RETURN_404;
         this.entityWriteOperations = null;
         this.entityPatchUpdateStyles = null;
         this.relationshipWriteOperations = null;
@@ -383,6 +389,76 @@ public final class ThingifierApiRouteRule {
     }
 
     /**
+     * Sets the default response entity view for successful responses on this route.
+     *
+     * <p>This is the response-only counterpart to {@link #entityView(String)}. It is useful for
+     * fixed instance routes where the public response shape should be constrained but writes may
+     * still accept a different request view.
+     *
+     * @param viewName entity view name used for successful responses
+     * @return this rule so route API configuration can be chained
+     */
+    public ThingifierApiRouteRule defaultEntityView(final String viewName) {
+        this.defaultEntityView = viewName;
+        return this;
+    }
+
+    /**
+     * Declares the model entity that a non-generated public route should target.
+     *
+     * <p>Use this with {@link #withFixedIdentifier(String)} when a route such as {@code
+     * /secret/note} should be processed as a Thingifier-managed entity instance without putting the
+     * identifier in the public URL.
+     *
+     * @param entityName singular or plural model entity name
+     * @return this rule so route API configuration can be chained
+     * @throws IllegalArgumentException when the entity name is blank
+     */
+    public ThingifierApiRouteRule mapsToEntity(final String entityName) {
+        this.mappedEntityName = requireText(entityName, "entity name");
+        return this;
+    }
+
+    /**
+     * Maps this public route to one fixed entity identifier.
+     *
+     * <p>The fixed identifier is a trusted server-side route decision, not a value read from the
+     * client URL. Runtime processing resolves the public route to an internal instance route while
+     * keeping the public path available for documentation, hooks, and error messages.
+     *
+     * @param identifier identifier of the target entity instance
+     * @return this rule so route API configuration can be chained
+     * @throws IllegalArgumentException when the identifier is blank or the route path has URL
+     *     parameters
+     */
+    public ThingifierApiRouteRule withFixedIdentifier(final String identifier) {
+        return withFixedIdentifier(identifier, FixedResourcePolicy.RETURN_404);
+    }
+
+    /**
+     * Maps this public route to one fixed entity identifier with explicit missing-instance policy.
+     *
+     * @param identifier identifier of the target entity instance
+     * @param policy behaviour when the target instance is missing
+     * @return this rule so route API configuration can be chained
+     * @throws IllegalArgumentException when the identifier is blank, the policy is null, or the
+     *     route path has URL parameters
+     */
+    public ThingifierApiRouteRule withFixedIdentifier(
+            final String identifier, final FixedResourcePolicy policy) {
+        if (hasPathParameter(pathPattern)) {
+            throw new IllegalArgumentException(
+                    "fixed identifier routes must not contain path parameters");
+        }
+        this.fixedIdentifier = requireText(identifier, "fixed identifier");
+        if (policy == null) {
+            throw new IllegalArgumentException("fixed resource policy is required");
+        }
+        this.fixedResourcePolicy = policy;
+        return this;
+    }
+
+    /**
      * Restricts which entity write operations this generated route may perform.
      *
      * <p>The route may still be generated; the runtime chooses 405 when the concrete write
@@ -556,6 +632,42 @@ public final class ThingifierApiRouteRule {
     }
 
     /**
+     * Reports whether this rule maps a public path to a fixed entity instance.
+     *
+     * @return true when both entity and identifier are configured
+     */
+    public boolean hasFixedIdentifierMapping() {
+        return mappedEntityName != null && fixedIdentifier != null;
+    }
+
+    /**
+     * Returns the entity name configured for a fixed identifier route.
+     *
+     * @return singular or plural entity name, or null when not configured
+     */
+    public String fixedEntityName() {
+        return mappedEntityName;
+    }
+
+    /**
+     * Returns the fixed identifier configured for this route.
+     *
+     * @return fixed entity instance identifier, or null when not configured
+     */
+    public String fixedIdentifier() {
+        return fixedIdentifier;
+    }
+
+    /**
+     * Returns the configured missing-instance policy for this fixed route.
+     *
+     * @return fixed resource policy, defaulting to {@link FixedResourcePolicy#RETURN_404}
+     */
+    public FixedResourcePolicy fixedResourcePolicy() {
+        return fixedResourcePolicy;
+    }
+
+    /**
      * Applies this API-spec rule to a generated route definition.
      *
      * <p>Documentation route metadata is updated here, while runtime policy is resolved separately
@@ -605,6 +717,9 @@ public final class ThingifierApiRouteRule {
                 }
             }
         }
+        if (hasFixedIdentifierMapping()) {
+            route.mapToFixedEntity(mappedEntityName, fixedIdentifier, fixedResourcePolicy);
+        }
     }
 
     /**
@@ -650,5 +765,25 @@ public final class ThingifierApiRouteRule {
             Collections.addAll(selected, operations);
         }
         return selected;
+    }
+
+    private String requireText(final String value, final String label) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(label + " is required");
+        }
+        return value.trim();
+    }
+
+    private boolean hasPathParameter(final String path) {
+        final String normalized = path == null ? "" : path.trim();
+        if (normalized.contains("{") || normalized.contains("}")) {
+            return true;
+        }
+        for (String segment : normalized.split("/")) {
+            if (segment.startsWith(":") && segment.length() > 1) {
+                return true;
+            }
+        }
+        return false;
     }
 }

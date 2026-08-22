@@ -9,7 +9,7 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.InstanceRou
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.RelationshipCollectionRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.RelationshipInstanceRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
-import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteResolver;
 import uk.co.compendiumdev.thingifier.apiconfig.ApiConfigValidationReport;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation;
@@ -28,9 +28,11 @@ public final class WriteMethodRoutePolicy {
 
     public void applyTo(final ApiRoutingDefinition routingDefinition, final String apiPathPrefix) {
         rejectInvalidApiConfig();
+        ThingRouteResolver resolver =
+                new ThingRouteResolver(schema, thingifier.apiSpec(), apiPathPrefix);
         for (RoutingDefinition route : routingDefinition.definitions()) {
             ThingRoute thingRoute =
-                    new ThingRouteMapper(schema).map(removePrefix(route.url(), apiPathPrefix));
+                    resolver.map(route.verb(), removePrefix(route.url(), apiPathPrefix));
             applyTo(route, thingRoute, apiPathPrefix);
         }
         updateAcceptPatchHeaders(routingDefinition, apiPathPrefix);
@@ -258,13 +260,15 @@ public final class WriteMethodRoutePolicy {
 
     private void updateAcceptPatchHeaders(
             final ApiRoutingDefinition routingDefinition, final String apiPathPrefix) {
+        ThingRouteResolver resolver =
+                new ThingRouteResolver(schema, thingifier.apiSpec(), apiPathPrefix);
         for (RoutingDefinition route : routingDefinition.definitions()) {
             if (route.verb() != RoutingVerb.OPTIONS) {
                 continue;
             }
 
             ThingRoute thingRoute =
-                    new ThingRouteMapper(schema).map(removePrefix(route.url(), apiPathPrefix));
+                    resolver.map(route.verb(), removePrefix(route.url(), apiPathPrefix));
             if (!(thingRoute instanceof InstanceRoute)) {
                 continue;
             }

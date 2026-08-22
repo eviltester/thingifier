@@ -7,6 +7,7 @@ import java.util.List;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.ContentTypeHeaderParser;
 import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
 import uk.co.compendiumdev.thingifier.api.security.SecuritySchemeNames;
+import uk.co.compendiumdev.thingifier.api.spec.FixedResourcePolicy;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 
@@ -40,6 +41,9 @@ public class RoutingDefinition {
     private boolean disabled = false;
     private String requestEntityViewName;
     private HashMap<Integer, String> responseEntityViewNames;
+    private String fixedEntityName;
+    private String fixedIdentifier;
+    private FixedResourcePolicy fixedResourcePolicy;
 
     /**
      * Creates route metadata for one verb and path.
@@ -72,6 +76,9 @@ public class RoutingDefinition {
         responseHeaders = new HashMap<>();
         requestEntityViewName = null;
         responseEntityViewNames = new HashMap<>();
+        fixedEntityName = null;
+        fixedIdentifier = null;
+        fixedResourcePolicy = FixedResourcePolicy.RETURN_404;
     }
 
     /**
@@ -474,6 +481,61 @@ public class RoutingDefinition {
      */
     public String getResponseEntityViewFor(final int statusCode) {
         return responseEntityViewNames.get(statusCode);
+    }
+
+    /**
+     * Marks this public route as mapping to one fixed entity instance.
+     *
+     * <p>Documentation generators keep the public URL exactly as declared, while runtime route
+     * resolution uses this metadata to process the request as an internal instance route.
+     *
+     * @param entityName singular or plural target entity name
+     * @param identifier fixed entity instance identifier
+     * @param policy behaviour when the target instance is missing
+     * @return this definition so route metadata can be chained
+     */
+    public RoutingDefinition mapToFixedEntity(
+            final String entityName, final String identifier, final FixedResourcePolicy policy) {
+        fixedEntityName = entityName;
+        fixedIdentifier = identifier;
+        fixedResourcePolicy = policy == null ? FixedResourcePolicy.RETURN_404 : policy;
+        return this;
+    }
+
+    /**
+     * Reports whether this route maps to a fixed entity instance.
+     *
+     * @return true when fixed route metadata is present
+     */
+    public boolean hasFixedIdentifierMapping() {
+        return fixedEntityName != null && fixedIdentifier != null;
+    }
+
+    /**
+     * Returns the fixed route's target entity name.
+     *
+     * @return singular or plural entity name, or null when not fixed
+     */
+    public String fixedEntityName() {
+        return fixedEntityName;
+    }
+
+    /**
+     * Returns the fixed route's target entity identifier.
+     *
+     * @return fixed identifier, or null when not fixed
+     */
+    public String fixedIdentifier() {
+        return fixedIdentifier;
+    }
+
+    /**
+     * Returns the fixed route's missing-instance policy.
+     *
+     * @return configured fixed resource policy
+     */
+    public FixedResourcePolicy fixedResourcePolicy() {
+        return fixedResourcePolicy;
     }
 
     /**

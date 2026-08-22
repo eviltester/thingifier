@@ -10,7 +10,6 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierApiRunt
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.WriteMethodPolicy;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.InstanceRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
-import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
 import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleContext;
 import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleHookRegistry;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
@@ -94,7 +93,7 @@ public class RestApiPatchHandler {
             final HttpHeadersBlock requestHeaders,
             final ThingifierRequestContext context,
             final ThingifierApiLifecycleContext lifecycle) {
-        ThingRoute route = new ThingRouteMapper(runtime.schema()).map(url);
+        ThingRoute route = routeFor(url, lifecycle);
         WriteMethodPolicy policy = new WriteMethodPolicy(runtime);
         ApiResponse policyResponse =
                 policy.rejectIfNotAllowed(
@@ -130,6 +129,10 @@ public class RestApiPatchHandler {
                 () ->
                         new EntityPatchDocumentMapper(runtime.schema())
                                 .map(patchStyle(requestHeaders), route, lifecycle.rawBody()));
+    }
+
+    private ThingRoute routeFor(final String url, final ThingifierApiLifecycleContext lifecycle) {
+        return lifecycle == null ? runtime.routeFor(RoutingVerb.PATCH, url) : lifecycle.route();
     }
 
     /**

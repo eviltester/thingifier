@@ -10,7 +10,6 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.InstanceRou
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.RelationshipCollectionRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.RelationshipInstanceRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
-import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
 import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleContext;
 import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleHookRegistry;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
@@ -118,7 +117,7 @@ public final class RestApiQueryHandler {
             final ThingifierRequestContext context,
             final ThingifierApiLifecycleContext lifecycle) {
         ThingReadResultApiMapper apiMapper = new ThingReadResultApiMapper(runtime.apiConfig());
-        ThingRoute route = new ThingRouteMapper(runtime.schema()).map(url);
+        ThingRoute route = routeFor(url, lifecycle);
 
         if (route instanceof InstanceRoute) {
             return methodNotAllowed("OPTIONS, GET, HEAD, POST, PUT, DELETE");
@@ -201,6 +200,10 @@ public final class RestApiQueryHandler {
                             apiMapper));
         }
         return lifecycle.apiResponse();
+    }
+
+    private ThingRoute routeFor(final String url, final ThingifierApiLifecycleContext lifecycle) {
+        return lifecycle == null ? runtime.routeFor(RoutingVerb.QUERY, url) : lifecycle.route();
     }
 
     /**

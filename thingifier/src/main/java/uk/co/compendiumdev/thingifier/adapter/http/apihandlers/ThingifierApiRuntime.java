@@ -2,6 +2,9 @@ package uk.co.compendiumdev.thingifier.adapter.http.apihandlers;
 
 import java.util.List;
 import java.util.Optional;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteResolver;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.security.DataScopeCreationPolicy;
@@ -20,6 +23,22 @@ public interface ThingifierApiRuntime {
     ThingifierApiSpec apiSpec();
 
     List<String> thingNames();
+
+    /**
+     * Resolves a public request path to the internal route shape handlers should process.
+     *
+     * <p>This is the shared entry point for generated routes and fixed-instance route mappings so
+     * auth, lifecycle, validation, and command/query handling agree on the same target entity and
+     * identifier.
+     *
+     * @param verb routing verb for the request
+     * @param path public request path
+     * @return resolved route
+     */
+    default ThingRoute routeFor(final RoutingVerb verb, final String path) {
+        return new ThingRouteResolver(schema(), apiSpec(), apiConfig().getApiEndPointPrefix())
+                .map(verb, path);
+    }
 
     ThingifierRequestContext contextFrom(HttpHeadersBlock requestHeaders);
 

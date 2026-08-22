@@ -6,7 +6,6 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.InstanceRou
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.RelationshipCollectionRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.RelationshipInstanceRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
-import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRouteMapper;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.BasicAuthHeaderParser;
@@ -62,7 +61,7 @@ public final class RouteAuthPolicy {
      */
     public ApiResponse rejectIfNotAuthorized(
             final RoutingVerb verb, final String path, final ThingifierRequestContext context) {
-        final ThingRoute route = new ThingRouteMapper(runtime.schema()).map(path);
+        final ThingRoute route = runtime.routeFor(verb, path);
         return rejectIfNotAuthorized(verb, path, context, route);
     }
 

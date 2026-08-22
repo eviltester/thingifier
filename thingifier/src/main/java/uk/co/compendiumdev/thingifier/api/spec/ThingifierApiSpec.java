@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.Set;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
+import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.security.SecuritySchemeNames;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthenticator;
@@ -290,6 +291,7 @@ public final class ThingifierApiSpec {
      * @param apiPathPrefix configured API prefix used when matching paths
      */
     public void applyTo(final ApiRoutingDefinition routingDefinition, final String apiPathPrefix) {
+        addFixedRouteDefinitionsTo(routingDefinition, apiPathPrefix);
         for (RoutingDefinition route : routingDefinition.definitions()) {
             ruleFor(route.verb(), route.url(), apiPathPrefix)
                     .ifPresent(rule -> rule.applyTo(route));
@@ -375,6 +377,24 @@ public final class ThingifierApiSpec {
                                 ApiRoutePathMatcher.pathsMatch(
                                         rule.pathPattern(), path, apiPathPrefix))
                 .findFirst();
+    }
+
+    /**
+     * Finds a fixed-instance mapping for a verb and public request path.
+     *
+     * <p>Fixed mappings are route rules that turn a public path with no URL identifier into an
+     * internal entity instance target. Runtime routing asks for this before falling back to the
+     * normal generated route mapper.
+     *
+     * @param verb routing verb
+     * @param path request path
+     * @param apiPathPrefix configured API prefix used when matching paths
+     * @return matching fixed route rule when configured
+     */
+    public Optional<ThingifierApiRouteRule> fixedRouteRuleFor(
+            final RoutingVerb verb, final String path, final String apiPathPrefix) {
+        return ruleFor(verb, path, apiPathPrefix)
+                .filter(ThingifierApiRouteRule::hasFixedIdentifierMapping);
     }
 
     /**
@@ -711,6 +731,127 @@ public final class ThingifierApiSpec {
                     .flatMap(this::defaultResponseEntityViewFor)
                     .ifPresent(viewName -> route.responseEntityView(statusCode, viewName));
         }
+    }
+
+    /**
+     * Adds route definitions for fixed-instance route rules.
+     *
+     * <p>Generated route rules normally modify routes that already exist. Fixed-instance rules are
+     * different because their public path intentionally does not follow the generated {@code
+     * /entities/{id}} shape. This method creates those public routes before normal rule application
+     * so documentation, server registration, and runtime policy all see the same route.
+     *
+     * @param routingDefinition generated route definition set to augment
+     * @param apiPathPrefix configured API prefix
+     */
+    public void addFixedRouteDefinitionsTo(
+            final ApiRoutingDefinition routingDefinition, final String apiPathPrefix) {
+        for (ThingifierApiRouteRule rule : routeRules) {
+            if (!rule.hasFixedIdentifierMapping()) {
+                continue;
+            }
+            final String routeUrl = publicRouteUrl(rule.pathPattern(), apiPathPrefix);
+            if (hasRoute(routingDefinition, rule.verb(), routeUrl)) {
+                continue;
+            }
+            final EntityDefinition entity =
+                    routingDefinition
+                            .objectSchemaNamed(rule.fixedEntityName())
+                            .orElseThrow(
+                                    () ->
+                                            new IllegalStateException(
+                                                    String.format(
+                                                            "Fixed route %s maps to unknown entity %s",
+                                                            rule.pathPattern(),
+                                                            rule.fixedEntityName())));
+            RoutingDefinition route =
+                    routingDefinition
+                            .addRouting(
+                                    fixedRouteDocumentation(rule, entity),
+                                    rule.verb(),
+                                    routeUrl,
+                                    RoutingStatus.returnedFromCall())
+                            .mapToFixedEntity(
+                                    entity.getName(),
+                                    rule.fixedIdentifier(),
+                                    rule.fixedResourcePolicy());
+            applyFixedRoutePayloads(route, entity);
+        }
+    }
+
+    private boolean hasRoute(
+            final ApiRoutingDefinition routingDefinition,
+            final RoutingVerb verb,
+            final String routeUrl) {
+        for (RoutingDefinition route : routingDefinition.definitions()) {
+            if (route.verb() == verb && samePathPattern(route.url(), routeUrl)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String fixedRouteDocumentation(
+            final ThingifierApiRouteRule rule, final EntityDefinition entity) {
+        return String.format(
+                "map %s to fixed %s instance %s",
+                rule.pathPattern(), entity.getName(), rule.fixedIdentifier());
+    }
+
+    private void applyFixedRoutePayloads(
+            final RoutingDefinition route, final EntityDefinition entity) {
+        switch (route.verb()) {
+            case GET:
+                route.addPossibleStatus(
+                                RoutingStatus.returnValue(
+                                        200, String.format("A specific %s", entity.getName())))
+                        .returnPayload(200, entity.getName())
+                        .addPossibleStatus(RoutingStatus.returnValue(404));
+                break;
+            case HEAD:
+                route.addPossibleStatus(RoutingStatus.returnValue(200))
+                        .addPossibleStatus(RoutingStatus.returnValue(404));
+                break;
+            case POST:
+            case PATCH:
+                route.addPossibleStatus(
+                                RoutingStatus.returnValue(
+                                        200,
+                                        String.format("Updated the fixed %s", entity.getName())))
+                        .returnPayload(200, entity.getName())
+                        .requestPayload(entity.getName())
+                        .addPossibleStatus(RoutingStatus.returnValue(404))
+                        .addPossibleStatus(RoutingStatus.returnValue(422))
+                        .addPossibleStatus(RoutingStatus.returnValue(409));
+                break;
+            case PUT:
+                route.addPossibleStatus(RoutingStatus.returnValue(200))
+                        .returnPayload(200, entity.getName())
+                        .addPossibleStatus(RoutingStatus.returnValue(201))
+                        .returnPayload(201, entity.getName())
+                        .requestPayload(entity.getName())
+                        .addPossibleStatus(RoutingStatus.returnValue(404))
+                        .addPossibleStatus(RoutingStatus.returnValue(422))
+                        .addPossibleStatus(RoutingStatus.returnValue(409));
+                break;
+            case DELETE:
+                route.addPossibleStatus(RoutingStatus.returnValue(204))
+                        .addPossibleStatus(RoutingStatus.returnValue(404));
+                break;
+            default:
+                break;
+        }
+    }
+
+    private String publicRouteUrl(final String pathPattern, final String apiPathPrefix) {
+        final String normalizedPath = normalize(pathPattern);
+        final String normalizedPrefix = normalize(apiPathPrefix);
+        if (normalizedPrefix.isEmpty()
+                || normalizedPath.equals(normalizedPrefix)
+                || normalizedPath.startsWith(normalizedPrefix + "/")) {
+            return normalizedPath;
+        }
+        return normalizedPrefix + "/" + normalizedPath;
     }
 
     /**
