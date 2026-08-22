@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.adapter.http.apihandlers;
 
+import java.util.List;
 import java.util.Optional;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.CollectionRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.InstanceRoute;
@@ -8,6 +9,7 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.Relationshi
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
+import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.ApiKeyHeaderParser;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.BasicAuthHeaderParser;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.BearerAuthHeaderParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -20,6 +22,7 @@ import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthorizationRes
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthorizer;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiDataScopeSelection;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiRouteAuthDetails;
+import uk.co.compendiumdev.thingifier.api.security.ThingifierApiSecuritySchemeType;
 import uk.co.compendiumdev.thingifier.api.spec.ApiRoutePathMatcher;
 import uk.co.compendiumdev.thingifier.api.spec.ThingifierApiRouteRule;
 import uk.co.compendiumdev.thingifier.application.schema.EntityTypeRef;
@@ -93,12 +96,159 @@ public final class RouteAuthPolicy {
             return null;
         }
 
-        final ThingifierApiRouteRule rule = matchingRule.get();
-        if (rule.hasBasicAuthEnforcement()) {
-            return rejectForBasicAuth(verb, path, context, route, rule);
+        return rejectForAuthAlternatives(verb, path, context, route, matchingRule.get());
+    }
+
+    /**
+     * Enforces the route's ordered authentication alternatives.
+     *
+     * <p>Only the first declared scheme whose credential source is present is authenticated. A
+     * malformed or rejected selected credential stops the request immediately so a higher-priority
+     * credential cannot silently fall through to a later alternative.
+     *
+     * @param verb generated API verb
+     * @param path generated API path
+     * @param context active request context
+     * @param route mapped generated route
+     * @param rule matching route rule
+     * @return rejection response, or null when authentication and authorization succeed
+     */
+    private ApiResponse rejectForAuthAlternatives(
+            final RoutingVerb verb,
+            final String path,
+            final ThingifierRequestContext context,
+            final ThingRoute route,
+            final ThingifierApiRouteRule rule) {
+        final List<String> schemeNames = rule.authEnforcementSchemeNames();
+        for (String schemeName : schemeNames) {
+            final Optional<ThingifierApiSecuritySchemeType> schemeType =
+                    authSchemeTypeFor(rule, schemeName);
+            if (schemeType.isEmpty()) {
+                return unknownAuthScheme(schemeName);
+            }
+            if (!credentialSourceIsPresent(context, schemeName, schemeType.get())) {
+                continue;
+            }
+            return rejectForAuthScheme(
+                    verb, path, context, route, rule, schemeName, schemeType.get());
         }
 
-        return rejectForBearerAuth(verb, path, context, route, rule);
+        final Optional<ThingifierApiSecuritySchemeType> firstSchemeType =
+                authSchemeTypeFor(rule, schemeNames.get(0));
+        if (firstSchemeType.isEmpty()) {
+            return unknownAuthScheme(schemeNames.get(0));
+        }
+        return unauthorized(defaultChallengeFor(schemeNames.get(0), firstSchemeType.get()));
+    }
+
+    private ApiResponse rejectForAuthScheme(
+            final RoutingVerb verb,
+            final String path,
+            final ThingifierRequestContext context,
+            final ThingRoute route,
+            final ThingifierApiRouteRule rule,
+            final String schemeName,
+            final ThingifierApiSecuritySchemeType schemeType) {
+        switch (schemeType) {
+            case API_KEY:
+                return rejectForApiKeyAuth(verb, path, context, route, rule, schemeName);
+            case BASIC:
+                return rejectForBasicAuth(verb, path, context, route, rule, schemeName);
+            case BEARER:
+                return rejectForBearerAuth(verb, path, context, route, rule, schemeName);
+            default:
+                return unknownAuthScheme(schemeName);
+        }
+    }
+
+    private Optional<ThingifierApiSecuritySchemeType> authSchemeTypeFor(
+            final ThingifierApiRouteRule rule, final String schemeName) {
+        if (schemeName.equals(rule.apiKeyAuthEnforcementSchemeName())) {
+            return Optional.of(ThingifierApiSecuritySchemeType.API_KEY);
+        }
+        if (schemeName.equals(rule.basicAuthEnforcementSchemeName())) {
+            return Optional.of(ThingifierApiSecuritySchemeType.BASIC);
+        }
+        if (schemeName.equals(rule.bearerAuthEnforcementSchemeName())) {
+            return Optional.of(ThingifierApiSecuritySchemeType.BEARER);
+        }
+        return runtime.apiSpec().security().schemeType(schemeName);
+    }
+
+    private boolean credentialSourceIsPresent(
+            final ThingifierRequestContext context,
+            final String schemeName,
+            final ThingifierApiSecuritySchemeType schemeType) {
+        switch (schemeType) {
+            case API_KEY:
+                return context.headers()
+                        .headerExists(runtime.apiSpec().security().apiKeyHeaderName(schemeName));
+            case BASIC:
+                return new BasicAuthHeaderParser(context.headers().get(AUTHORIZATION_HEADER))
+                        .isBasicAuth();
+            case BEARER:
+                return new BearerAuthHeaderParser(context.headers().get(AUTHORIZATION_HEADER))
+                        .isBearerToken();
+            default:
+                return false;
+        }
+    }
+
+    private String defaultChallengeFor(
+            final String schemeName, final ThingifierApiSecuritySchemeType schemeType) {
+        switch (schemeType) {
+            case BASIC:
+                return basicChallengeFor(schemeName);
+            case BEARER:
+                return BEARER_CHALLENGE;
+            case API_KEY:
+            default:
+                return "";
+        }
+    }
+
+    private ApiResponse unknownAuthScheme(final String schemeName) {
+        return ApiResponse.error(
+                500, "No security scheme declaration configured for auth scheme " + schemeName);
+    }
+
+    /**
+     * Enforces a named API key auth route rule.
+     *
+     * @param verb generated API verb
+     * @param path generated API path
+     * @param context active request context
+     * @param route mapped generated route
+     * @param rule matching route rule
+     * @return rejection response, or null when authentication and authorization succeed
+     */
+    private ApiResponse rejectForApiKeyAuth(
+            final RoutingVerb verb,
+            final String path,
+            final ThingifierRequestContext context,
+            final ThingRoute route,
+            final ThingifierApiRouteRule rule,
+            final String schemeName) {
+        final String headerName = runtime.apiSpec().security().apiKeyHeaderName(schemeName);
+        final ApiKeyHeaderParser apiKey = new ApiKeyHeaderParser(context.headers().get(headerName));
+        if (!apiKey.isValid()) {
+            return unauthorized("");
+        }
+
+        final Optional<ThingifierApiAuthenticator> authenticator =
+                runtime.apiSpec().authenticatorFor(schemeName);
+        if (authenticator.isEmpty()) {
+            return ApiResponse.error(
+                    500, "No authenticator configured for API key auth scheme " + schemeName);
+        }
+
+        final ThingifierApiAuthenticationContext authenticationContext =
+                ThingifierApiAuthenticationContext.apiKey(
+                        authDetails(schemeName, verb, path, context, route, rule),
+                        apiKey.credential(),
+                        headerName);
+        return rejectAfterAuthentication(
+                rule, context, schemeName, authenticator.get(), authenticationContext, "");
     }
 
     /**
@@ -116,8 +266,8 @@ public final class RouteAuthPolicy {
             final String path,
             final ThingifierRequestContext context,
             final ThingRoute route,
-            final ThingifierApiRouteRule rule) {
-        final String schemeName = rule.bearerAuthEnforcementSchemeName();
+            final ThingifierApiRouteRule rule,
+            final String schemeName) {
         final BearerAuthHeaderParser bearer =
                 new BearerAuthHeaderParser(context.headers().get(AUTHORIZATION_HEADER));
         if (!bearer.isValid()) {
@@ -159,8 +309,8 @@ public final class RouteAuthPolicy {
             final String path,
             final ThingifierRequestContext context,
             final ThingRoute route,
-            final ThingifierApiRouteRule rule) {
-        final String schemeName = rule.basicAuthEnforcementSchemeName();
+            final ThingifierApiRouteRule rule,
+            final String schemeName) {
         final String challenge = basicChallengeFor(schemeName);
         final BasicAuthHeaderParser basic =
                 new BasicAuthHeaderParser(context.headers().get(AUTHORIZATION_HEADER));
@@ -276,9 +426,7 @@ public final class RouteAuthPolicy {
      * @return true when named auth should be enforced for this request
      */
     private boolean requiresAuth(final ThingifierApiRouteRule rule) {
-        return !rule.isDisabled()
-                && !rule.isMethodNotAllowed()
-                && (rule.hasBasicAuthEnforcement() || rule.hasBearerAuthEnforcement());
+        return !rule.isDisabled() && !rule.isMethodNotAllowed() && rule.hasAuthEnforcement();
     }
 
     /**
@@ -383,7 +531,11 @@ public final class RouteAuthPolicy {
      * @return 401 response with a WWW-Authenticate challenge
      */
     private ApiResponse unauthorized(final String challenge) {
-        return ApiResponse.error(401, "Unauthorized").setHeader(WWW_AUTHENTICATE_HEADER, challenge);
+        final ApiResponse response = ApiResponse.error(401, "Unauthorized");
+        if (challenge != null && !challenge.trim().isEmpty()) {
+            response.setHeader(WWW_AUTHENTICATE_HEADER, challenge);
+        }
+        return response;
     }
 
     /**
@@ -396,6 +548,8 @@ public final class RouteAuthPolicy {
     private ApiResponse challengeIfUnauthorized(
             final ApiResponse response, final String challenge) {
         if (response.getStatusCode() == 401
+                && challenge != null
+                && !challenge.trim().isEmpty()
                 && response.getHeaderValue(WWW_AUTHENTICATE_HEADER).isEmpty()) {
             response.setHeader(WWW_AUTHENTICATE_HEADER, challenge);
         }

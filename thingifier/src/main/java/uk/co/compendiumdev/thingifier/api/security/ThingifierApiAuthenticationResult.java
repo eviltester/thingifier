@@ -8,7 +8,8 @@ import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
  *
  * <p>The result either supplies a principal for later authorization or an API response explaining
  * why the credentials cannot be accepted. Thingifier supplies the standard missing and malformed
- * bearer-token responses before invoking authenticators.
+ * credential responses before invoking authenticators when the route's auth scheme cannot be
+ * parsed.
  *
  * <p>Successful authenticators may also choose a data scope for the rest of the request. That
  * selection is trusted because it is returned only after application code has validated the

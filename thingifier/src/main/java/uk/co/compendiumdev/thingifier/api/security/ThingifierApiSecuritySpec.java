@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -18,13 +19,18 @@ public final class ThingifierApiSecuritySpec {
     /** Default Basic realm used when a scheme has not configured one. */
     public static final String DEFAULT_BASIC_REALM = "Thingifier";
 
+    /** Default request header used by API key schemes when no header is explicitly configured. */
+    public static final String DEFAULT_API_KEY_HEADER = "X-API-KEY";
+
     private final Set<String> bearerSchemes;
     private final Map<String, String> basicRealms;
+    private final Map<String, String> apiKeyHeaders;
 
     /** Creates an empty security declaration set. */
     public ThingifierApiSecuritySpec() {
         bearerSchemes = new LinkedHashSet<>();
         basicRealms = new LinkedHashMap<>();
+        apiKeyHeaders = new LinkedHashMap<>();
     }
 
     /**
@@ -65,6 +71,37 @@ public final class ThingifierApiSecuritySpec {
     }
 
     /**
+     * Declares a named API key scheme using the default {@code X-API-KEY} header.
+     *
+     * <p>API key schemes are for user-facing token headers that should be enforced at runtime and
+     * rendered in OpenAPI as {@code type: apiKey}, {@code in: header}.
+     *
+     * @param schemeName name to use in API spec route rules and OpenAPI security schemes
+     * @return this security spec so declarations can be chained
+     */
+    public ThingifierApiSecuritySpec apiKey(final String schemeName) {
+        return apiKey(schemeName, DEFAULT_API_KEY_HEADER);
+    }
+
+    /**
+     * Declares a named API key scheme with a configured request header.
+     *
+     * <p>The header name is part of the public API contract. Thingifier reads the credential from
+     * this header before invoking the named authenticator, and OpenAPI advertises the same header
+     * so clients know how to supply the token.
+     *
+     * @param schemeName name to use in API spec route rules and OpenAPI security schemes
+     * @param headerName request header that carries the API key credential
+     * @return this security spec so declarations can be chained
+     */
+    public ThingifierApiSecuritySpec apiKey(final String schemeName, final String headerName) {
+        apiKeyHeaders.put(
+                SecuritySchemeNames.requireValid(schemeName),
+                SecuritySchemeNames.requireValidHeaderName(headerName));
+        return this;
+    }
+
+    /**
      * Reports whether the named bearer scheme has been declared.
      *
      * @param schemeName security scheme name
@@ -82,6 +119,40 @@ public final class ThingifierApiSecuritySpec {
      */
     public boolean hasBasic(final String schemeName) {
         return basicRealms.containsKey(SecuritySchemeNames.requireValid(schemeName));
+    }
+
+    /**
+     * Reports whether the named API key scheme has been declared.
+     *
+     * @param schemeName security scheme name
+     * @return true when a matching API key scheme is known
+     */
+    public boolean hasApiKey(final String schemeName) {
+        return apiKeyHeaders.containsKey(SecuritySchemeNames.requireValid(schemeName));
+    }
+
+    /**
+     * Resolves the transport type for a declared security scheme.
+     *
+     * <p>Alternative route auth works from ordered scheme names. This lookup keeps those route
+     * declarations concise while still letting Thingifier parse the correct credential source for
+     * each named scheme.
+     *
+     * @param schemeName security scheme name
+     * @return scheme type when the name has been declared
+     */
+    public Optional<ThingifierApiSecuritySchemeType> schemeType(final String schemeName) {
+        final String normalizedSchemeName = SecuritySchemeNames.requireValid(schemeName);
+        if (bearerSchemes.contains(normalizedSchemeName)) {
+            return Optional.of(ThingifierApiSecuritySchemeType.BEARER);
+        }
+        if (basicRealms.containsKey(normalizedSchemeName)) {
+            return Optional.of(ThingifierApiSecuritySchemeType.BASIC);
+        }
+        if (apiKeyHeaders.containsKey(normalizedSchemeName)) {
+            return Optional.of(ThingifierApiSecuritySchemeType.API_KEY);
+        }
+        return Optional.empty();
     }
 
     /**
@@ -103,6 +174,15 @@ public final class ThingifierApiSecuritySpec {
     }
 
     /**
+     * Returns all declared API key scheme names in declaration order.
+     *
+     * @return immutable set of API key scheme names
+     */
+    public Set<String> apiKeySchemes() {
+        return Collections.unmodifiableSet(apiKeyHeaders.keySet());
+    }
+
+    /**
      * Returns the Basic realm for a named scheme.
      *
      * <p>Routes may enforce a named Basic scheme without an explicit security declaration. In that
@@ -114,6 +194,22 @@ public final class ThingifierApiSecuritySpec {
     public String basicRealm(final String schemeName) {
         return basicRealms.getOrDefault(
                 SecuritySchemeNames.requireValid(schemeName), DEFAULT_BASIC_REALM);
+    }
+
+    /**
+     * Returns the header name for a named API key scheme.
+     *
+     * <p>Routes may enforce a named API key scheme without an explicit security declaration. In
+     * that case the default header keeps runtime behaviour and documentation predictable, while
+     * applications that expose a public header such as {@code X-AUTH-TOKEN} should declare it with
+     * {@link #apiKey(String, String)}.
+     *
+     * @param schemeName security scheme name
+     * @return configured API key header, or {@code X-API-KEY} when no declaration exists
+     */
+    public String apiKeyHeaderName(final String schemeName) {
+        return apiKeyHeaders.getOrDefault(
+                SecuritySchemeNames.requireValid(schemeName), DEFAULT_API_KEY_HEADER);
     }
 
     private String normalizedRealm(final String realm) {

@@ -39,7 +39,7 @@ class InternalHttpRequestToHttpApiRequestTest {
         Assertions.assertEquals("http://localhost/todos", apiRequest.getUrl());
         Assertions.assertEquals("127.0.0.1", apiRequest.getIP());
         Assertions.assertEquals("123", apiRequest.getUrlParam(":id"));
-        Assertions.assertEquals("application/json", apiRequest.getHeader("Accept"));
+        Assertions.assertEquals("APPLICATION/JSON", apiRequest.getHeader("Accept"));
         Assertions.assertEquals(3, apiRequest.getHeadersList().size());
         Assertions.assertEquals("1", apiRequest.getQueryParams().get("p"));
         Assertions.assertEquals("", apiRequest.getQueryParams().get("empty"));

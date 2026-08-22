@@ -7,6 +7,7 @@ import java.util.List;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.ContentTypeHeaderParser;
 import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
 import uk.co.compendiumdev.thingifier.api.security.SecuritySchemeNames;
+import uk.co.compendiumdev.thingifier.api.security.ThingifierApiSecuritySpec;
 import uk.co.compendiumdev.thingifier.api.spec.FixedResourcePolicy;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
@@ -37,6 +38,11 @@ public class RoutingDefinition {
     private String basicAuthSchemeName = SecuritySchemeNames.DEFAULT_BASIC_AUTH_SCHEME;
     private boolean usesBearerAuth = false;
     private String bearerAuthSchemeName = SecuritySchemeNames.DEFAULT_BEARER_AUTH_SCHEME;
+    private boolean usesApiKeyAuth = false;
+    private String apiKeyAuthSchemeName = SecuritySchemeNames.DEFAULT_API_KEY_AUTH_SCHEME;
+    private String apiKeyHeaderName = ThingifierApiSecuritySpec.DEFAULT_API_KEY_HEADER;
+    private boolean apiKeyHeaderNameConfigured = false;
+    private List<String> authSchemeNames;
     private boolean hiddenFromDocumentation = false;
     private boolean disabled = false;
     private String requestEntityViewName;
@@ -76,6 +82,7 @@ public class RoutingDefinition {
         responseHeaders = new HashMap<>();
         requestEntityViewName = null;
         responseEntityViewNames = new HashMap<>();
+        authSchemeNames = new ArrayList<>();
         fixedEntityName = null;
         fixedIdentifier = null;
         fixedResourcePolicy = FixedResourcePolicy.RETURN_404;
@@ -675,6 +682,7 @@ public class RoutingDefinition {
     public RoutingDefinition secureWithBasicAuth(final String schemeName) {
         usesBasicAuth = true;
         basicAuthSchemeName = SecuritySchemeNames.requireValid(schemeName);
+        replaceAuthSchemeNamesWith(basicAuthSchemeName);
         return this;
     }
 
@@ -714,6 +722,7 @@ public class RoutingDefinition {
     public RoutingDefinition secureWithBearerAuth(final String schemeName) {
         usesBearerAuth = true;
         bearerAuthSchemeName = SecuritySchemeNames.requireValid(schemeName);
+        replaceAuthSchemeNamesWith(bearerAuthSchemeName);
         return this;
     }
 
@@ -733,6 +742,119 @@ public class RoutingDefinition {
      */
     public String bearerAuthSchemeName() {
         return bearerAuthSchemeName;
+    }
+
+    /**
+     * Marks the route as requiring the default API key auth scheme in generated documentation.
+     *
+     * @return this definition so route metadata can be chained
+     */
+    public RoutingDefinition secureWithApiKey() {
+        return secureWithApiKey(SecuritySchemeNames.DEFAULT_API_KEY_AUTH_SCHEME);
+    }
+
+    /**
+     * Marks the route as requiring a named API key auth scheme in generated documentation.
+     *
+     * <p>The concrete header name is normally supplied by {@link ThingifierApiSecuritySpec}. This
+     * overload keeps generated route metadata focused on the scheme selected by the route.
+     *
+     * @param schemeName API key security scheme name
+     * @return this definition so route metadata can be chained
+     */
+    public RoutingDefinition secureWithApiKey(final String schemeName) {
+        usesApiKeyAuth = true;
+        apiKeyAuthSchemeName = SecuritySchemeNames.requireValid(schemeName);
+        replaceAuthSchemeNamesWith(apiKeyAuthSchemeName);
+        return this;
+    }
+
+    /**
+     * Marks the route as requiring a named API key auth scheme with an explicit header.
+     *
+     * <p>This is useful for manually added documentation routes that do not have a Thingifier API
+     * security declaration to resolve the header name from.
+     *
+     * @param schemeName API key security scheme name
+     * @param headerName request header carrying the API key credential
+     * @return this definition so route metadata can be chained
+     */
+    public RoutingDefinition secureWithApiKey(final String schemeName, final String headerName) {
+        secureWithApiKey(schemeName);
+        apiKeyHeaderName = SecuritySchemeNames.requireValidHeaderName(headerName);
+        apiKeyHeaderNameConfigured = true;
+        return this;
+    }
+
+    /**
+     * Marks the route as accepting any of several named auth schemes in declaration order.
+     *
+     * <p>This metadata is used by OpenAPI generation to render OR-style security requirements.
+     * Generated routes normally resolve each scheme type from the owning Thingifier API security
+     * spec. Manually documented routes can still call the scheme-specific helpers to provide
+     * fallback type/header metadata.
+     *
+     * @param schemeNames ordered security scheme names accepted by the route
+     * @return this definition so route metadata can be chained
+     * @throws IllegalArgumentException when no scheme names are supplied or a name is blank
+     */
+    public RoutingDefinition secureWithAnyOf(final String... schemeNames) {
+        authSchemeNames = normalizedSchemeNames(schemeNames);
+        return this;
+    }
+
+    /**
+     * Reports whether the route has explicit ordered auth scheme metadata.
+     *
+     * @return true when one or more auth scheme names are configured
+     */
+    public boolean hasAuthSchemeNames() {
+        return !authSchemeNames.isEmpty();
+    }
+
+    /**
+     * Returns ordered auth scheme names for this route.
+     *
+     * @return immutable ordered scheme names
+     */
+    public List<String> authSchemeNames() {
+        return List.copyOf(authSchemeNames);
+    }
+
+    /**
+     * Reports whether the route is documented as API-key secured.
+     *
+     * @return true when API key auth should be documented
+     */
+    public boolean isSecuredByApiKeyAuth() {
+        return usesApiKeyAuth;
+    }
+
+    /**
+     * Returns the API key security scheme name used in generated documentation.
+     *
+     * @return API key security scheme name
+     */
+    public String apiKeyAuthSchemeName() {
+        return apiKeyAuthSchemeName;
+    }
+
+    /**
+     * Reports whether this route carries an explicit API key header name.
+     *
+     * @return true when the header was configured directly on this route definition
+     */
+    public boolean hasApiKeyHeaderName() {
+        return apiKeyHeaderNameConfigured;
+    }
+
+    /**
+     * Returns the route's API key header name.
+     *
+     * @return configured API key header, or the default API key header
+     */
+    public String apiKeyHeaderName() {
+        return apiKeyHeaderName;
     }
 
     /**
@@ -772,6 +894,28 @@ public class RoutingDefinition {
      */
     public boolean isDisabled() {
         return disabled;
+    }
+
+    private void replaceAuthSchemeNamesWith(final String schemeName) {
+        authSchemeNames.clear();
+        authSchemeNames.add(schemeName);
+    }
+
+    private List<String> normalizedSchemeNames(final String... schemeNames) {
+        if (schemeNames == null || schemeNames.length == 0) {
+            throw new IllegalArgumentException("secureWithAnyOf requires at least one scheme");
+        }
+        final List<String> normalizedSchemeNames = new ArrayList<>();
+        for (String schemeName : schemeNames) {
+            final String normalizedSchemeName = SecuritySchemeNames.requireValid(schemeName);
+            if (!normalizedSchemeNames.contains(normalizedSchemeName)) {
+                normalizedSchemeNames.add(normalizedSchemeName);
+            }
+        }
+        if (normalizedSchemeNames.isEmpty()) {
+            throw new IllegalArgumentException("secureWithAnyOf requires at least one scheme");
+        }
+        return normalizedSchemeNames;
     }
 
     public static final class RequestUrlParameter {

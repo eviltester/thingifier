@@ -61,6 +61,18 @@ public final class ThingifierApiAuthorizationContext {
     }
 
     /**
+     * Returns the security scheme name that selected the authenticator.
+     *
+     * <p>This alias mirrors the public API wording used by generic authorizers. It returns the same
+     * value as {@link #schemeName()}.
+     *
+     * @return security scheme name
+     */
+    public String authSchemeName() {
+        return authenticationContext.authSchemeName();
+    }
+
+    /**
      * Returns the generated API verb being processed.
      *
      * @return routing verb
@@ -146,6 +158,24 @@ public final class ThingifierApiAuthorizationContext {
     }
 
     /**
+     * Returns the parsed credential for token-style authentication schemes.
+     *
+     * @return bearer token or API key, or an empty string for Basic auth
+     */
+    public String authCredential() {
+        return authenticationContext.authCredential();
+    }
+
+    /**
+     * Returns where the parsed credential came from.
+     *
+     * @return credential source header name, or an empty string when unavailable
+     */
+    public String authCredentialSource() {
+        return authenticationContext.authCredentialSource();
+    }
+
+    /**
      * Returns the parsed bearer token.
      *
      * @return bearer token without the Authorization scheme prefix
@@ -170,6 +200,15 @@ public final class ThingifierApiAuthorizationContext {
      */
     public String basicPassword() {
         return authenticationContext.basicPassword();
+    }
+
+    /**
+     * Returns the parsed API key credential from the authentication step.
+     *
+     * @return API key value, or an empty string when the enforced scheme is not API key auth
+     */
+    public String apiKey() {
+        return authenticationContext.apiKey();
     }
 
     /**

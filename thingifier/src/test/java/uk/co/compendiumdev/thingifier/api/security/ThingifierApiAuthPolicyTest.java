@@ -95,6 +95,35 @@ class ThingifierApiAuthPolicyTest {
     }
 
     @Test
+    void namedApiKeySchemeIsDocumentedOnProtectedGeneratedRoute() {
+        final Thingifier thingifier = todoModel();
+        thingifier.apiSpec().security().apiKey("authToken", "X-AUTH-TOKEN");
+        thingifier.apiSpec().route(RoutingVerb.POST, "/api/todos").secureWithApiKey("authToken");
+        final ThingifierApiDocumentationDefn apiDefn = new ThingifierApiDocumentationDefn();
+        apiDefn.setThingifier(thingifier);
+        apiDefn.setPathPrefix("/api");
+
+        final OpenAPI openApi =
+                new uk.co.compendiumdev.thingifier.swaggerizer.Swaggerizer(apiDefn).swagger();
+
+        final SecurityScheme scheme = openApi.getComponents().getSecuritySchemes().get("authToken");
+        Assertions.assertNotNull(scheme);
+        Assertions.assertEquals(SecurityScheme.Type.APIKEY, scheme.getType());
+        Assertions.assertEquals(SecurityScheme.In.HEADER, scheme.getIn());
+        Assertions.assertEquals("X-AUTH-TOKEN", scheme.getName());
+        Assertions.assertEquals(
+                "authToken",
+                openApi.getPaths()
+                        .get("/api/todos")
+                        .getPost()
+                        .getSecurity()
+                        .get(0)
+                        .keySet()
+                        .iterator()
+                        .next());
+    }
+
+    @Test
     @SuppressWarnings("deprecation")
     void legacyBearerMarkerRemainsDocumentationOnly() {
         final Thingifier thingifier = todoModel();
@@ -167,6 +196,24 @@ class ThingifierApiAuthPolicyTest {
     }
 
     @Test
+    void directApiMissingApiKeyReturns401WithoutMutation() {
+        final Thingifier thingifier = todoModel();
+        protectTodoPostWithApiKey(thingifier);
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"blocked\"}"),
+                                new HttpHeadersBlock());
+
+        Assertions.assertEquals(401, response.getStatusCode());
+        Assertions.assertEquals("", response.getHeaders().get("WWW-Authenticate"));
+        Assertions.assertEquals(0, todoCount(thingifier));
+    }
+
+    @Test
     void directApiInvalidBearerTokenReturns401WithoutMutation() {
         final Thingifier thingifier = todoModel();
         protectTodoPost(thingifier);
@@ -200,6 +247,35 @@ class ThingifierApiAuthPolicyTest {
         Assertions.assertEquals(401, response.getStatusCode());
         Assertions.assertEquals(
                 "Basic realm=\"Thingifier\"", response.getHeaders().get("WWW-Authenticate"));
+        Assertions.assertEquals(0, todoCount(thingifier));
+    }
+
+    @Test
+    void blankApiKeyHeaderReturns401BeforeAuthenticator() {
+        final Thingifier thingifier = todoModel();
+        final AtomicReference<Boolean> authenticatorCalled = new AtomicReference<>(false);
+        thingifier.apiSpec().security().apiKey("authToken", "X-AUTH-TOKEN");
+        thingifier
+                .apiSpec()
+                .authenticator(
+                        "authToken",
+                        context -> {
+                            authenticatorCalled.set(true);
+                            return ThingifierApiAuthenticationResult.authenticated();
+                        });
+        thingifier.apiSpec().route(RoutingVerb.POST, "/todos").secureWithApiKey("authToken");
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"blocked\"}"),
+                                headersWithApiKey("   "));
+
+        Assertions.assertEquals(401, response.getStatusCode());
+        Assertions.assertEquals("", response.getHeaders().get("WWW-Authenticate"));
+        Assertions.assertFalse(authenticatorCalled.get());
         Assertions.assertEquals(0, todoCount(thingifier));
     }
 
@@ -338,6 +414,40 @@ class ThingifierApiAuthPolicyTest {
     }
 
     @Test
+    void validApiKeyHeaderCallsAuthenticatorWithCredentialAndSource() {
+        final Thingifier thingifier = todoModel();
+        final AtomicReference<ThingifierApiAuthenticationContext> seenContext =
+                new AtomicReference<>();
+        thingifier.apiSpec().security().apiKey("authToken", "X-AUTH-TOKEN");
+        thingifier
+                .apiSpec()
+                .authenticator(
+                        "authToken",
+                        context -> {
+                            seenContext.set(context);
+                            return ThingifierApiAuthenticationResult.rejected(403, "checked");
+                        });
+        thingifier.apiSpec().route(RoutingVerb.POST, "/todos").secureWithApiKey("authToken");
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"blocked\"}"),
+                                headersWithApiKey("Valid-API-Key"));
+
+        Assertions.assertEquals(403, response.getStatusCode());
+        Assertions.assertNotNull(seenContext.get());
+        Assertions.assertEquals("authToken", seenContext.get().authSchemeName());
+        Assertions.assertEquals("Valid-API-Key", seenContext.get().authCredential());
+        Assertions.assertEquals("Valid-API-Key", seenContext.get().apiKey());
+        Assertions.assertEquals("X-AUTH-TOKEN", seenContext.get().authCredentialSource());
+        Assertions.assertEquals("", seenContext.get().bearerToken());
+        Assertions.assertEquals(0, todoCount(thingifier));
+    }
+
+    @Test
     void directApiValidBasicCredentialsAllowMutation() {
         final Thingifier thingifier = todoModel();
         protectTodoPostWithBasic(thingifier);
@@ -352,6 +462,156 @@ class ThingifierApiAuthPolicyTest {
 
         Assertions.assertEquals(201, response.getStatusCode());
         Assertions.assertEquals(1, todoCount(thingifier));
+    }
+
+    @Test
+    void directApiValidApiKeyAllowsMutation() {
+        final Thingifier thingifier = todoModel();
+        protectTodoPostWithApiKey(thingifier);
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"created\"}"),
+                                headersWithApiKey("Valid-API-Key"));
+
+        Assertions.assertEquals(201, response.getStatusCode());
+        Assertions.assertEquals(1, todoCount(thingifier));
+    }
+
+    @Test
+    void directApiApiKeyAlternativeAllowsMutation() {
+        final Thingifier thingifier = todoModel();
+        protectTodoPostWithAlternativeAuth(thingifier);
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"created\"}"),
+                                headersWithApiKey("Valid-API-Key"));
+
+        Assertions.assertEquals(201, response.getStatusCode());
+        Assertions.assertEquals(1, todoCount(thingifier));
+    }
+
+    @Test
+    void directApiBearerAlternativeAllowsMutation() {
+        final Thingifier thingifier = todoModel();
+        protectTodoPostWithAlternativeAuth(thingifier);
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"created\"}"),
+                                headersWithBearer("valid-token"));
+
+        Assertions.assertEquals(201, response.getStatusCode());
+        Assertions.assertEquals(1, todoCount(thingifier));
+    }
+
+    @Test
+    void alternativeAuthUsesDeclarationOrderWhenCredentialsCompete() {
+        final Thingifier thingifier = todoModel();
+        final AtomicReference<String> selectedScheme = new AtomicReference<>();
+        thingifier.apiSpec().security().bearer("secretBearer");
+        thingifier.apiSpec().security().apiKey("secretApiKey", "X-AUTH-TOKEN");
+        thingifier
+                .apiSpec()
+                .authenticator(
+                        "secretBearer",
+                        context -> {
+                            selectedScheme.set(context.authSchemeName());
+                            return ThingifierApiAuthenticationResult.authenticated(
+                                    "bearer-principal");
+                        });
+        thingifier
+                .apiSpec()
+                .authenticator(
+                        "secretApiKey",
+                        context -> {
+                            selectedScheme.set(context.authSchemeName());
+                            return ThingifierApiAuthenticationResult.authenticated(
+                                    "api-key-principal");
+                        });
+        thingifier
+                .apiSpec()
+                .route(RoutingVerb.POST, "/todos")
+                .secureWithAnyOf("secretBearer", "secretApiKey");
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"created\"}"),
+                                headersWithBearerAndApiKey("valid-token", "Valid-API-Key"));
+
+        Assertions.assertEquals(201, response.getStatusCode());
+        Assertions.assertEquals("secretBearer", selectedScheme.get());
+        Assertions.assertEquals(1, todoCount(thingifier));
+    }
+
+    @Test
+    void selectedRejectedAlternativeDoesNotFallThrough() {
+        final Thingifier thingifier = todoModel();
+        final AtomicReference<Boolean> apiKeyAuthenticatorCalled = new AtomicReference<>(false);
+        thingifier.apiSpec().security().bearer("secretBearer");
+        thingifier.apiSpec().security().apiKey("secretApiKey", "X-AUTH-TOKEN");
+        thingifier
+                .apiSpec()
+                .authenticator(
+                        "secretBearer",
+                        context -> ThingifierApiAuthenticationResult.rejected("Invalid bearer"));
+        thingifier
+                .apiSpec()
+                .authenticator(
+                        "secretApiKey",
+                        context -> {
+                            apiKeyAuthenticatorCalled.set(true);
+                            return ThingifierApiAuthenticationResult.authenticated(
+                                    "api-key-principal");
+                        });
+        thingifier
+                .apiSpec()
+                .route(RoutingVerb.POST, "/todos")
+                .secureWithAnyOf("secretBearer", "secretApiKey");
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"blocked\"}"),
+                                headersWithBearerAndApiKey("wrong", "Valid-API-Key"));
+
+        Assertions.assertEquals(401, response.getStatusCode());
+        Assertions.assertEquals("Bearer", response.getHeaders().get("WWW-Authenticate"));
+        Assertions.assertFalse(apiKeyAuthenticatorCalled.get());
+        Assertions.assertEquals(0, todoCount(thingifier));
+    }
+
+    @Test
+    void alternativeAuthMissingCredentialsUsesFirstSchemeChallenge() {
+        final Thingifier thingifier = todoModel();
+        protectTodoPostWithAlternativeAuth(thingifier);
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"blocked\"}"),
+                                new HttpHeadersBlock());
+
+        Assertions.assertEquals(401, response.getStatusCode());
+        Assertions.assertEquals("Bearer", response.getHeaders().get("WWW-Authenticate"));
+        Assertions.assertEquals(0, todoCount(thingifier));
     }
 
     @Test
@@ -505,6 +765,32 @@ class ThingifierApiAuthPolicyTest {
     }
 
     @Test
+    void apiKeyAuthenticatorCustom401CanOmitChallengeAndBody() {
+        final Thingifier thingifier = todoModel();
+        thingifier.apiSpec().security().apiKey("authToken", "X-AUTH-TOKEN");
+        thingifier
+                .apiSpec()
+                .authenticator(
+                        "authToken",
+                        context ->
+                                ThingifierApiAuthenticationResult.rejected(new ApiResponse(401)));
+        thingifier.apiSpec().route(RoutingVerb.POST, "/todos").secureWithApiKey("authToken");
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"blocked\"}"),
+                                headersWithApiKey("Valid-API-Key"));
+
+        Assertions.assertEquals(401, response.getStatusCode());
+        Assertions.assertEquals("", response.getHeaders().get("WWW-Authenticate"));
+        Assertions.assertFalse(response.hasABody());
+        Assertions.assertEquals(0, todoCount(thingifier));
+    }
+
+    @Test
     void basicAuthenticatorCustom403PreservesHeadersAndBody() {
         final Thingifier thingifier = todoModel();
         thingifier
@@ -566,6 +852,21 @@ class ThingifierApiAuthPolicyTest {
     }
 
     @Test
+    void httpApiMissingApiKeyReturns401WithoutMutation() {
+        final Thingifier thingifier = todoModel();
+        thingifier.apiConfig().setFrom(new ThingifierApiConfig("/api"));
+        protectPrefixedTodoPostWithApiKey(thingifier);
+
+        final HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .post(jsonPostRequest("/api/todos", "{\"title\":\"blocked\"}"));
+
+        Assertions.assertEquals(401, response.getStatusCode());
+        Assertions.assertEquals("", response.getHeaders().get("WWW-Authenticate"));
+        Assertions.assertEquals(0, todoCount(thingifier));
+    }
+
+    @Test
     void httpApiValidBearerTokenAllowsMutation() {
         final Thingifier thingifier = todoModel();
         thingifier.apiConfig().setFrom(new ThingifierApiConfig("/api"));
@@ -576,6 +877,38 @@ class ThingifierApiAuthPolicyTest {
                         .post(
                                 jsonPostRequest("/api/todos", "{\"title\":\"created\"}")
                                         .addHeader("Authorization", "Bearer valid-token"));
+
+        Assertions.assertEquals(201, response.getStatusCode());
+        Assertions.assertEquals(1, todoCount(thingifier));
+    }
+
+    @Test
+    void httpApiValidApiKeyPreservesCredentialCaseAndAllowsMutation() {
+        final Thingifier thingifier = todoModel();
+        thingifier.apiConfig().setFrom(new ThingifierApiConfig("/api"));
+        protectPrefixedTodoPostWithApiKey(thingifier);
+
+        final HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .post(
+                                jsonPostRequest("/api/todos", "{\"title\":\"created\"}")
+                                        .addHeader("X-AUTH-TOKEN", "Valid-API-Key"));
+
+        Assertions.assertEquals(201, response.getStatusCode());
+        Assertions.assertEquals(1, todoCount(thingifier));
+    }
+
+    @Test
+    void httpApiApiKeyAlternativeAllowsMutation() {
+        final Thingifier thingifier = todoModel();
+        thingifier.apiConfig().setFrom(new ThingifierApiConfig("/api"));
+        protectPrefixedTodoPostWithAlternativeAuth(thingifier);
+
+        final HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .post(
+                                jsonPostRequest("/api/todos", "{\"title\":\"created\"}")
+                                        .addHeader("X-AUTH-TOKEN", "Valid-API-Key"));
 
         Assertions.assertEquals(201, response.getStatusCode());
         Assertions.assertEquals(1, todoCount(thingifier));
@@ -1018,6 +1351,23 @@ class ThingifierApiAuthPolicyTest {
                 .secureWithBasicAuth("adminPassword");
     }
 
+    private ThingifierApiRouteRule protectTodoPostWithApiKey(final Thingifier thingifier) {
+        thingifier.apiSpec().security().apiKey("authToken", "X-AUTH-TOKEN");
+        thingifier.apiSpec().authenticator("authToken", this::validApiKeyAuthenticator);
+        return thingifier.apiSpec().route(RoutingVerb.POST, "/todos").secureWithApiKey("authToken");
+    }
+
+    private ThingifierApiRouteRule protectTodoPostWithAlternativeAuth(final Thingifier thingifier) {
+        thingifier.apiSpec().security().bearer("secretBearer");
+        thingifier.apiSpec().security().apiKey("secretApiKey", "X-AUTH-TOKEN");
+        thingifier.apiSpec().authenticator("secretBearer", this::validTokenAuthenticator);
+        thingifier.apiSpec().authenticator("secretApiKey", this::validApiKeyAuthenticator);
+        return thingifier
+                .apiSpec()
+                .route(RoutingVerb.POST, "/todos")
+                .secureWithAnyOf("secretBearer", "secretApiKey");
+    }
+
     private void protectPrefixedTodoPost(final Thingifier thingifier) {
         thingifier.apiSpec().authenticator("cartToken", this::validTokenAuthenticator);
         thingifier
@@ -1034,6 +1384,23 @@ class ThingifierApiAuthPolicyTest {
                 .secureWithBasicAuth("adminPassword");
     }
 
+    private void protectPrefixedTodoPostWithApiKey(final Thingifier thingifier) {
+        thingifier.apiSpec().security().apiKey("authToken", "X-AUTH-TOKEN");
+        thingifier.apiSpec().authenticator("authToken", this::validApiKeyAuthenticator);
+        thingifier.apiSpec().route(RoutingVerb.POST, "/api/todos").secureWithApiKey("authToken");
+    }
+
+    private void protectPrefixedTodoPostWithAlternativeAuth(final Thingifier thingifier) {
+        thingifier.apiSpec().security().bearer("secretBearer");
+        thingifier.apiSpec().security().apiKey("secretApiKey", "X-AUTH-TOKEN");
+        thingifier.apiSpec().authenticator("secretBearer", this::validTokenAuthenticator);
+        thingifier.apiSpec().authenticator("secretApiKey", this::validApiKeyAuthenticator);
+        thingifier
+                .apiSpec()
+                .route(RoutingVerb.POST, "/api/todos")
+                .secureWithAnyOf("secretBearer", "secretApiKey");
+    }
+
     private ThingifierApiAuthenticationResult validTokenAuthenticator(
             final ThingifierApiAuthenticationContext context) {
         if ("valid-token".equals(context.bearerToken())) {
@@ -1048,6 +1415,14 @@ class ThingifierApiAuthPolicyTest {
             return ThingifierApiAuthenticationResult.authenticated("basic-principal");
         }
         return ThingifierApiAuthenticationResult.rejected("Invalid basic credentials");
+    }
+
+    private ThingifierApiAuthenticationResult validApiKeyAuthenticator(
+            final ThingifierApiAuthenticationContext context) {
+        if ("Valid-API-Key".equals(context.apiKey())) {
+            return ThingifierApiAuthenticationResult.authenticated("api-key-principal");
+        }
+        return ThingifierApiAuthenticationResult.rejected("Invalid API key");
     }
 
     private Thingifier todoModel() {
@@ -1121,6 +1496,19 @@ class ThingifierApiAuthPolicyTest {
 
     private HttpHeadersBlock headersWithBasic(final String username, final String password) {
         return headersWithAuthorization(basicAuthorization(username, password));
+    }
+
+    private HttpHeadersBlock headersWithApiKey(final String apiKey) {
+        final HttpHeadersBlock headers = new HttpHeadersBlock();
+        headers.put("X-AUTH-TOKEN", apiKey);
+        return headers;
+    }
+
+    private HttpHeadersBlock headersWithBearerAndApiKey(
+            final String bearerToken, final String apiKey) {
+        final HttpHeadersBlock headers = headersWithBearer(bearerToken);
+        headers.put("X-AUTH-TOKEN", apiKey);
+        return headers;
     }
 
     private HttpHeadersBlock headersWithSessionAndBearer(
