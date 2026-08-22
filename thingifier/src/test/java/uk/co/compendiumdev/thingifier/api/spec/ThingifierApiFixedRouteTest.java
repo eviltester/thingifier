@@ -5,11 +5,15 @@ import static uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation.UPDA
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleHookRegistry;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.HttpRouteRegistry;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.HttpRouteVerb;
+import uk.co.compendiumdev.thingifier.adapter.httpserver.ThingifierHttpApiRoutings;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinitionDocGenerator;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
@@ -66,6 +70,87 @@ class ThingifierApiFixedRouteTest {
                 new ApiRoutingDefinitionDocGenerator(thingifier).generate("/api");
 
         Assertions.assertNotNull(route(definition, RoutingVerb.GET, "api/secret/note"));
+    }
+
+    @Test
+    void fixedGetRouteGeneratesHeadDefinition() {
+        final Thingifier thingifier = secretModel();
+        getSecretNoteRoute(thingifier);
+
+        final ApiRoutingDefinition definition =
+                new ApiRoutingDefinitionDocGenerator(thingifier).generate("");
+        final RoutingDefinition route = route(definition, RoutingVerb.HEAD, "secret/note");
+
+        Assertions.assertTrue(route.hasFixedIdentifierMapping());
+        Assertions.assertEquals("secretnote", route.fixedEntityName());
+        Assertions.assertEquals("note", route.fixedIdentifier());
+        Assertions.assertFalse(route.hasRequestUrlParams());
+    }
+
+    @Test
+    void fixedGetRouteGeneratesOptionsAllowHeader() {
+        final Thingifier thingifier = secretModel();
+        getSecretNoteRoute(thingifier);
+
+        final ApiRoutingDefinition definition =
+                new ApiRoutingDefinitionDocGenerator(thingifier).generate("");
+        final RoutingDefinition route = route(definition, RoutingVerb.OPTIONS, "secret/note");
+
+        Assertions.assertEquals("Allow", route.header());
+        Assertions.assertEquals("OPTIONS, GET, HEAD", route.headerValue());
+    }
+
+    @Test
+    void fixedRoutesAtSamePublicPathShareOptionsAllowHeader() {
+        final Thingifier thingifier = secretModel();
+        getSecretNoteRoute(thingifier);
+        postSecretNoteRoute(thingifier);
+
+        final ApiRoutingDefinition definition =
+                new ApiRoutingDefinitionDocGenerator(thingifier).generate("");
+        final List<RoutingDefinition> routes =
+                routes(definition, RoutingVerb.OPTIONS, "secret/note");
+
+        Assertions.assertEquals(1, routes.size());
+        Assertions.assertEquals("OPTIONS, GET, HEAD, POST", routes.get(0).headerValue());
+    }
+
+    @Test
+    void fixedOptionsRouteIsRegisteredForHttpServer() {
+        final Thingifier thingifier = secretModel();
+        getSecretNoteRoute(thingifier);
+        final HttpRouteRegistry registry = new HttpRouteRegistry();
+        HttpRouteRegistry.use(registry);
+
+        try {
+            final ThingifierApiDocumentationDefn apiDefn = new ThingifierApiDocumentationDefn();
+            apiDefn.setThingifier(thingifier);
+            apiDefn.setPathPrefix("");
+            new ThingifierHttpApiRoutings(thingifier, apiDefn);
+
+            Assertions.assertTrue(
+                    registry.routes().stream()
+                            .anyMatch(
+                                    route ->
+                                            route.verb() == HttpRouteVerb.OPTIONS
+                                                    && route.path().equals("secret/note")));
+        } finally {
+            HttpRouteRegistry.clearCurrent();
+        }
+    }
+
+    @Test
+    void methodNotAllowedFixedRouteIsNotAdvertisedInOptionsAllowHeader() {
+        final Thingifier thingifier = secretModel();
+        getSecretNoteRoute(thingifier);
+        postSecretNoteRoute(thingifier).methodNotAllowed();
+
+        final ApiRoutingDefinition definition =
+                new ApiRoutingDefinitionDocGenerator(thingifier).generate("");
+
+        Assertions.assertEquals(
+                "OPTIONS, GET, HEAD",
+                route(definition, RoutingVerb.OPTIONS, "secret/note").headerValue());
     }
 
     @Test
@@ -154,6 +239,19 @@ class ThingifierApiFixedRouteTest {
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals("", response.getBody());
         Assertions.assertFalse(response.getHeaders().get("Content-Length").isEmpty());
+    }
+
+    @Test
+    void headUsesFixedGetRouteWhenHeadIsNotDeclared() {
+        final Thingifier thingifier = secretModel();
+        getSecretNoteRoute(thingifier);
+        createSecretNote(thingifier, "note", "stored text", "internal-token");
+
+        final HttpApiResponse response =
+                new ThingifierHttpApi(thingifier).head(jsonRequest("/secret/note"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals("", response.getBody());
     }
 
     @Test
@@ -435,5 +533,13 @@ class ThingifierApiFixedRouteTest {
                 .filter(route -> route.url().equals(url))
                 .findFirst()
                 .orElseThrow();
+    }
+
+    private List<RoutingDefinition> routes(
+            final ApiRoutingDefinition definition, final RoutingVerb verb, final String url) {
+        return definition.definitions().stream()
+                .filter(route -> route.verb() == verb)
+                .filter(route -> route.url().equals(url))
+                .toList();
     }
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -13,6 +14,7 @@ import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
+import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
 import uk.co.compendiumdev.thingifier.api.security.SecuritySchemeNames;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthenticator;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiSecuritySpec;
@@ -370,6 +372,21 @@ public final class ThingifierApiSpec {
      */
     public Optional<ThingifierApiRouteRule> ruleFor(
             final RoutingVerb verb, final String path, final String apiPathPrefix) {
+        final Optional<ThingifierApiRouteRule> directRule =
+                directRuleFor(verb, path, apiPathPrefix);
+        if (directRule.isPresent()) {
+            return directRule;
+        }
+
+        if (verb == RoutingVerb.HEAD) {
+            return fixedGetRuleForHead(path, apiPathPrefix);
+        }
+
+        return Optional.empty();
+    }
+
+    private Optional<ThingifierApiRouteRule> directRuleFor(
+            final RoutingVerb verb, final String path, final String apiPathPrefix) {
         return routeRules.stream()
                 .filter(rule -> rule.verb() == verb)
                 .filter(
@@ -377,6 +394,23 @@ public final class ThingifierApiSpec {
                                 ApiRoutePathMatcher.pathsMatch(
                                         rule.pathPattern(), path, apiPathPrefix))
                 .findFirst();
+    }
+
+    /**
+     * Lets fixed GET mappings supply HEAD behaviour when no explicit HEAD rule exists.
+     *
+     * <p>Generated entity routes already create explicit HEAD definitions beside GET. Fixed routes
+     * do not have a generated route shape to modify, so this fallback keeps runtime auth, response
+     * policies, and route resolution aligned with the synthesized fixed HEAD route definition.
+     *
+     * @param path public request path
+     * @param apiPathPrefix configured API prefix used when matching paths
+     * @return fixed GET rule that should also govern HEAD, when configured
+     */
+    private Optional<ThingifierApiRouteRule> fixedGetRuleForHead(
+            final String path, final String apiPathPrefix) {
+        return directRuleFor(RoutingVerb.GET, path, apiPathPrefix)
+                .filter(ThingifierApiRouteRule::hasFixedIdentifierMapping);
     }
 
     /**
@@ -754,16 +788,7 @@ public final class ThingifierApiSpec {
             if (hasRoute(routingDefinition, rule.verb(), routeUrl)) {
                 continue;
             }
-            final EntityDefinition entity =
-                    routingDefinition
-                            .objectSchemaNamed(rule.fixedEntityName())
-                            .orElseThrow(
-                                    () ->
-                                            new IllegalStateException(
-                                                    String.format(
-                                                            "Fixed route %s maps to unknown entity %s",
-                                                            rule.pathPattern(),
-                                                            rule.fixedEntityName())));
+            final EntityDefinition entity = fixedRouteEntity(routingDefinition, rule);
             RoutingDefinition route =
                     routingDefinition
                             .addRouting(
@@ -777,6 +802,89 @@ public final class ThingifierApiSpec {
                                     rule.fixedResourcePolicy());
             applyFixedRoutePayloads(route, entity);
         }
+        addFixedHeadRouteDefinitionsTo(routingDefinition, apiPathPrefix);
+        addFixedOptionsRouteDefinitionsTo(routingDefinition, apiPathPrefix);
+    }
+
+    /**
+     * Adds fixed HEAD routes for fixed GET routes that do not have an explicit HEAD declaration.
+     *
+     * <p>HTTP clients expect HEAD to be available wherever GET is available. Generated entity
+     * routes already have that pair; fixed-instance routes need the pair synthesized because their
+     * public path does not come from the normal collection/instance route generator.
+     *
+     * @param routingDefinition generated route definition set to augment
+     * @param apiPathPrefix configured API prefix
+     */
+    private void addFixedHeadRouteDefinitionsTo(
+            final ApiRoutingDefinition routingDefinition, final String apiPathPrefix) {
+        for (ThingifierApiRouteRule rule : routeRules) {
+            if (rule.verb() != RoutingVerb.GET || !rule.hasFixedIdentifierMapping()) {
+                continue;
+            }
+            final String routeUrl = publicRouteUrl(rule.pathPattern(), apiPathPrefix);
+            if (hasRoute(routingDefinition, RoutingVerb.HEAD, routeUrl)) {
+                continue;
+            }
+            final EntityDefinition entity = fixedRouteEntity(routingDefinition, rule);
+            RoutingDefinition route =
+                    routingDefinition
+                            .addRouting(
+                                    fixedHeadRouteDocumentation(rule, entity),
+                                    RoutingVerb.HEAD,
+                                    routeUrl,
+                                    RoutingStatus.returnedFromCall())
+                            .mapToFixedEntity(
+                                    entity.getName(),
+                                    rule.fixedIdentifier(),
+                                    rule.fixedResourcePolicy());
+            applyFixedRoutePayloads(route, entity);
+            rule.applyTo(route);
+        }
+    }
+
+    /**
+     * Adds one OPTIONS route for each fixed public path.
+     *
+     * <p>The existing {@link ApiRoutingDefinition#updateOptionsAllowHeaders()} step then calculates
+     * the final Allow header from visible and callable route definitions, keeping fixed routes
+     * consistent with generated entity routes.
+     *
+     * @param routingDefinition generated route definition set to augment
+     * @param apiPathPrefix configured API prefix
+     */
+    private void addFixedOptionsRouteDefinitionsTo(
+            final ApiRoutingDefinition routingDefinition, final String apiPathPrefix) {
+        Set<String> fixedRouteUrls = new LinkedHashSet<>();
+        for (ThingifierApiRouteRule rule : routeRules) {
+            if (rule.hasFixedIdentifierMapping()) {
+                fixedRouteUrls.add(publicRouteUrl(rule.pathPattern(), apiPathPrefix));
+            }
+        }
+
+        for (String routeUrl : fixedRouteUrls) {
+            if (hasRoute(routingDefinition, RoutingVerb.OPTIONS, routeUrl)) {
+                continue;
+            }
+            routingDefinition.addRouting(
+                    fixedOptionsRouteDocumentation(routeUrl),
+                    RoutingVerb.OPTIONS,
+                    routeUrl,
+                    RoutingStatus.returnValue(204, "the fixed endpoint verb options"),
+                    new ResponseHeader("Allow", "OPTIONS"));
+        }
+    }
+
+    private EntityDefinition fixedRouteEntity(
+            final ApiRoutingDefinition routingDefinition, final ThingifierApiRouteRule rule) {
+        return routingDefinition
+                .objectSchemaNamed(rule.fixedEntityName())
+                .orElseThrow(
+                        () ->
+                                new IllegalStateException(
+                                        String.format(
+                                                "Fixed route %s maps to unknown entity %s",
+                                                rule.pathPattern(), rule.fixedEntityName())));
     }
 
     private boolean hasRoute(
@@ -796,6 +904,17 @@ public final class ThingifierApiSpec {
         return String.format(
                 "map %s to fixed %s instance %s",
                 rule.pathPattern(), entity.getName(), rule.fixedIdentifier());
+    }
+
+    private String fixedHeadRouteDocumentation(
+            final ThingifierApiRouteRule rule, final EntityDefinition entity) {
+        return String.format(
+                "return headers for fixed %s instance %s at %s",
+                entity.getName(), rule.fixedIdentifier(), rule.pathPattern());
+    }
+
+    private String fixedOptionsRouteDocumentation(final String routeUrl) {
+        return String.format("return supported verbs for fixed route %s", routeUrl);
     }
 
     private void applyFixedRoutePayloads(
