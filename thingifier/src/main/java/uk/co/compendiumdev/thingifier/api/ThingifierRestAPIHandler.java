@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.DefaultThingifierApiRuntime;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.FixedRouteResourcePreparer;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.RouteApiResponsePolicyApplier;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.RouteAuthPolicy;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierApiRuntime;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
@@ -605,8 +606,12 @@ public class ThingifierRestAPIHandler {
             final ApiResponse response,
             final ThingifierRequestContext context) {
         final ApiResponse responseWithRepository = withRepository(response, context);
-        applyResponseEntityView(verb, url, responseWithRepository);
-        return responseWithRepository;
+        return new RouteApiResponsePolicyApplier(runtime)
+                .apply(
+                        verb,
+                        url,
+                        responseWithRepository,
+                        apiResponse -> applyResponseEntityView(verb, url, apiResponse));
     }
 
     /**

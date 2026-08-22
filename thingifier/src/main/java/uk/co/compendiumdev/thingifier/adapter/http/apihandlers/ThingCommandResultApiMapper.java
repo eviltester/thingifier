@@ -102,6 +102,11 @@ public final class ThingCommandResultApiMapper {
             response = ApiResponse.error(statusCode, messages);
         }
 
+        if (result.getError() != null
+                && result.getError().category() == ApplicationError.Category.VALIDATION) {
+            response = ApiResponse.validationError(statusCode, response.getErrorMessages());
+        }
+
         if (result.rolledBackCreatedInstance()) {
             response.addToErrorMessages(CREATED_ITEM_ROLLED_BACK_MESSAGE);
         }

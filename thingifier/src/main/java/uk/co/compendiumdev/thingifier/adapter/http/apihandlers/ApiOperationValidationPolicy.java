@@ -85,7 +85,7 @@ public final class ApiOperationValidationPolicy {
             ApiOperationValidationResult result =
                     definition.validator().validate(validationContext);
             if (result != null && result.rejected()) {
-                return ApiResponse.error(result.statusCode(), result.message());
+                return ApiResponse.validationError(result.statusCode(), result.message());
             }
         }
         return null;

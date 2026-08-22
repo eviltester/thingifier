@@ -11,6 +11,7 @@ import java.util.Optional;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.adapter.hooks.ScopedHook;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.DefaultThingifierApiRuntime;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.RouteApiResponsePolicyApplier;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.RouteAuthPolicy;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierApiRuntime;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.CollectionRoute;
@@ -229,7 +230,7 @@ public final class ThingifierHttpApi {
         }
 
         if (httpResponse == null && isDisabledByApiSpec(request, effectiveVerb)) {
-            httpResponse = disabledRouteResponse(request);
+            httpResponse = disabledRouteResponse(request, effectiveVerb);
         }
 
         if (httpResponse == null && lifecycle != null) {
@@ -335,22 +336,31 @@ public final class ThingifierHttpApi {
             final HttpApiRequest request,
             final HttpVerb effectiveVerb,
             final ApiResponse apiResponse) {
+        final ApiResponse policyResponse =
+                new RouteApiResponsePolicyApplier(new DefaultThingifierApiRuntime(thingifier))
+                        .apply(
+                                routingVerbFor(effectiveVerb),
+                                request.getPath(),
+                                apiResponse,
+                                response ->
+                                        applyResponseEntityView(request, effectiveVerb, response));
+
         HttpApiResponse httpResponse =
                 new HttpApiResponse(
                         request.getHeaders(),
-                        apiResponse,
+                        policyResponse,
                         jsonThing,
                         thingifier.apiConfig(),
                         xmlEntityNamesFor(request.getPath(), effectiveVerb));
 
         if (effectiveVerb == HttpVerb.HEAD) {
             final int bodyLength = httpResponse.getBody().getBytes(StandardCharsets.UTF_8).length;
-            apiResponse.clearBody();
-            apiResponse.setHeader("Content-Length", Integer.toString(bodyLength));
+            policyResponse.clearBody();
+            policyResponse.setHeader("Content-Length", Integer.toString(bodyLength));
             httpResponse =
                     new HttpApiResponse(
                             request.getHeaders(),
-                            apiResponse,
+                            policyResponse,
                             jsonThing,
                             thingifier.apiConfig(),
                             xmlEntityNamesFor(request.getPath(), effectiveVerb));
@@ -394,15 +404,15 @@ public final class ThingifierHttpApi {
      * Creates the legacy not-found style response used for disabled generated routes.
      *
      * @param request HTTP API request
+     * @param verb effective HTTP API verb
      * @return HTTP API response representing the disabled route
      */
-    private HttpApiResponse disabledRouteResponse(final HttpApiRequest request) {
-        return new HttpApiResponse(
-                request.getHeaders(),
-                ApiResponse.error404("Could not find any instances with " + request.getPath()),
-                jsonThing,
-                thingifier.apiConfig(),
-                xmlEntityNamesFor(request.getPath(), HttpVerb.GET));
+    private HttpApiResponse disabledRouteResponse(
+            final HttpApiRequest request, final HttpVerb verb) {
+        return httpResponseFor(
+                request,
+                verb,
+                ApiResponse.error404("Could not find any instances with " + request.getPath()));
     }
 
     /**
@@ -423,13 +433,7 @@ public final class ThingifierHttpApi {
 
         if (!requestValidator.validateSyntax(request, verb)) {
 
-            httpResponse =
-                    new HttpApiResponse(
-                            request.getHeaders(),
-                            requestValidator.getErrorApiResponse(),
-                            jsonThing,
-                            thingifier.apiConfig(),
-                            xmlEntityNamesFor(request.getPath(), verb));
+            httpResponse = httpResponseFor(request, verb, requestValidator.getErrorApiResponse());
         }
 
         return httpResponse;
@@ -565,16 +569,14 @@ public final class ThingifierHttpApi {
 
         final String viewName = configuredViewName.get();
         if (!entity.hasViewNamed(viewName)) {
-            return new HttpApiResponse(
-                    request.getHeaders(),
+            return httpResponseFor(
+                    request,
+                    verb,
                     ApiResponse.error(
                             500,
                             String.format(
                                     "Entity view %s is not defined for %s",
-                                    viewName, entity.getName())),
-                    jsonThing,
-                    thingifier.apiConfig(),
-                    xmlEntityNamesFor(request.getPath(), verb));
+                                    viewName, entity.getName())));
         }
 
         final EntityViewDefinition view = entity.getViewNamed(viewName);
@@ -589,16 +591,14 @@ public final class ThingifierHttpApi {
             return null;
         }
 
-        return new HttpApiResponse(
-                request.getHeaders(),
-                ApiResponse.error(
+        return httpResponseFor(
+                request,
+                verb,
+                ApiResponse.validationError(
                         422,
                         String.format(
                                 "Fields are not allowed by %s: %s",
-                                viewName, String.join(", ", disallowedFields))),
-                jsonThing,
-                thingifier.apiConfig(),
-                xmlEntityNamesFor(request.getPath(), verb));
+                                viewName, String.join(", ", disallowedFields))));
     }
 
     /**
@@ -1095,13 +1095,7 @@ public final class ThingifierHttpApi {
                     thingifier
                             .api()
                             .get(query, request.getFilterableQueryParams(), request.getHeaders());
-            httpResponse =
-                    new HttpApiResponse(
-                            request.getHeaders(),
-                            apiResponse,
-                            jsonThing,
-                            thingifier.apiConfig(),
-                            xmlEntityNamesFor(request.getPath(), HttpVerb.GET));
+            httpResponse = httpResponseFor(request, HttpVerb.GET, apiResponse);
         }
 
         return runTheHttpApiResponseHooksOn(request, httpResponse, HttpVerb.GET);
