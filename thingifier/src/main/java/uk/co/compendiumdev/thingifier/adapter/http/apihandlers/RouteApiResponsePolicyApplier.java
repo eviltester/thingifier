@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.adapter.http.apihandlers;
 
+import java.util.List;
 import java.util.Optional;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
@@ -53,16 +54,21 @@ public final class RouteApiResponsePolicyApplier {
             return null;
         }
 
+        final Optional<ThingifierApiRouteRule> selectedRule = routeRuleFor(verb, publicPath);
+        final ApiResponse shapedResponse =
+                selectedRule
+                        .map(rule -> applyResponseShape(rule, publicPath, response))
+                        .orElse(response);
         final Optional<RouteApiResponsePolicy> selectedPolicy =
-                routeRuleFor(verb, publicPath).flatMap(rule -> policyFor(rule, response));
+                selectedRule.flatMap(rule -> policyFor(rule, shapedResponse));
 
-        selectedPolicy.ifPresent(policy -> applyStatusAndHeaders(policy, response));
+        selectedPolicy.ifPresent(policy -> applyStatusAndHeaders(policy, shapedResponse));
         if (responseViewApplicator != null) {
-            responseViewApplicator.apply(response);
+            responseViewApplicator.apply(shapedResponse);
         }
-        selectedPolicy.ifPresent(policy -> applyBodyPolicy(policy, response));
+        selectedPolicy.ifPresent(policy -> applyBodyPolicy(policy, shapedResponse));
 
-        return response;
+        return shapedResponse;
     }
 
     private Optional<ThingifierApiRouteRule> routeRuleFor(
@@ -80,6 +86,107 @@ public final class RouteApiResponsePolicyApplier {
             return rule.errorResponsePolicyFor(response.getStatusCode());
         }
         return rule.successResponsePolicy();
+    }
+
+    private ApiResponse applyResponseShape(
+            final ThingifierApiRouteRule rule,
+            final String publicPath,
+            final ApiResponse response) {
+        if (!rule.hasResponseShapeOverride()
+                || response.isErrorResponse()
+                || response.hasABodyOverride()
+                || response.getStatusCode() < 200
+                || response.getStatusCode() >= 300) {
+            return response;
+        }
+
+        switch (rule.responseShape()) {
+            case SINGLE_INSTANCE:
+                return singleInstanceResponse(rule, publicPath, response);
+            case COLLECTION:
+                return collectionResponse(rule, publicPath, response);
+            case DEFAULT:
+            default:
+                return response;
+        }
+    }
+
+    private ApiResponse singleInstanceResponse(
+            final ThingifierApiRouteRule rule,
+            final String publicPath,
+            final ApiResponse response) {
+        if (!rule.hasFixedIdentifierMapping()) {
+            return ApiResponse.error(
+                    500,
+                    String.format(
+                            "Route %s is configured for a single instance response but is not a fixed identifier route",
+                            publicPath));
+        }
+        if (response.hasReturnedInstance()) {
+            return response;
+        }
+        if (response.hasReturnedDraft()) {
+            return ApiResponse.error(
+                    500,
+                    String.format(
+                            "Route %s is configured for a single instance response but returned a draft instance",
+                            publicPath));
+        }
+        if (!response.isCollection()) {
+            return response;
+        }
+
+        final boolean hadBody = response.hasABody();
+        final List<EntityInstance> instances = response.getReturnedInstanceCollection();
+        if (instances.isEmpty()) {
+            return ApiResponse.error404(
+                    String.format("Could not find an instance with %s", publicPath));
+        }
+        if (instances.size() > 1) {
+            return ApiResponse.error(
+                    500,
+                    String.format(
+                            "Route %s is configured for a single instance response but returned %d instances",
+                            publicPath, instances.size()));
+        }
+        return preserveBodyPresence(response.returnSingleInstance(instances.get(0)), hadBody);
+    }
+
+    private ApiResponse collectionResponse(
+            final ThingifierApiRouteRule rule,
+            final String publicPath,
+            final ApiResponse response) {
+        if (!rule.hasFixedIdentifierMapping()) {
+            return ApiResponse.error(
+                    500,
+                    String.format(
+                            "Route %s is configured for a collection response but is not a fixed identifier route",
+                            publicPath));
+        }
+        if (response.isCollection()) {
+            return response;
+        }
+        if (response.hasReturnedInstance()) {
+            final boolean hadBody = response.hasABody();
+            return preserveBodyPresence(
+                    response.returnInstanceCollection(List.of(response.getReturnedInstance())),
+                    hadBody);
+        }
+        if (response.hasReturnedDraft()) {
+            return ApiResponse.error(
+                    500,
+                    String.format(
+                            "Route %s is configured for a collection response but returned a draft instance",
+                            publicPath));
+        }
+        return response;
+    }
+
+    private ApiResponse preserveBodyPresence(final ApiResponse response, final boolean hadBody) {
+        if (!hadBody) {
+            response.clearBody();
+        }
+        return response;
     }
 
     private void applyStatusAndHeaders(
