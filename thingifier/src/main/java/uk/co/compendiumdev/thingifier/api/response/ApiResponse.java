@@ -192,6 +192,21 @@ public final class ApiResponse {
     }
 
     /**
+     * Removes a response header.
+     *
+     * <p>Route-level response policies use this to deliberately hide generated or
+     * authenticator-provided headers when the public route contract requires a different failure
+     * shape.
+     *
+     * @param headername header name to remove
+     * @return this response so additional metadata can be chained
+     */
+    public ApiResponse removeHeader(final String headername) {
+        this.headers.remove(headername);
+        return this;
+    }
+
+    /**
      * Returns a response header value.
      *
      * @param headername header name

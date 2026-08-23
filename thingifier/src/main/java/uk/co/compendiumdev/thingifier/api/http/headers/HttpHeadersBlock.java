@@ -22,6 +22,18 @@ public class HttpHeadersBlock {
         headers.put(headername.trim().toLowerCase(), valueToAdd);
     }
 
+    /**
+     * Removes a header using HTTP's case-insensitive header-name rules.
+     *
+     * @param headername header name to remove
+     */
+    public void remove(String headername) {
+        if (headername == null) {
+            return;
+        }
+        headers.remove(headername.trim().toLowerCase());
+    }
+
     public String get(String headername) {
 
         if (headername == null) {

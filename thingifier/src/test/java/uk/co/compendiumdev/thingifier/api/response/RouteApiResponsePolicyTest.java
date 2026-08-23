@@ -5,11 +5,13 @@ import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.defin
 import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType.STRING;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.DefaultThingifierApiRuntime;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.RouteApiResponsePolicyApplier;
+import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiResponseHook;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinitionDocGenerator;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
@@ -18,6 +20,8 @@ import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
+import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthenticationResult;
+import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthorizationResult;
 import uk.co.compendiumdev.thingifier.api.spec.ResponseShape;
 import uk.co.compendiumdev.thingifier.api.spec.ThingifierApiRouteRule;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
@@ -147,6 +151,217 @@ class RouteApiResponsePolicyTest {
     }
 
     @Test
+    void errorPolicyCanRemoveGeneratedAuthChallengeHeader() {
+        final Thingifier thingifier = secretModel();
+        protectSecretTokenWithBearer(thingifier).onError(401).removeHeader("WWW-Authenticate");
+
+        final HttpApiResponse response =
+                new ThingifierHttpApi(thingifier).get(jsonRequest("/secret/token"));
+
+        Assertions.assertEquals(401, response.getStatusCode());
+        Assertions.assertFalse(response.getHeaders().headerExists("WWW-Authenticate"));
+    }
+
+    @Test
+    void conditionalExactHeaderPolicyAppliesAfterDefaultErrorPolicy() {
+        final Thingifier thingifier = secretModel();
+        final ThingifierApiRouteRule route = protectSecretTokenWithBasic(thingifier);
+        route.onError(401)
+                .header("WWW-Authenticate", "Basic realm=\"User Visible Realm\"")
+                .bodyText("default body");
+        route.onErrorWhen(401)
+                .whenRequestHeader("X-Embedded-Client", "true")
+                .removeHeader("WWW-Authenticate")
+                .suppressBody();
+
+        final HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .get(jsonRequest("/secret/token").addHeader("X-Embedded-Client", "true"));
+
+        Assertions.assertEquals(401, response.getStatusCode());
+        Assertions.assertFalse(response.getHeaders().headerExists("WWW-Authenticate"));
+        Assertions.assertEquals("", response.getBody());
+    }
+
+    @Test
+    void conditionalExactHeaderPolicyIsSkippedWhenHeaderValueDiffers() {
+        final Thingifier thingifier = secretModel();
+        final ThingifierApiRouteRule route = protectSecretTokenWithBasic(thingifier);
+        route.onError(401)
+                .header("WWW-Authenticate", "Basic realm=\"User Visible Realm\"")
+                .bodyText("default body");
+        route.onErrorWhen(401)
+                .whenRequestHeader("X-Embedded-Client", "true")
+                .removeHeader("WWW-Authenticate")
+                .suppressBody();
+
+        final HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .get(jsonRequest("/secret/token").addHeader("X-Embedded-Client", "false"));
+
+        Assertions.assertEquals(401, response.getStatusCode());
+        Assertions.assertEquals(
+                "Basic realm=\"User Visible Realm\"",
+                response.getHeaders().get("WWW-Authenticate"));
+        Assertions.assertEquals("default body", response.getBody());
+    }
+
+    @Test
+    void conditionalHeaderPresentPolicyAppliesWhenHeaderExists() {
+        final Thingifier thingifier = secretModel();
+        final ThingifierApiRouteRule route = getSecretNoteRoute(thingifier);
+        route.onError(404).bodyText("not found");
+        route.onErrorWhen(404).whenRequestHeaderPresent("X-Quiet").suppressBody();
+
+        final HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .get(jsonRequest("/secret/note").addHeader("X-Quiet", "true"));
+
+        Assertions.assertEquals(404, response.getStatusCode());
+        Assertions.assertEquals("", response.getBody());
+    }
+
+    @Test
+    void conditionalHeaderMissingPolicyAppliesWhenHeaderIsAbsent() {
+        final Thingifier thingifier = secretModel();
+        final ThingifierApiRouteRule route = getSecretNoteRoute(thingifier);
+        route.onError(404).bodyText("not found");
+        route.onErrorWhen(404).whenRequestHeaderMissing("X-Debug").bodyText("quiet missing");
+
+        final HttpApiResponse response =
+                new ThingifierHttpApi(thingifier).get(jsonRequest("/secret/note"));
+
+        Assertions.assertEquals(404, response.getStatusCode());
+        Assertions.assertEquals("quiet missing", response.getBody());
+    }
+
+    @Test
+    void multipleConditionalPoliciesApplyInDeclarationOrder() {
+        final Thingifier thingifier = secretModel();
+        final ThingifierApiRouteRule route = getSecretNoteRoute(thingifier);
+        route.onError(404).header("X-Stage", "default");
+        route.onErrorWhen(404).whenRequestHeaderPresent("X-Mode").header("X-Stage", "first");
+        route.onErrorWhen(404).whenRequestHeaderPresent("X-Mode").header("X-Stage", "second");
+
+        final HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .get(jsonRequest("/secret/note").addHeader("X-Mode", "test"));
+
+        Assertions.assertEquals(404, response.getStatusCode());
+        Assertions.assertEquals("second", response.getHeaders().get("X-Stage"));
+    }
+
+    @Test
+    void errorPolicyRunsForAuthorizerRejection() {
+        final Thingifier thingifier = secretModel();
+        protectSecretTokenWithBearer(thingifier)
+                .authorizeWith(context -> ThingifierApiAuthorizationResult.forbidden())
+                .onError(403)
+                .suppressBody();
+
+        final HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .get(jsonRequest("/secret/token").addHeader("Authorization", "Bearer ok"));
+
+        Assertions.assertEquals(403, response.getStatusCode());
+        Assertions.assertEquals("", response.getBody());
+    }
+
+    @Test
+    void conditionalPolicyCanRemoveCustomAuthenticatorRejectionHeader() {
+        final Thingifier thingifier = secretModel();
+        thingifier
+                .apiSpec()
+                .authenticator(
+                        "secretBearer",
+                        context -> {
+                            final ApiResponse response =
+                                    ApiResponse.error(401, "custom rejection")
+                                            .setHeader("WWW-Authenticate", "Custom");
+                            return ThingifierApiAuthenticationResult.rejected(response);
+                        });
+        final ThingifierApiRouteRule route =
+                getSecretTokenRoute(thingifier).secureWithBearerAuth("secretBearer");
+        route.onError(401).header("X-Default-Policy", "applied");
+        route.onErrorWhen(401)
+                .whenRequestHeaderPresent("X-No-Challenge")
+                .removeHeader("WWW-Authenticate")
+                .suppressBody();
+
+        final HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .get(
+                                jsonRequest("/secret/token")
+                                        .addHeader("Authorization", "Bearer rejected")
+                                        .addHeader("X-No-Challenge", "true"));
+
+        Assertions.assertEquals(401, response.getStatusCode());
+        Assertions.assertFalse(response.getHeaders().headerExists("WWW-Authenticate"));
+        Assertions.assertEquals("applied", response.getHeaders().get("X-Default-Policy"));
+        Assertions.assertEquals("", response.getBody());
+    }
+
+    @Test
+    void responseHookReceivesPolicyShapedAuthFailureResponse() {
+        final Thingifier thingifier = secretModel();
+        protectSecretTokenWithBearer(thingifier)
+                .onError(401)
+                .removeHeader("WWW-Authenticate")
+                .suppressBody();
+        final AtomicReference<HttpApiResponse> observedResponse = new AtomicReference<>();
+        final HttpApiResponseHook hook =
+                (request, response, config) -> {
+                    observedResponse.set(response);
+                    return null;
+                };
+
+        new ThingifierHttpApi(thingifier, null, List.of(hook)).get(jsonRequest("/secret/token"));
+
+        Assertions.assertNotNull(observedResponse.get());
+        Assertions.assertEquals(401, observedResponse.get().getStatusCode());
+        Assertions.assertFalse(
+                observedResponse.get().getHeaders().headerExists("WWW-Authenticate"));
+        Assertions.assertEquals("", observedResponse.get().getBody());
+    }
+
+    @Test
+    void directApiAppliesConditionalErrorPolicyUsingRequestHeaders() {
+        final Thingifier thingifier = secretModel();
+        getSecretNoteRoute(thingifier)
+                .onErrorWhen(404)
+                .whenRequestHeaderPresent("X-Quiet")
+                .suppressBody();
+        final HttpHeadersBlock headers = new HttpHeadersBlock();
+        headers.put("X-Quiet", "true");
+
+        final ApiResponse response =
+                thingifier.api().get("secret/note", new QueryFilterParams(), headers);
+
+        Assertions.assertEquals(404, response.getStatusCode());
+        Assertions.assertFalse(response.hasABody());
+    }
+
+    @Test
+    void conditionalErrorPolicyHeadersAreAddedToGeneratedRouteDocumentation() {
+        final Thingifier thingifier = secretModel();
+        getSecretTokenRoute(thingifier)
+                .onErrorWhen(401)
+                .whenRequestHeaderPresent("X-Client")
+                .header("WWW-Authenticate", "Bearer");
+
+        final RoutingDefinition route =
+                route(
+                        new ApiRoutingDefinitionDocGenerator(thingifier).generate(""),
+                        RoutingVerb.GET,
+                        "secret/token");
+
+        Assertions.assertTrue(
+                route.getPossibleStatusReponses().stream()
+                        .anyMatch(status -> status.value() == 401));
+        Assertions.assertEquals("Bearer", route.getResponseHeaderValue("WWW-Authenticate"));
+    }
+
+    @Test
     void directApiAppliesSuccessPolicy() {
         final Thingifier thingifier = secretModel();
         getSecretTokenRoute(thingifier)
@@ -248,6 +463,25 @@ class RouteApiResponsePolicyTest {
                 .mapsToEntity("secrettoken")
                 .withFixedIdentifier("token")
                 .entityCan(UPDATE);
+    }
+
+    private ThingifierApiRouteRule protectSecretTokenWithBearer(final Thingifier thingifier) {
+        thingifier
+                .apiSpec()
+                .authenticator(
+                        "secretBearer",
+                        context -> ThingifierApiAuthenticationResult.authenticated("principal"));
+        return getSecretTokenRoute(thingifier).secureWithBearerAuth("secretBearer");
+    }
+
+    private ThingifierApiRouteRule protectSecretTokenWithBasic(final Thingifier thingifier) {
+        thingifier.apiSpec().security().basic("secretBasic", "User Visible Realm");
+        thingifier
+                .apiSpec()
+                .authenticator(
+                        "secretBasic",
+                        context -> ThingifierApiAuthenticationResult.authenticated("principal"));
+        return getSecretTokenRoute(thingifier).secureWithBasicAuth("secretBasic");
     }
 
     private Thingifier secretModel() {

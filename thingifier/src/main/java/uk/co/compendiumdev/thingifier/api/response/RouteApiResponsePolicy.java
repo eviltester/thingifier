@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.api.response;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 
 /**
  * Declarative response shaping for one route outcome.
@@ -28,7 +29,9 @@ public final class RouteApiResponsePolicy {
 
     private Integer statusCode;
     private final List<HeaderValue> staticHeaders;
+    private final List<String> removedHeaders;
     private final List<InstanceFieldHeader> instanceFieldHeaders;
+    private final List<RequestCondition> requestConditions;
     private BodyAction bodyAction;
     private String bodyText;
     private String entityViewName;
@@ -37,7 +40,9 @@ public final class RouteApiResponsePolicy {
     public RouteApiResponsePolicy() {
         statusCode = null;
         staticHeaders = new ArrayList<>();
+        removedHeaders = new ArrayList<>();
         instanceFieldHeaders = new ArrayList<>();
+        requestConditions = new ArrayList<>();
         bodyAction = BodyAction.PRESERVE;
         bodyText = null;
         entityViewName = null;
@@ -68,6 +73,22 @@ public final class RouteApiResponsePolicy {
     }
 
     /**
+     * Removes a response header when this policy applies.
+     *
+     * <p>This is useful for route contracts that need to suppress framework-generated challenge
+     * headers, such as browser-facing {@code 401} responses that should not trigger a credential
+     * prompt.
+     *
+     * @param name header name
+     * @return this policy so response actions can be chained
+     * @throws IllegalArgumentException when the header name is blank
+     */
+    public RouteApiResponsePolicy removeHeader(final String name) {
+        removedHeaders.add(requireText(name, "header name"));
+        return this;
+    }
+
+    /**
      * Adds a header whose value is read from the single returned instance or draft.
      *
      * <p>The action is deliberately narrow: it does not attempt collection behavior and it does
@@ -84,6 +105,53 @@ public final class RouteApiResponsePolicy {
                 new InstanceFieldHeader(
                         requireText(headerName, "header name"),
                         requireText(fieldName, "field name")));
+        return this;
+    }
+
+    /**
+     * Applies this policy only when the request header has exactly the expected value.
+     *
+     * <p>Multiple request conditions are combined with logical AND. Header names are matched using
+     * HTTP's case-insensitive rules; values are compared exactly after normal request header
+     * parsing.
+     *
+     * @param headerName request header name
+     * @param expectedValue expected request header value, with null treated as an empty value
+     * @return this policy so response actions can be chained
+     * @throws IllegalArgumentException when the header name is blank
+     */
+    public RouteApiResponsePolicy whenRequestHeader(
+            final String headerName, final String expectedValue) {
+        requestConditions.add(
+                RequestCondition.headerEquals(
+                        requireText(headerName, "header name"),
+                        expectedValue == null ? "" : expectedValue));
+        return this;
+    }
+
+    /**
+     * Applies this policy only when the request header is present.
+     *
+     * @param headerName request header name
+     * @return this policy so response actions can be chained
+     * @throws IllegalArgumentException when the header name is blank
+     */
+    public RouteApiResponsePolicy whenRequestHeaderPresent(final String headerName) {
+        requestConditions.add(
+                RequestCondition.headerPresent(requireText(headerName, "header name")));
+        return this;
+    }
+
+    /**
+     * Applies this policy only when the request header is absent.
+     *
+     * @param headerName request header name
+     * @return this policy so response actions can be chained
+     * @throws IllegalArgumentException when the header name is blank
+     */
+    public RouteApiResponsePolicy whenRequestHeaderMissing(final String headerName) {
+        requestConditions.add(
+                RequestCondition.headerMissing(requireText(headerName, "header name")));
         return this;
     }
 
@@ -147,12 +215,51 @@ public final class RouteApiResponsePolicy {
     }
 
     /**
+     * Returns response headers removed by this policy.
+     *
+     * @return immutable header names
+     */
+    public List<String> removedHeaders() {
+        return Collections.unmodifiableList(removedHeaders);
+    }
+
+    /**
      * Returns instance-field header actions in declaration order.
      *
      * @return immutable instance-field header actions
      */
     public List<InstanceFieldHeader> instanceFieldHeaders() {
         return Collections.unmodifiableList(instanceFieldHeaders);
+    }
+
+    /**
+     * Returns request conditions that must match before this policy applies.
+     *
+     * @return immutable request conditions
+     */
+    public List<RequestCondition> requestConditions() {
+        return Collections.unmodifiableList(requestConditions);
+    }
+
+    /**
+     * Reports whether this policy should apply to the supplied request headers.
+     *
+     * <p>A policy with no request conditions matches every request. Conditions are deliberately
+     * request-only so response policy selection stays deterministic and does not depend on later
+     * body rendering.
+     *
+     * @param requestHeaders request headers from the active API call
+     * @return true when every configured request condition matches
+     */
+    public boolean matchesRequest(final HttpHeadersBlock requestHeaders) {
+        final HttpHeadersBlock headers =
+                requestHeaders == null ? new HttpHeadersBlock() : requestHeaders;
+        for (RequestCondition condition : requestConditions) {
+            if (!condition.matches(headers)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -215,6 +322,59 @@ public final class RouteApiResponsePolicy {
          */
         public String value() {
             return value;
+        }
+    }
+
+    /** One request-header predicate used to decide if a route response policy should run. */
+    public static final class RequestCondition {
+        private enum Type {
+            HEADER_EQUALS,
+            HEADER_PRESENT,
+            HEADER_MISSING
+        }
+
+        private final Type type;
+        private final String headerName;
+        private final String expectedValue;
+
+        private RequestCondition(
+                final Type type, final String headerName, final String expectedValue) {
+            this.type = type;
+            this.headerName = headerName;
+            this.expectedValue = expectedValue;
+        }
+
+        private static RequestCondition headerEquals(
+                final String headerName, final String expectedValue) {
+            return new RequestCondition(Type.HEADER_EQUALS, headerName, expectedValue);
+        }
+
+        private static RequestCondition headerPresent(final String headerName) {
+            return new RequestCondition(Type.HEADER_PRESENT, headerName, null);
+        }
+
+        private static RequestCondition headerMissing(final String headerName) {
+            return new RequestCondition(Type.HEADER_MISSING, headerName, null);
+        }
+
+        /**
+         * Reports whether this condition matches the supplied request headers.
+         *
+         * @param headers request headers
+         * @return true when the predicate matches
+         */
+        public boolean matches(final HttpHeadersBlock headers) {
+            switch (type) {
+                case HEADER_EQUALS:
+                    return headers.headerExists(headerName)
+                            && headers.get(headerName).equals(expectedValue);
+                case HEADER_PRESENT:
+                    return headers.headerExists(headerName);
+                case HEADER_MISSING:
+                    return !headers.headerExists(headerName);
+                default:
+                    return false;
+            }
         }
     }
 

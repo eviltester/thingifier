@@ -342,6 +342,7 @@ public final class ThingifierHttpApi {
                                 routingVerbFor(effectiveVerb),
                                 request.getPath(),
                                 apiResponse,
+                                request.getHeaders(),
                                 response ->
                                         applyResponseEntityView(request, effectiveVerb, response));
 

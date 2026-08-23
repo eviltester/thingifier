@@ -47,6 +47,7 @@ public final class ThingifierApiRouteRule {
     private final List<ApiOperationValidatorDefinition> apiOperationValidators;
     private RouteApiResponsePolicy successResponsePolicy;
     private final Map<Integer, RouteApiResponsePolicy> errorResponsePolicies;
+    private final Map<Integer, List<RouteApiResponsePolicy>> conditionalErrorResponsePolicies;
     private RouteApiResponsePolicy validationErrorResponsePolicy;
     private String documentation;
     private String requestPayload;
@@ -81,6 +82,7 @@ public final class ThingifierApiRouteRule {
         this.apiOperationValidators = new java.util.ArrayList<>();
         this.successResponsePolicy = null;
         this.errorResponsePolicies = new HashMap<>();
+        this.conditionalErrorResponsePolicies = new HashMap<>();
         this.validationErrorResponsePolicy = null;
         this.documentation = null;
         this.requestPayload = null;
@@ -755,6 +757,26 @@ public final class ThingifierApiRouteRule {
     }
 
     /**
+     * Adds a conditional response policy for generated error responses with one status code.
+     *
+     * <p>Unlike {@link #onError(int)}, each call creates a new policy and appends it to the route's
+     * ordered conditional policy list. The unconditional {@code onError} policy, when configured,
+     * runs first; matching conditional policies then run in declaration order. This lets a route
+     * define a default error shape and request-specific overrides without relying on broad response
+     * hooks.
+     *
+     * @param statusCode generated error status code to match
+     * @return mutable route response policy for a conditional error outcome
+     */
+    public RouteApiResponsePolicy onErrorWhen(final int statusCode) {
+        final RouteApiResponsePolicy policy = new RouteApiResponsePolicy();
+        conditionalErrorResponsePolicies
+                .computeIfAbsent(statusCode, ignored -> new java.util.ArrayList<>())
+                .add(policy);
+        return policy;
+    }
+
+    /**
      * Configures response shaping for Thingifier validation-style failures on this route.
      *
      * <p>This policy is checked before status-specific error policies so validation errors can have
@@ -798,12 +820,37 @@ public final class ThingifierApiRouteRule {
     }
 
     /**
+     * Returns conditional error response policies for a status code in declaration order.
+     *
+     * @param statusCode generated error status code
+     * @return immutable conditional policies
+     */
+    public List<RouteApiResponsePolicy> conditionalErrorResponsePoliciesFor(final int statusCode) {
+        return Collections.unmodifiableList(
+                conditionalErrorResponsePolicies.getOrDefault(statusCode, List.of()));
+    }
+
+    /**
      * Returns all status-specific error response policies.
      *
      * @return immutable map of error status to policy
      */
     public Map<Integer, RouteApiResponsePolicy> errorResponsePolicies() {
         return Collections.unmodifiableMap(errorResponsePolicies);
+    }
+
+    /**
+     * Returns all conditional status-specific error response policies.
+     *
+     * @return immutable map of error status to ordered conditional policies
+     */
+    public Map<Integer, List<RouteApiResponsePolicy>> conditionalErrorResponsePolicies() {
+        final Map<Integer, List<RouteApiResponsePolicy>> snapshot = new HashMap<>();
+        for (Map.Entry<Integer, List<RouteApiResponsePolicy>> entry :
+                conditionalErrorResponsePolicies.entrySet()) {
+            snapshot.put(entry.getKey(), Collections.unmodifiableList(entry.getValue()));
+        }
+        return Collections.unmodifiableMap(snapshot);
     }
 
     /**
@@ -1052,6 +1099,13 @@ public final class ThingifierApiRouteRule {
         for (Map.Entry<Integer, RouteApiResponsePolicy> entry : errorResponsePolicies.entrySet()) {
             route.addPossibleStatus(RoutingStatus.returnValue(entry.getKey()));
             applyPolicyMetadata(route, entry.getValue());
+        }
+        for (Map.Entry<Integer, List<RouteApiResponsePolicy>> entry :
+                conditionalErrorResponsePolicies.entrySet()) {
+            route.addPossibleStatus(RoutingStatus.returnValue(entry.getKey()));
+            for (RouteApiResponsePolicy policy : entry.getValue()) {
+                applyPolicyMetadata(route, policy);
+            }
         }
     }
 

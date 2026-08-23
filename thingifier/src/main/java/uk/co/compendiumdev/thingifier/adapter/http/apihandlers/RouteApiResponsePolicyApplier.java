@@ -3,6 +3,7 @@ package uk.co.compendiumdev.thingifier.adapter.http.apihandlers;
 import java.util.List;
 import java.util.Optional;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
+import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.response.RouteApiResponsePolicy;
 import uk.co.compendiumdev.thingifier.api.spec.ThingifierApiRouteRule;
@@ -50,6 +51,29 @@ public final class RouteApiResponsePolicyApplier {
             final String publicPath,
             final ApiResponse response,
             final ResponseViewApplicator responseViewApplicator) {
+        return apply(verb, publicPath, response, new HttpHeadersBlock(), responseViewApplicator);
+    }
+
+    /**
+     * Applies the matching route response policies, including request-aware conditional policies.
+     *
+     * <p>The unconditional status policy runs first, then each matching conditional policy runs in
+     * declaration order. This lets a route describe its default response shape and then layer
+     * request-specific adjustments over the top.
+     *
+     * @param verb routing verb for route-rule lookup
+     * @param publicPath public request path
+     * @param response generated response
+     * @param requestHeaders request headers used by conditional policies
+     * @param responseViewApplicator normal route/entity response-view applicator
+     * @return the same response after policy actions have been applied
+     */
+    public ApiResponse apply(
+            final RoutingVerb verb,
+            final String publicPath,
+            final ApiResponse response,
+            final HttpHeadersBlock requestHeaders,
+            final ResponseViewApplicator responseViewApplicator) {
         if (response == null) {
             return null;
         }
@@ -59,14 +83,16 @@ public final class RouteApiResponsePolicyApplier {
                 selectedRule
                         .map(rule -> applyResponseShape(rule, publicPath, response))
                         .orElse(response);
-        final Optional<RouteApiResponsePolicy> selectedPolicy =
-                selectedRule.flatMap(rule -> policyFor(rule, shapedResponse));
+        final List<RouteApiResponsePolicy> selectedPolicies =
+                selectedRule
+                        .map(rule -> policiesFor(rule, shapedResponse, requestHeaders))
+                        .orElse(List.of());
 
-        selectedPolicy.ifPresent(policy -> applyStatusAndHeaders(policy, shapedResponse));
+        selectedPolicies.forEach(policy -> applyStatusAndHeaders(policy, shapedResponse));
         if (responseViewApplicator != null) {
             responseViewApplicator.apply(shapedResponse);
         }
-        selectedPolicy.ifPresent(policy -> applyBodyPolicy(policy, shapedResponse));
+        selectedPolicies.forEach(policy -> applyBodyPolicy(policy, shapedResponse));
 
         return shapedResponse;
     }
@@ -77,15 +103,33 @@ public final class RouteApiResponsePolicyApplier {
                 .ruleFor(verb, publicPath, runtime.apiConfig().getApiEndPointPrefix());
     }
 
-    private Optional<RouteApiResponsePolicy> policyFor(
-            final ThingifierApiRouteRule rule, final ApiResponse response) {
+    private List<RouteApiResponsePolicy> policiesFor(
+            final ThingifierApiRouteRule rule,
+            final ApiResponse response,
+            final HttpHeadersBlock requestHeaders) {
+        final List<RouteApiResponsePolicy> policies = new java.util.ArrayList<>();
         if (response.isValidationErrorResponse()) {
-            return rule.validationErrorResponsePolicy();
+            rule.validationErrorResponsePolicy()
+                    .filter(policy -> policy.matchesRequest(requestHeaders))
+                    .ifPresent(policies::add);
+            return policies;
         }
-        if (response.isErrorResponse()) {
-            return rule.errorResponsePolicyFor(response.getStatusCode());
+        if (response.isErrorResponse() || response.getStatusCode() >= 400) {
+            rule.errorResponsePolicyFor(response.getStatusCode())
+                    .filter(policy -> policy.matchesRequest(requestHeaders))
+                    .ifPresent(policies::add);
+            for (RouteApiResponsePolicy policy :
+                    rule.conditionalErrorResponsePoliciesFor(response.getStatusCode())) {
+                if (policy.matchesRequest(requestHeaders)) {
+                    policies.add(policy);
+                }
+            }
+            return policies;
         }
-        return rule.successResponsePolicy();
+        rule.successResponsePolicy()
+                .filter(policy -> policy.matchesRequest(requestHeaders))
+                .ifPresent(policies::add);
+        return policies;
     }
 
     private ApiResponse applyResponseShape(
@@ -197,6 +241,10 @@ public final class RouteApiResponsePolicyApplier {
 
         for (RouteApiResponsePolicy.HeaderValue header : policy.staticHeaders()) {
             response.setHeader(header.name(), header.value());
+        }
+
+        for (String headerName : policy.removedHeaders()) {
+            response.removeHeader(headerName);
         }
 
         for (RouteApiResponsePolicy.InstanceFieldHeader header : policy.instanceFieldHeaders()) {
