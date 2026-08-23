@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import uk.co.compendiumdev.thingifier.api.callbacks.ThingifierApiOperationCallback;
+import uk.co.compendiumdev.thingifier.api.callbacks.ThingifierApiOperationCallbackDefinition;
+import uk.co.compendiumdev.thingifier.api.callbacks.ThingifierApiOperationCallbackDefinition.Outcome;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
@@ -45,6 +48,7 @@ public final class ThingifierApiRouteRule {
     private final List<String> authEnforcementSchemeNames;
     private final List<ThingifierApiAuthorizer> authorizers;
     private final List<ApiOperationValidatorDefinition> apiOperationValidators;
+    private final List<ThingifierApiOperationCallbackDefinition> operationCallbacks;
     private RouteApiResponsePolicy successResponsePolicy;
     private final Map<Integer, RouteApiResponsePolicy> errorResponsePolicies;
     private final Map<Integer, List<RouteApiResponsePolicy>> conditionalErrorResponsePolicies;
@@ -80,6 +84,7 @@ public final class ThingifierApiRouteRule {
         this.authEnforcementSchemeNames = new java.util.ArrayList<>();
         this.authorizers = new java.util.ArrayList<>();
         this.apiOperationValidators = new java.util.ArrayList<>();
+        this.operationCallbacks = new java.util.ArrayList<>();
         this.successResponsePolicy = null;
         this.errorResponsePolicies = new HashMap<>();
         this.conditionalErrorResponsePolicies = new HashMap<>();
@@ -730,6 +735,136 @@ public final class ThingifierApiRouteRule {
     }
 
     /**
+     * Registers a callback that runs after any completed outcome for this route.
+     *
+     * <p>Operation callbacks are trusted, code-only application side effects. They run after
+     * Thingifier has created and route-shaped an {@link
+     * uk.co.compendiumdev.thingifier.api.response.ApiResponse}, and before legacy response hooks
+     * render or override the final HTTP response.
+     *
+     * @param callback callback to run
+     * @return callback registration for optional failure-policy configuration
+     */
+    public ThingifierApiOperationCallbackDefinition afterOperation(
+            final ThingifierApiOperationCallback callback) {
+        return afterOperation(defaultCallbackName("after-operation"), callback);
+    }
+
+    /**
+     * Registers a named callback that runs after any completed outcome for this route.
+     *
+     * @param name stable callback name used in diagnostics
+     * @param callback callback to run
+     * @return callback registration for optional failure-policy configuration
+     */
+    public ThingifierApiOperationCallbackDefinition afterOperation(
+            final String name, final ThingifierApiOperationCallback callback) {
+        return addOperationCallback(name, Outcome.ANY, null, callback);
+    }
+
+    /**
+     * Registers a callback that runs only for successful route outcomes.
+     *
+     * <p>A successful outcome is based on the final route-shaped status code in the 2xx or 3xx
+     * range.
+     *
+     * @param callback callback to run
+     * @return callback registration for optional failure-policy configuration
+     */
+    public ThingifierApiOperationCallbackDefinition afterSuccessfulOperation(
+            final ThingifierApiOperationCallback callback) {
+        return afterSuccessfulOperation(
+                defaultCallbackName("after-successful-operation"), callback);
+    }
+
+    /**
+     * Registers a named callback that runs only for successful route outcomes.
+     *
+     * @param name stable callback name used in diagnostics
+     * @param callback callback to run
+     * @return callback registration for optional failure-policy configuration
+     */
+    public ThingifierApiOperationCallbackDefinition afterSuccessfulOperation(
+            final String name, final ThingifierApiOperationCallback callback) {
+        return addOperationCallback(name, Outcome.SUCCESS, null, callback);
+    }
+
+    /**
+     * Registers a callback that runs only for failed route outcomes.
+     *
+     * <p>Use this for route-specific failure observation. It is not a replacement for response
+     * policies; callbacks should perform application side effects rather than shape response
+     * bodies.
+     *
+     * @param callback callback to run
+     * @return callback registration for optional failure-policy configuration
+     */
+    public ThingifierApiOperationCallbackDefinition afterFailedOperation(
+            final ThingifierApiOperationCallback callback) {
+        return afterFailedOperation(defaultCallbackName("after-failed-operation"), callback);
+    }
+
+    /**
+     * Registers a named callback that runs only for failed route outcomes.
+     *
+     * @param name stable callback name used in diagnostics
+     * @param callback callback to run
+     * @return callback registration for optional failure-policy configuration
+     */
+    public ThingifierApiOperationCallbackDefinition afterFailedOperation(
+            final String name, final ThingifierApiOperationCallback callback) {
+        return addOperationCallback(name, Outcome.FAILURE, null, callback);
+    }
+
+    /**
+     * Registers a callback that runs only when the final status code matches.
+     *
+     * @param statusCode final API status code to match
+     * @param callback callback to run
+     * @return callback registration for optional failure-policy configuration
+     */
+    public ThingifierApiOperationCallbackDefinition afterStatus(
+            final int statusCode, final ThingifierApiOperationCallback callback) {
+        return afterStatus(defaultCallbackName("after-status-" + statusCode), statusCode, callback);
+    }
+
+    /**
+     * Registers a named callback that runs only when the final status code matches.
+     *
+     * @param name stable callback name used in diagnostics
+     * @param statusCode final API status code to match
+     * @param callback callback to run
+     * @return callback registration for optional failure-policy configuration
+     */
+    public ThingifierApiOperationCallbackDefinition afterStatus(
+            final String name,
+            final int statusCode,
+            final ThingifierApiOperationCallback callback) {
+        return addOperationCallback(name, Outcome.STATUS, statusCode, callback);
+    }
+
+    /**
+     * Reports whether this route has operation callbacks.
+     *
+     * @return true when callbacks are registered
+     */
+    public boolean hasOperationCallbacks() {
+        return !operationCallbacks.isEmpty();
+    }
+
+    /**
+     * Returns operation callbacks in declaration order.
+     *
+     * <p>Callbacks are runtime-only and intentionally absent from YAML export/import and public
+     * OpenAPI because Java functions cannot safely round-trip through those formats.
+     *
+     * @return immutable callback registrations
+     */
+    public List<ThingifierApiOperationCallbackDefinition> operationCallbacks() {
+        return Collections.unmodifiableList(operationCallbacks);
+    }
+
+    /**
      * Configures response shaping for non-error responses returned by this route.
      *
      * <p>Route response policies let endpoint contracts adjust status codes, headers, bodies, and
@@ -1189,6 +1324,22 @@ public final class ThingifierApiRouteRule {
             throw new IllegalArgumentException("secureWithAnyOf requires at least one scheme");
         }
         return normalizedSchemeNames;
+    }
+
+    private ThingifierApiOperationCallbackDefinition addOperationCallback(
+            final String name,
+            final Outcome outcome,
+            final Integer statusCode,
+            final ThingifierApiOperationCallback callback) {
+        final ThingifierApiOperationCallbackDefinition definition =
+                new ThingifierApiOperationCallbackDefinition(
+                        this, name, outcome, statusCode, callback);
+        operationCallbacks.add(definition);
+        return definition;
+    }
+
+    private String defaultCallbackName(final String prefix) {
+        return prefix + "-" + (operationCallbacks.size() + 1);
     }
 
     private String requireText(final String value, final String label) {

@@ -6,6 +6,7 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.DefaultThingifier
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.FixedRouteResourcePreparer;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.RouteApiResponsePolicyApplier;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.RouteAuthPolicy;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.RouteOperationCallbackApplier;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierApiRuntime;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleContext;
@@ -135,6 +136,7 @@ public class ThingifierRestAPIHandler {
                 request.path(),
                 context,
                 lifecycle,
+                request,
                 () -> get.handle(request.path(), request.queryParams(), context, lifecycle));
     }
 
@@ -187,6 +189,7 @@ public class ThingifierRestAPIHandler {
                 request.path(),
                 context,
                 lifecycle,
+                request,
                 () -> {
                     final ApiResponse response =
                             get.handle(request.path(), request.queryParams(), context, lifecycle);
@@ -220,6 +223,7 @@ public class ThingifierRestAPIHandler {
                 request.path(),
                 context,
                 lifecycle,
+                request,
                 () ->
                         query.handle(
                                 request.path(),
@@ -268,6 +272,7 @@ public class ThingifierRestAPIHandler {
                 request.path(),
                 context,
                 lifecycle,
+                request,
                 () -> delete.handle(request.path(), request.queryParams(), context, lifecycle));
     }
 
@@ -321,6 +326,7 @@ public class ThingifierRestAPIHandler {
                 request.path(),
                 context,
                 lifecycle,
+                request,
                 () ->
                         post.handle(
                                 request.path(),
@@ -397,6 +403,7 @@ public class ThingifierRestAPIHandler {
                 request.path(),
                 context,
                 lifecycle,
+                request,
                 () ->
                         put.handle(
                                 request.path(),
@@ -484,6 +491,7 @@ public class ThingifierRestAPIHandler {
                 request.path(),
                 context,
                 lifecycle,
+                request,
                 () ->
                         patch.handle(
                                 request.path(),
@@ -558,19 +566,44 @@ public class ThingifierRestAPIHandler {
             final ThingifierRequestContext context,
             final ThingifierApiLifecycleContext lifecycle,
             final Supplier<ApiResponse> action) {
+        return withAuthorizedResponsePolicy(verb, url, context, lifecycle, null, action);
+    }
+
+    /**
+     * Applies auth, fixed-resource preparation, response policy, and route operation callbacks.
+     *
+     * <p>Callbacks run after response policies so they see the route-shaped API result, and before
+     * legacy HTTP response hooks so application code still has one final compatibility hook phase.
+     *
+     * @param verb routing verb used for route-rule lookup
+     * @param url generated API path
+     * @param context request context containing the active store
+     * @param lifecycle lifecycle context when called through HTTP processing, otherwise null
+     * @param request parsed request envelope, or null for older direct-call helpers
+     * @param action handler action to run when auth allows the request
+     * @return response after auth, response policy, and route callbacks have been applied
+     */
+    private ApiResponse withAuthorizedResponsePolicy(
+            final RoutingVerb verb,
+            final String url,
+            final ThingifierRequestContext context,
+            final ThingifierApiLifecycleContext lifecycle,
+            final ApiRequestEnvelope request,
+            final Supplier<ApiResponse> action) {
         final ApiResponse authResponse =
                 lifecycle == null ? authPolicy.rejectIfNotAuthorized(verb, url, context) : null;
         if (authResponse != null) {
-            return withResponsePolicy(verb, url, authResponse, context);
+            return withResponsePolicy(verb, url, authResponse, context, lifecycle, request);
         }
         final ThingRoute route =
                 lifecycle == null ? runtime.routeFor(verb, url) : lifecycle.route();
         final ApiResponse fixedResourceResponse =
                 new FixedRouteResourcePreparer(runtime).prepare(verb, url, route, context);
         if (fixedResourceResponse != null) {
-            return withResponsePolicy(verb, url, fixedResourceResponse, context);
+            return withResponsePolicy(
+                    verb, url, fixedResourceResponse, context, lifecycle, request);
         }
-        return withResponsePolicy(verb, url, action.get(), context);
+        return withResponsePolicy(verb, url, action.get(), context, lifecycle, request);
     }
 
     /**
@@ -604,15 +637,20 @@ public class ThingifierRestAPIHandler {
             final RoutingVerb verb,
             final String url,
             final ApiResponse response,
-            final ThingifierRequestContext context) {
+            final ThingifierRequestContext context,
+            final ThingifierApiLifecycleContext lifecycle,
+            final ApiRequestEnvelope request) {
         final ApiResponse responseWithRepository = withRepository(response, context);
-        return new RouteApiResponsePolicyApplier(runtime)
-                .apply(
-                        verb,
-                        url,
-                        responseWithRepository,
-                        context.headers(),
-                        apiResponse -> applyResponseEntityView(verb, url, apiResponse));
+        final ApiResponse policyResponse =
+                new RouteApiResponsePolicyApplier(runtime)
+                        .apply(
+                                verb,
+                                url,
+                                responseWithRepository,
+                                context.headers(),
+                                apiResponse -> applyResponseEntityView(verb, url, apiResponse));
+        return new RouteOperationCallbackApplier(runtime)
+                .apply(verb, url, policyResponse, context, lifecycle, request);
     }
 
     /**
