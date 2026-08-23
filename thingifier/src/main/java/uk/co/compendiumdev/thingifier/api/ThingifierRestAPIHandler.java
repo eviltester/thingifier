@@ -611,6 +611,7 @@ public class ThingifierRestAPIHandler {
                         verb,
                         url,
                         responseWithRepository,
+                        context.headers(),
                         apiResponse -> applyResponseEntityView(verb, url, apiResponse));
     }
 
