@@ -53,6 +53,7 @@ public final class ThingifierApiRouteRule {
     private String requestEntityView;
     private String defaultEntityView;
     private Map<Integer, String> responseEntityViews;
+    private ResponseShape responseShape;
     private String mappedEntityName;
     private String fixedIdentifier;
     private FixedResourcePolicy fixedResourcePolicy;
@@ -86,6 +87,7 @@ public final class ThingifierApiRouteRule {
         this.requestEntityView = null;
         this.defaultEntityView = null;
         this.responseEntityViews = new HashMap<>();
+        this.responseShape = ResponseShape.DEFAULT;
         this.mappedEntityName = null;
         this.fixedIdentifier = null;
         this.fixedResourcePolicy = FixedResourcePolicy.RETURN_404;
@@ -546,6 +548,34 @@ public final class ThingifierApiRouteRule {
     }
 
     /**
+     * Sets the successful entity response shape for this route.
+     *
+     * <p>Use {@link ResponseShape#SINGLE_INSTANCE} for fixed-resource routes where the public URL
+     * represents one known entity instance and must render as one object, even when legacy global
+     * configuration would normally wrap instance reads in a collection response.
+     *
+     * @param shape route response shape, or {@link ResponseShape#DEFAULT} when null
+     * @return this rule so route API configuration can be chained
+     */
+    public ThingifierApiRouteRule responseShape(final ResponseShape shape) {
+        this.responseShape = shape == null ? ResponseShape.DEFAULT : shape;
+        return this;
+    }
+
+    /**
+     * Requires successful responses on this route to render as one persisted instance.
+     *
+     * <p>This is a convenience alias for {@code responseShape(ResponseShape.SINGLE_INSTANCE)}. It
+     * is intended for fixed-resource routes such as {@code /secret/note} where the fixed identifier
+     * is declared in server code rather than supplied by the URL.
+     *
+     * @return this rule so route API configuration can be chained
+     */
+    public ThingifierApiRouteRule respondWithSingleInstance() {
+        return responseShape(ResponseShape.SINGLE_INSTANCE);
+    }
+
+    /**
      * Declares the model entity that a non-generated public route should target.
      *
      * <p>Use this with {@link #withFixedIdentifier(String)} when a route such as {@code
@@ -828,6 +858,24 @@ public final class ThingifierApiRouteRule {
     }
 
     /**
+     * Returns the successful response shape configured for this route.
+     *
+     * @return route response shape, defaulting to {@link ResponseShape#DEFAULT}
+     */
+    public ResponseShape responseShape() {
+        return responseShape;
+    }
+
+    /**
+     * Reports whether this route overrides the generated response shape.
+     *
+     * @return true when a non-default response shape is configured
+     */
+    public boolean hasResponseShapeOverride() {
+        return responseShape != ResponseShape.DEFAULT;
+    }
+
+    /**
      * Reports whether this route overrides entity write operation policy.
      *
      * @return true when entity write operations were explicitly configured
@@ -986,6 +1034,9 @@ public final class ThingifierApiRouteRule {
         }
         if (hasFixedIdentifierMapping()) {
             route.mapToFixedEntity(mappedEntityName, fixedIdentifier, fixedResourcePolicy);
+        }
+        if (hasResponseShapeOverride()) {
+            route.responseShape(responseShape);
         }
         applyResponsePolicyMetadataTo(route);
     }

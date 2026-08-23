@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleHookRegistry;
+import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiResponseHook;
 import uk.co.compendiumdev.thingifier.adapter.httpserver.HttpRouteRegistry;
 import uk.co.compendiumdev.thingifier.adapter.httpserver.HttpRouteVerb;
 import uk.co.compendiumdev.thingifier.adapter.httpserver.ThingifierHttpApiRoutings;
@@ -175,6 +176,35 @@ class ThingifierApiFixedRouteTest {
     }
 
     @Test
+    void openApiDocumentsSingleInstanceSchemaForShapedFixedRoute() {
+        final Thingifier thingifier = secretModel();
+        thingifier
+                .apiSpec()
+                .route(RoutingVerb.GET, "/secret/note")
+                .mapsToEntity("secretnote")
+                .withFixedIdentifier("note")
+                .defaultEntityView("SecretNoteResponse")
+                .respondWithSingleInstance();
+        final ThingifierApiDocumentationDefn apiDefn = new ThingifierApiDocumentationDefn();
+        apiDefn.setThingifier(thingifier);
+        apiDefn.setPathPrefix("/api");
+
+        final OpenAPI openApi = new Swaggerizer(apiDefn).swagger();
+        final String schemaRef =
+                openApi.getPaths()
+                        .get("/api/secret/note")
+                        .getGet()
+                        .getResponses()
+                        .get("200")
+                        .getContent()
+                        .get("application/json")
+                        .getSchema()
+                        .get$ref();
+
+        Assertions.assertEquals("#/components/schemas/SecretNoteResponse", schemaRef);
+    }
+
+    @Test
     void getFixedRouteReturnsConfiguredInstance() {
         final Thingifier thingifier = secretModel();
         getSecretNoteRoute(thingifier);
@@ -187,6 +217,61 @@ class ThingifierApiFixedRouteTest {
         Assertions.assertEquals(
                 "note", response.apiResponse().getReturnedInstance().getPrimaryKeyValue());
         Assertions.assertTrue(response.getBody().contains("stored text"));
+    }
+
+    @Test
+    void fixedRouteWithoutResponseShapeHonoursLegacyCollectionConfig() {
+        final Thingifier thingifier = secretModel();
+        thingifier.apiConfig().setReturnSingleGetItemsAsCollection(true);
+        getSecretNoteRoute(thingifier);
+        createSecretNote(thingifier, "note", "stored text", "internal-token");
+
+        final HttpApiResponse response =
+                new ThingifierHttpApi(thingifier).get(jsonRequest("/secret/note"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertTrue(response.apiResponse().isCollection());
+        Assertions.assertTrue(response.getBody().contains("secretnotes"));
+    }
+
+    @Test
+    void singleInstanceShapeOverridesLegacyCollectionConfigForFixedGet() {
+        final Thingifier thingifier = secretModel();
+        thingifier.apiConfig().setReturnSingleGetItemsAsCollection(true);
+        getSecretNoteRoute(thingifier).respondWithSingleInstance();
+        createSecretNote(thingifier, "note", "stored text", "internal-token");
+
+        final HttpApiResponse response =
+                new ThingifierHttpApi(thingifier).get(jsonRequest("/secret/note"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertTrue(response.apiResponse().hasReturnedInstance());
+        Assertions.assertFalse(response.apiResponse().isCollection());
+        Assertions.assertFalse(response.getBody().contains("secretnotes"));
+        Assertions.assertTrue(response.getBody().contains("stored text"));
+    }
+
+    @Test
+    void responseHookReceivesSingleInstanceBodyForShapedFixedRoute() {
+        final Thingifier thingifier = secretModel();
+        thingifier.apiConfig().setReturnSingleGetItemsAsCollection(true);
+        getSecretNoteRoute(thingifier).respondWithSingleInstance();
+        createSecretNote(thingifier, "note", "stored text", "internal-token");
+        final AtomicReference<String> bodySeenByHook = new AtomicReference<>();
+        final HttpApiResponseHook hook =
+                (request, response, config) -> {
+                    bodySeenByHook.set(response.getBody());
+                    return null;
+                };
+
+        final HttpApiResponse response =
+                new ThingifierHttpApi(thingifier, null, List.of(hook))
+                        .get(jsonRequest("/secret/note"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertNotNull(bodySeenByHook.get());
+        Assertions.assertFalse(bodySeenByHook.get().contains("secretnotes"));
+        Assertions.assertTrue(bodySeenByHook.get().contains("stored text"));
     }
 
     @Test
@@ -255,6 +340,24 @@ class ThingifierApiFixedRouteTest {
     }
 
     @Test
+    void headFixedRouteUsesSingleInstanceShapeBeforeSuccessPolicy() {
+        final Thingifier thingifier = secretModel();
+        thingifier.apiConfig().setReturnSingleGetItemsAsCollection(true);
+        getSecretNoteRoute(thingifier)
+                .respondWithSingleInstance()
+                .onSuccess()
+                .addInstanceFieldAsHeader("X-Secret-Note", "text");
+        createSecretNote(thingifier, "note", "stored text", "internal-token");
+
+        final HttpApiResponse response =
+                new ThingifierHttpApi(thingifier).head(jsonRequest("/secret/note"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals("", response.getBody());
+        Assertions.assertEquals("stored text", response.getHeaders().get("X-Secret-Note"));
+    }
+
+    @Test
     void missingFixedRouteReturns404ByDefault() {
         final Thingifier thingifier = secretModel();
         getSecretNoteRoute(thingifier);
@@ -278,6 +381,22 @@ class ThingifierApiFixedRouteTest {
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals(
                 "after", secretNote(thingifier, "note").getFieldValue("text").asString());
+    }
+
+    @Test
+    void postFixedRouteWithSingleInstanceShapeReturnsUpdatedInstance() {
+        final Thingifier thingifier = secretModel();
+        postSecretNoteRoute(thingifier).respondWithSingleInstance();
+        createSecretNote(thingifier, "note", "before", "internal-token");
+
+        final HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .post(jsonPost("/secret/note", "{\"text\":\"after\"}"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertTrue(response.apiResponse().hasReturnedInstance());
+        Assertions.assertFalse(response.apiResponse().isCollection());
+        Assertions.assertTrue(response.getBody().contains("after"));
     }
 
     @Test
@@ -394,6 +513,26 @@ class ThingifierApiFixedRouteTest {
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals("note", secretNote(thingifier, "note").getPrimaryKeyValue());
+    }
+
+    @Test
+    void singleInstanceShapeHonoursEnsureExistsFixedRoutePolicy() {
+        final Thingifier thingifier = secretModel();
+        thingifier.apiConfig().setReturnSingleGetItemsAsCollection(true);
+        thingifier
+                .apiSpec()
+                .route(RoutingVerb.GET, "/secret/note")
+                .mapsToEntity("secretnote")
+                .withFixedIdentifier("note", FixedResourcePolicy.ENSURE_EXISTS)
+                .respondWithSingleInstance();
+
+        final HttpApiResponse response =
+                new ThingifierHttpApi(thingifier).get(jsonRequest("/secret/note"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertTrue(response.apiResponse().hasReturnedInstance());
+        Assertions.assertEquals(
+                "note", response.apiResponse().getReturnedInstance().getPrimaryKeyValue());
     }
 
     @Test

@@ -134,6 +134,35 @@ class ThingifierApiSpecTest {
     }
 
     @Test
+    void routeRecordsSingleInstanceResponseShape() {
+        final Thingifier thingifier = model();
+        final ThingifierApiRouteRule rule =
+                thingifier
+                        .apiSpec()
+                        .route(RoutingVerb.GET, "/api/todos/{id}")
+                        .respondWithSingleInstance();
+
+        Assertions.assertTrue(rule.hasResponseShapeOverride());
+        Assertions.assertEquals(ResponseShape.SINGLE_INSTANCE, rule.responseShape());
+    }
+
+    @Test
+    void routeResponseShapeIsCopiedToGeneratedRouteDefinition() {
+        final Thingifier thingifier = model();
+        thingifier
+                .apiSpec()
+                .route(RoutingVerb.GET, "/api/todos/{id}")
+                .responseShape(ResponseShape.SINGLE_INSTANCE);
+
+        final ApiRoutingDefinition definition =
+                new ApiRoutingDefinitionDocGenerator(thingifier).generate("/api");
+        final RoutingDefinition route = route(definition, RoutingVerb.GET, "api/todos/:id");
+
+        Assertions.assertTrue(route.hasResponseShapeOverride());
+        Assertions.assertEquals(ResponseShape.SINGLE_INSTANCE, route.responseShape());
+    }
+
+    @Test
     void namedBasicAuthClearsBearerEnforcementOnRoute() {
         final Thingifier thingifier = model();
         final ThingifierApiRouteRule rule =

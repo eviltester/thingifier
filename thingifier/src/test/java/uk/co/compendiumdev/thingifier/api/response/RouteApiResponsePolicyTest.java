@@ -4,9 +4,12 @@ import static uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation.UPDA
 import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType.AUTO_INCREMENT;
 import static uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType.STRING;
 
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.DefaultThingifierApiRuntime;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.RouteApiResponsePolicyApplier;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinitionDocGenerator;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
@@ -15,6 +18,7 @@ import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
+import uk.co.compendiumdev.thingifier.api.spec.ResponseShape;
 import uk.co.compendiumdev.thingifier.api.spec.ThingifierApiRouteRule;
 import uk.co.compendiumdev.thingifier.core.EntityRelModel;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
@@ -157,6 +161,44 @@ class RouteApiResponsePolicyTest {
 
         Assertions.assertEquals(200, response.getStatusCode());
         Assertions.assertEquals("issued-value", response.getHeaders().get("X-Secret-Token"));
+    }
+
+    @Test
+    void singleInstanceShapeRejectsMultipleReturnedInstances() {
+        final Thingifier thingifier = secretModel();
+        getSecretNoteRoute(thingifier).respondWithSingleInstance();
+        final EntityInstance first = createSecretNote(thingifier, "note", "first", "internal");
+        final EntityInstance second = createSecretNote(thingifier, "other", "second", "internal");
+
+        final ApiResponse response =
+                new RouteApiResponsePolicyApplier(new DefaultThingifierApiRuntime(thingifier))
+                        .apply(
+                                RoutingVerb.GET,
+                                "secret/note",
+                                ApiResponse.success()
+                                        .returnInstanceCollection(List.of(first, second)),
+                                null);
+
+        Assertions.assertEquals(500, response.getStatusCode());
+        Assertions.assertTrue(response.isErrorResponse());
+        Assertions.assertTrue(
+                response.getErrorMessages()
+                        .contains(
+                                "Route secret/note is configured for a single instance response but returned 2 instances"));
+    }
+
+    @Test
+    void collectionShapeWrapsSingleReturnedInstanceForFixedRoute() {
+        final Thingifier thingifier = secretModel();
+        getSecretNoteRoute(thingifier).responseShape(ResponseShape.COLLECTION);
+        createSecretNote(thingifier, "note", "visible", "internal");
+
+        final HttpApiResponse response =
+                new ThingifierHttpApi(thingifier).get(jsonRequest("/secret/note"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertTrue(response.apiResponse().isCollection());
+        Assertions.assertTrue(response.getBody().contains("secretnotes"));
     }
 
     @Test

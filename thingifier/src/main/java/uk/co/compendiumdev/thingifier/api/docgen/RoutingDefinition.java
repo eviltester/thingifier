@@ -9,6 +9,7 @@ import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
 import uk.co.compendiumdev.thingifier.api.security.SecuritySchemeNames;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiSecuritySpec;
 import uk.co.compendiumdev.thingifier.api.spec.FixedResourcePolicy;
+import uk.co.compendiumdev.thingifier.api.spec.ResponseShape;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 
@@ -47,6 +48,7 @@ public class RoutingDefinition {
     private boolean disabled = false;
     private String requestEntityViewName;
     private HashMap<Integer, String> responseEntityViewNames;
+    private ResponseShape responseShape;
     private String fixedEntityName;
     private String fixedIdentifier;
     private FixedResourcePolicy fixedResourcePolicy;
@@ -82,6 +84,7 @@ public class RoutingDefinition {
         responseHeaders = new HashMap<>();
         requestEntityViewName = null;
         responseEntityViewNames = new HashMap<>();
+        responseShape = ResponseShape.DEFAULT;
         authSchemeNames = new ArrayList<>();
         fixedEntityName = null;
         fixedIdentifier = null;
@@ -488,6 +491,38 @@ public class RoutingDefinition {
      */
     public String getResponseEntityViewFor(final int statusCode) {
         return responseEntityViewNames.get(statusCode);
+    }
+
+    /**
+     * Sets the successful entity response shape documented for this route.
+     *
+     * <p>This metadata lets route rules describe singleton/fixed-resource contracts explicitly
+     * without changing how ordinary generated collection routes are documented.
+     *
+     * @param shape response shape, or {@link ResponseShape#DEFAULT} when null
+     * @return this definition so route metadata can be chained
+     */
+    public RoutingDefinition responseShape(final ResponseShape shape) {
+        responseShape = shape == null ? ResponseShape.DEFAULT : shape;
+        return this;
+    }
+
+    /**
+     * Returns the successful entity response shape for this route.
+     *
+     * @return route response shape, defaulting to {@link ResponseShape#DEFAULT}
+     */
+    public ResponseShape responseShape() {
+        return responseShape;
+    }
+
+    /**
+     * Reports whether the route explicitly overrides normal generated response shape.
+     *
+     * @return true when a non-default response shape is configured
+     */
+    public boolean hasResponseShapeOverride() {
+        return responseShape != ResponseShape.DEFAULT;
     }
 
     /**
