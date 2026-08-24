@@ -7,12 +7,14 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.FixedRouteResourc
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.RouteApiResponsePolicyApplier;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.RouteAuthPolicy;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.RouteOperationCallbackApplier;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ScopedSessionPolicyApplier;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierApiRuntime;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleContext;
 import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleHookRegistry;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.http.ApiRequestEnvelope;
+import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.BodyParser;
@@ -39,6 +41,7 @@ public class ThingifierRestAPIHandler {
     private final RestApiGetHandler get;
     private final RestApiQueryHandler query;
     private final RouteAuthPolicy authPolicy;
+    private final ScopedSessionPolicyApplier scopedSessionPolicy;
 
     /**
      * Creates a direct API facade for a Thingifier model.
@@ -81,6 +84,7 @@ public class ThingifierRestAPIHandler {
         this.patch = new RestApiPatchHandler(runtime, hooks);
         this.query = new RestApiQueryHandler(runtime, hooks);
         this.authPolicy = new RouteAuthPolicy(runtime);
+        this.scopedSessionPolicy = new ScopedSessionPolicyApplier(runtime);
     }
 
     // TODO: we should be able to accept xml with correct content type
@@ -107,7 +111,12 @@ public class ThingifierRestAPIHandler {
             final String url, final QueryFilterParams queryParams, HttpHeadersBlock headers) {
         ThingifierRequestContext context = contextFrom(headers);
         return withAuthorizedResponsePolicy(
-                RoutingVerb.GET, url, context, null, () -> get.handle(url, queryParams, context));
+                RoutingVerb.GET,
+                url,
+                context,
+                null,
+                queryParams,
+                () -> get.handle(url, queryParams, context));
     }
 
     /**
@@ -156,6 +165,7 @@ public class ThingifierRestAPIHandler {
                 url,
                 context,
                 null,
+                queryParams,
                 () -> {
                     final ApiResponse response =
                             get.handle(RoutingVerb.HEAD, url, queryParams, context);
@@ -566,7 +576,30 @@ public class ThingifierRestAPIHandler {
             final ThingifierRequestContext context,
             final ThingifierApiLifecycleContext lifecycle,
             final Supplier<ApiResponse> action) {
-        return withAuthorizedResponsePolicy(verb, url, context, lifecycle, null, action);
+        return withAuthorizedResponsePolicy(
+                verb, url, context, lifecycle, null, new QueryFilterParams(), action);
+    }
+
+    /**
+     * Applies scoped sessions and route auth for older direct-call helpers with query parameters.
+     *
+     * @param verb routing verb used for route-rule lookup
+     * @param url generated API path
+     * @param context request context containing the active store
+     * @param lifecycle lifecycle context when called through HTTP processing, otherwise null
+     * @param queryParams query parameters available to scoped-session credential resolution
+     * @param action handler action to run when auth allows the request
+     * @return response after auth and normal response policy have been applied
+     */
+    private ApiResponse withAuthorizedResponsePolicy(
+            final RoutingVerb verb,
+            final String url,
+            final ThingifierRequestContext context,
+            final ThingifierApiLifecycleContext lifecycle,
+            final QueryFilterParams queryParams,
+            final Supplier<ApiResponse> action) {
+        return withAuthorizedResponsePolicy(
+                verb, url, context, lifecycle, null, queryParams, action);
     }
 
     /**
@@ -590,13 +623,59 @@ public class ThingifierRestAPIHandler {
             final ThingifierApiLifecycleContext lifecycle,
             final ApiRequestEnvelope request,
             final Supplier<ApiResponse> action) {
+        return withAuthorizedResponsePolicy(
+                verb,
+                url,
+                context,
+                lifecycle,
+                request,
+                request == null ? new QueryFilterParams() : request.queryParams(),
+                action);
+    }
+
+    /**
+     * Applies scoped sessions, auth, fixed-resource preparation, response policy, and callbacks.
+     *
+     * <p>Scoped-session resolution runs before explicit route auth so route auth can override the
+     * selected data scope when both are configured. Lifecycle-backed HTTP calls skip these gates
+     * because {@link ThingifierHttpApi} has already run them before request validation.
+     *
+     * @param verb routing verb used for route-rule lookup
+     * @param url generated API path
+     * @param context request context containing the active store
+     * @param lifecycle lifecycle context when called through HTTP processing, otherwise null
+     * @param request parsed request envelope, or null for older direct-call helpers
+     * @param queryParams query parameters available to scoped-session credential resolution
+     * @param action handler action to run when auth allows the request
+     * @return response after auth, response policy, and route callbacks have been applied
+     */
+    private ApiResponse withAuthorizedResponsePolicy(
+            final RoutingVerb verb,
+            final String url,
+            final ThingifierRequestContext context,
+            final ThingifierApiLifecycleContext lifecycle,
+            final ApiRequestEnvelope request,
+            final QueryFilterParams queryParams,
+            final Supplier<ApiResponse> action) {
+        final ThingRoute route =
+                lifecycle == null ? runtime.routeFor(verb, url) : lifecycle.route();
+        final ApiResponse scopedSessionResponse =
+                lifecycle == null
+                        ? scopedSessionPolicy.rejectIfNotResolved(
+                                verb, url, context, route, queryParams)
+                        : null;
+        if (scopedSessionResponse != null) {
+            return withResponsePolicy(
+                    verb, url, scopedSessionResponse, context, lifecycle, request);
+        }
+
         final ApiResponse authResponse =
-                lifecycle == null ? authPolicy.rejectIfNotAuthorized(verb, url, context) : null;
+                lifecycle == null
+                        ? authPolicy.rejectIfNotAuthorized(verb, url, context, route)
+                        : null;
         if (authResponse != null) {
             return withResponsePolicy(verb, url, authResponse, context, lifecycle, request);
         }
-        final ThingRoute route =
-                lifecycle == null ? runtime.routeFor(verb, url) : lifecycle.route();
         final ApiResponse fixedResourceResponse =
                 new FixedRouteResourcePreparer(runtime).prepare(verb, url, route, context);
         if (fixedResourceResponse != null) {

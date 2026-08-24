@@ -13,14 +13,12 @@ import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.ApiKeyHeader
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.BasicAuthHeaderParser;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.BearerAuthHeaderParser;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
-import uk.co.compendiumdev.thingifier.api.security.DataScopeCreationPolicy;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthenticationContext;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthenticationResult;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthenticator;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthorizationContext;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthorizationResult;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthorizer;
-import uk.co.compendiumdev.thingifier.api.security.ThingifierApiDataScopeSelection;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiRouteAuthDetails;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiSecuritySchemeType;
 import uk.co.compendiumdev.thingifier.api.spec.ApiRoutePathMatcher;
@@ -28,7 +26,6 @@ import uk.co.compendiumdev.thingifier.api.spec.ThingifierApiRouteRule;
 import uk.co.compendiumdev.thingifier.application.schema.EntityTypeRef;
 import uk.co.compendiumdev.thingifier.application.schema.RelationshipSpec;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
-import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
 
 /**
  * Enforces route-level authentication and authorization configured in the API spec.
@@ -384,39 +381,8 @@ public final class RouteAuthPolicy {
         if (authentication.dataScopeSelection().isEmpty()) {
             return null;
         }
-
-        final ThingifierApiDataScopeSelection selection = authentication.dataScopeSelection().get();
-        if (requiresPreExistingScope(context, selection)) {
-            return ApiResponse.error404("Could not find data scope " + selection.dataScopeName());
-        }
-
-        final Optional<ThingStore> selectedStore =
-                runtime.storeForDataScope(selection.dataScopeName(), selection.creationPolicy());
-        if (selectedStore.isEmpty()) {
-            return ApiResponse.error404("Could not find data scope " + selection.dataScopeName());
-        }
-
-        if (requiresEmptyScopeAfterHeaderCreation(context, selection)) {
-            selectedStore.get().administration().clearAllData();
-        }
-        context.useDataScope(selection.dataScopeName(), selectedStore.get());
-        return null;
-    }
-
-    private boolean requiresPreExistingScope(
-            final ThingifierRequestContext context,
-            final ThingifierApiDataScopeSelection selection) {
-        return selection.creationPolicy() == DataScopeCreationPolicy.USE_EXISTING_ONLY
-                && selection.dataScopeName().equals(context.dataScopeName())
-                && context.wasDataScopeCreatedWhenContextCreated();
-    }
-
-    private boolean requiresEmptyScopeAfterHeaderCreation(
-            final ThingifierRequestContext context,
-            final ThingifierApiDataScopeSelection selection) {
-        return selection.creationPolicy() == DataScopeCreationPolicy.ENSURE_EXISTS
-                && selection.dataScopeName().equals(context.dataScopeName())
-                && context.wasDataScopeCreatedWhenContextCreated();
+        return new DataScopeSelectionApplier(runtime)
+                .apply(context, authentication.dataScopeSelection().get());
     }
 
     /**
