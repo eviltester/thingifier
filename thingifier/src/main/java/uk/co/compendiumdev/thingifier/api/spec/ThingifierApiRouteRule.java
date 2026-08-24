@@ -46,6 +46,8 @@ public final class ThingifierApiRouteRule {
     private String apiKeyAuthSchemeName;
     private String enforcedApiKeyAuthSchemeName;
     private final List<String> authEnforcementSchemeNames;
+    private ScopedSessionMode scopedSessionMode;
+    private String scopedSessionName;
     private final List<ThingifierApiAuthorizer> authorizers;
     private final List<ApiOperationValidatorDefinition> apiOperationValidators;
     private final List<ThingifierApiOperationCallbackDefinition> operationCallbacks;
@@ -82,6 +84,8 @@ public final class ThingifierApiRouteRule {
         this.apiKeyAuthSchemeName = SecuritySchemeNames.DEFAULT_API_KEY_AUTH_SCHEME;
         this.enforcedApiKeyAuthSchemeName = null;
         this.authEnforcementSchemeNames = new java.util.ArrayList<>();
+        this.scopedSessionMode = ScopedSessionMode.INHERIT;
+        this.scopedSessionName = null;
         this.authorizers = new java.util.ArrayList<>();
         this.apiOperationValidators = new java.util.ArrayList<>();
         this.operationCallbacks = new java.util.ArrayList<>();
@@ -101,6 +105,27 @@ public final class ThingifierApiRouteRule {
         this.entityWriteOperations = null;
         this.entityPatchUpdateStyles = null;
         this.relationshipWriteOperations = null;
+    }
+
+    /**
+     * Route-level scoped-session behaviour.
+     *
+     * <p>These values are resolved at runtime with contract-level defaults. Keeping the route
+     * setting explicit avoids treating arbitrary request headers as data-scope selectors unless the
+     * route has opted into trusted scoped-session resolution.
+     */
+    public enum ScopedSessionMode {
+        /** Use the API contract's read/write scoped-session defaults. */
+        INHERIT,
+
+        /** Missing credentials use the default scope, while invalid supplied credentials reject. */
+        ALLOW_ANONYMOUS_DEFAULT_SCOPE,
+
+        /** Missing or invalid credentials reject before validators and handlers run. */
+        REQUIRE_AUTHENTICATED_SCOPE,
+
+        /** Do not apply scoped-session resolution on this route. */
+        DISABLED
     }
 
     /**
@@ -337,7 +362,8 @@ public final class ThingifierApiRouteRule {
     /**
      * Adds a route-specific authorization callback.
      *
-     * <p>Authorizers run only after the named authenticator accepts the route's credential.
+     * <p>Authorizers run only after a trusted credential gate has accepted the request, either a
+     * named route authenticator or a scoped-session resolver on routes without explicit route auth.
      * Multiple authorizers are evaluated in registration order and the first rejection stops the
      * request.
      *
@@ -351,6 +377,81 @@ public final class ThingifierApiRouteRule {
         }
         authorizers.add(authorizer);
         return this;
+    }
+
+    /**
+     * Allows this route to use the default data scope when the scoped-session credential is absent.
+     *
+     * <p>If the credential is present, the configured resolver still validates it and invalid
+     * credentials reject. This is intended for anonymous read-style routes where default data is
+     * safe, without weakening the rule for bad supplied credentials.
+     *
+     * @return this rule so route API configuration can be chained
+     */
+    public ThingifierApiRouteRule allowAnonymousUsingDefaultScope() {
+        scopedSessionMode = ScopedSessionMode.ALLOW_ANONYMOUS_DEFAULT_SCOPE;
+        scopedSessionName = null;
+        return this;
+    }
+
+    /**
+     * Allows this route to use the default data scope when one named scoped-session credential is
+     * absent.
+     *
+     * @param sessionName named scoped-session definition to use when a credential is supplied
+     * @return this rule so route API configuration can be chained
+     */
+    public ThingifierApiRouteRule allowAnonymousUsingDefaultScope(final String sessionName) {
+        scopedSessionMode = ScopedSessionMode.ALLOW_ANONYMOUS_DEFAULT_SCOPE;
+        scopedSessionName = SecuritySchemeNames.requireValid(sessionName);
+        return this;
+    }
+
+    /**
+     * Requires a valid scoped-session credential for this route.
+     *
+     * <p>The resolver may select a data scope and principal. Missing credentials reject before the
+     * resolver is called; supplied credentials that resolve to unauthenticated reject as invalid.
+     *
+     * @param sessionName named scoped-session definition
+     * @return this rule so route API configuration can be chained
+     */
+    public ThingifierApiRouteRule requireScopedSession(final String sessionName) {
+        scopedSessionMode = ScopedSessionMode.REQUIRE_AUTHENTICATED_SCOPE;
+        scopedSessionName = SecuritySchemeNames.requireValid(sessionName);
+        return this;
+    }
+
+    /**
+     * Disables scoped-session resolution for this route.
+     *
+     * <p>Use this when contract-level read/write defaults exist but a specific generated or fixed
+     * route should keep the historical request-context behaviour.
+     *
+     * @return this rule so route API configuration can be chained
+     */
+    public ThingifierApiRouteRule disableScopedSession() {
+        scopedSessionMode = ScopedSessionMode.DISABLED;
+        scopedSessionName = null;
+        return this;
+    }
+
+    /**
+     * Returns the route's scoped-session override.
+     *
+     * @return scoped-session mode, defaulting to {@link ScopedSessionMode#INHERIT}
+     */
+    public ScopedSessionMode scopedSessionMode() {
+        return scopedSessionMode;
+    }
+
+    /**
+     * Returns the scoped-session definition explicitly selected by this route.
+     *
+     * @return named scoped session, or null when the API contract default should be used
+     */
+    public String scopedSessionName() {
+        return scopedSessionName;
     }
 
     /**

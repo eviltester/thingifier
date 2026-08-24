@@ -13,6 +13,7 @@ import uk.co.compendiumdev.thingifier.adapter.hooks.ScopedHook;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.DefaultThingifierApiRuntime;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.RouteApiResponsePolicyApplier;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.RouteAuthPolicy;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ScopedSessionPolicyApplier;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ThingifierApiRuntime;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.CollectionRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.InstanceRoute;
@@ -231,6 +232,20 @@ public final class ThingifierHttpApi {
 
         if (httpResponse == null && isDisabledByApiSpec(request, effectiveVerb)) {
             httpResponse = disabledRouteResponse(request, effectiveVerb);
+        }
+
+        if (httpResponse == null && lifecycle != null) {
+            final ApiResponse scopedSessionResponse =
+                    new ScopedSessionPolicyApplier(lifecycle.runtime())
+                            .rejectIfNotResolved(
+                                    lifecycle.routingVerb(),
+                                    lifecycle.path(),
+                                    lifecycle.requestContext(),
+                                    lifecycle.route(),
+                                    lifecycle.queryParams());
+            if (scopedSessionResponse != null) {
+                httpResponse = httpResponseFor(request, effectiveVerb, scopedSessionResponse);
+            }
         }
 
         if (httpResponse == null && lifecycle != null) {

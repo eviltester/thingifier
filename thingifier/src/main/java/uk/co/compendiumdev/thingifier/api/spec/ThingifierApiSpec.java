@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,10 @@ import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
 import uk.co.compendiumdev.thingifier.api.security.SecuritySchemeNames;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthenticator;
+import uk.co.compendiumdev.thingifier.api.security.ThingifierApiScopedSessionCredentialSourceType;
+import uk.co.compendiumdev.thingifier.api.security.ThingifierApiScopedSessionDefinition;
+import uk.co.compendiumdev.thingifier.api.security.ThingifierApiScopedSessionPolicy;
+import uk.co.compendiumdev.thingifier.api.security.ThingifierApiScopedSessionPolicy.Mode;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiSecuritySpec;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityWriteOperation;
@@ -40,6 +45,7 @@ public final class ThingifierApiSpec {
     private final List<RelationshipWritePolicyRule> relationshipWritePolicyRules;
     private final ThingifierApiSecuritySpec securitySpec;
     private final Map<String, ThingifierApiAuthenticator> authenticators;
+    private final Map<String, ThingifierApiScopedSessionDefinition> scopedSessions;
 
     public ThingifierApiSpec() {
         routeRules = new ArrayList<>();
@@ -49,6 +55,7 @@ public final class ThingifierApiSpec {
         relationshipWritePolicyRules = new ArrayList<>();
         securitySpec = new ThingifierApiSecuritySpec();
         authenticators = new HashMap<>();
+        scopedSessions = new LinkedHashMap<>();
     }
 
     /**
@@ -128,6 +135,22 @@ public final class ThingifierApiSpec {
         }
         authenticators.put(normalizedSchemeName, authenticator);
         return this;
+    }
+
+    /**
+     * Returns a named scoped-session definition, creating it when needed.
+     *
+     * <p>Scoped sessions are for application credentials that may select a data scope only after a
+     * trusted resolver has validated them. This keeps headers such as {@code X-CHALLENGER} or
+     * tenant ids from being treated as direct database names.
+     *
+     * @param sessionName scoped-session definition name
+     * @return mutable scoped-session definition
+     */
+    public ThingifierApiScopedSessionDefinition scopedSession(final String sessionName) {
+        final String normalizedSessionName = SecuritySchemeNames.requireValid(sessionName);
+        return scopedSessions.computeIfAbsent(
+                normalizedSessionName, ThingifierApiScopedSessionDefinition::new);
     }
 
     /**
@@ -297,6 +320,7 @@ public final class ThingifierApiSpec {
         for (RoutingDefinition route : routingDefinition.definitions()) {
             ruleFor(route.verb(), route.url(), apiPathPrefix)
                     .ifPresent(rule -> rule.applyTo(route));
+            applyScopedSessionDocumentationTo(route, apiPathPrefix);
             applyEntityDefaultsTo(route, routingDefinition);
         }
         routingDefinition.updateOptionsAllowHeaders();
@@ -443,6 +467,60 @@ public final class ThingifierApiSpec {
     }
 
     /**
+     * Finds a scoped-session definition by name.
+     *
+     * @param sessionName scoped-session definition name
+     * @return configured definition when present
+     */
+    public Optional<ThingifierApiScopedSessionDefinition> scopedSessionNamed(
+            final String sessionName) {
+        return Optional.ofNullable(
+                scopedSessions.get(SecuritySchemeNames.requireValid(sessionName)));
+    }
+
+    /**
+     * Resolves the scoped-session policy for one route.
+     *
+     * <p>Explicit route settings win over contract-level read/write shortcuts. If a route refers to
+     * a missing scoped-session definition, the unresolved policy is returned so runtime handling
+     * can fail closed with a configuration error instead of silently allowing the request.
+     *
+     * @param verb routing verb
+     * @param path request or generated route path
+     * @param apiPathPrefix configured API prefix used when matching paths
+     * @return scoped-session policy when this route opts into resolution
+     */
+    public Optional<ThingifierApiScopedSessionPolicy> scopedSessionPolicyFor(
+            final RoutingVerb verb, final String path, final String apiPathPrefix) {
+        if (verb == null) {
+            return Optional.empty();
+        }
+
+        final Optional<ThingifierApiRouteRule> matchingRule = ruleFor(verb, path, apiPathPrefix);
+        if (matchingRule.isPresent()) {
+            final ThingifierApiRouteRule rule = matchingRule.get();
+            if (rule.isDisabled() || rule.isMethodNotAllowed()) {
+                return Optional.empty();
+            }
+            switch (rule.scopedSessionMode()) {
+                case DISABLED:
+                    return Optional.empty();
+                case ALLOW_ANONYMOUS_DEFAULT_SCOPE:
+                    return explicitScopedSessionPolicy(
+                            rule.scopedSessionName(), Mode.ALLOW_ANONYMOUS_DEFAULT_SCOPE);
+                case REQUIRE_AUTHENTICATED_SCOPE:
+                    return explicitScopedSessionPolicy(
+                            rule.scopedSessionName(), Mode.REQUIRE_AUTHENTICATED_SCOPE);
+                case INHERIT:
+                default:
+                    break;
+            }
+        }
+
+        return contractDefaultScopedSessionPolicyFor(verb);
+    }
+
+    /**
      * Resolves the request entity view for a route and entity.
      *
      * <p>Route-specific request views take precedence over entity defaults. Returning empty means
@@ -545,6 +623,72 @@ public final class ThingifierApiSpec {
                 .filter(rule -> samePathPattern(rule.pathPattern(), pathPattern))
                 .findFirst()
                 .orElseGet(() -> route(verb, pathPattern));
+    }
+
+    private Optional<ThingifierApiScopedSessionPolicy> explicitScopedSessionPolicy(
+            final String sessionName, final Mode mode) {
+        if (sessionName != null) {
+            return Optional.of(
+                    scopedSessionNamed(sessionName)
+                            .map(
+                                    definition ->
+                                            ThingifierApiScopedSessionPolicy.configured(
+                                                    definition, mode))
+                            .orElseGet(
+                                    () ->
+                                            ThingifierApiScopedSessionPolicy.unresolved(
+                                                    sessionName, mode)));
+        }
+
+        final Optional<ThingifierApiScopedSessionDefinition> defaultDefinition =
+                defaultScopedSessionDefinition();
+        if (defaultDefinition.isPresent()) {
+            return Optional.of(
+                    ThingifierApiScopedSessionPolicy.configured(defaultDefinition.get(), mode));
+        }
+        return Optional.of(ThingifierApiScopedSessionPolicy.unresolved("scopedSession", mode));
+    }
+
+    private Optional<ThingifierApiScopedSessionPolicy> contractDefaultScopedSessionPolicyFor(
+            final RoutingVerb verb) {
+        if (isReadVerb(verb)) {
+            return scopedSessions.values().stream()
+                    .filter(
+                            ThingifierApiScopedSessionDefinition
+                                    ::allowsAnonymousDefaultScopeForReads)
+                    .findFirst()
+                    .map(
+                            definition ->
+                                    ThingifierApiScopedSessionPolicy.configured(
+                                            definition, Mode.ALLOW_ANONYMOUS_DEFAULT_SCOPE));
+        }
+        if (isWriteVerb(verb)) {
+            return scopedSessions.values().stream()
+                    .filter(
+                            ThingifierApiScopedSessionDefinition
+                                    ::requiresAuthenticatedScopeForWrites)
+                    .findFirst()
+                    .map(
+                            definition ->
+                                    ThingifierApiScopedSessionPolicy.configured(
+                                            definition, Mode.REQUIRE_AUTHENTICATED_SCOPE));
+        }
+        return Optional.empty();
+    }
+
+    private Optional<ThingifierApiScopedSessionDefinition> defaultScopedSessionDefinition() {
+        return scopedSessions.values().stream().findFirst();
+    }
+
+    private boolean isReadVerb(final RoutingVerb verb) {
+        return verb == RoutingVerb.GET || verb == RoutingVerb.HEAD || verb == RoutingVerb.QUERY;
+    }
+
+    private boolean isWriteVerb(final RoutingVerb verb) {
+        return verb == RoutingVerb.POST
+                || verb == RoutingVerb.PUT
+                || verb == RoutingVerb.PATCH
+                || verb == RoutingVerb.DELETE;
     }
 
     /**
@@ -765,6 +909,38 @@ public final class ThingifierApiSpec {
                     .flatMap(this::defaultResponseEntityViewFor)
                     .ifPresent(viewName -> route.responseEntityView(statusCode, viewName));
         }
+    }
+
+    /**
+     * Documents required header-based scoped sessions as API-key security schemes.
+     *
+     * <p>Runtime scoped sessions can be optional, route-auth can be combined with them, and
+     * non-header sources are not a natural OpenAPI security scheme in this codebase. To avoid
+     * over-documenting, this only advertises a scoped-session credential when it is the route's
+     * required security mechanism and no explicit route auth metadata already exists.
+     *
+     * @param route generated route metadata
+     * @param apiPathPrefix configured API prefix
+     */
+    private void applyScopedSessionDocumentationTo(
+            final RoutingDefinition route, final String apiPathPrefix) {
+        if (route.hasAuthSchemeNames()) {
+            return;
+        }
+        scopedSessionPolicyFor(route.verb(), route.url(), apiPathPrefix)
+                .filter(ThingifierApiScopedSessionPolicy::requiresAuthenticatedScope)
+                .flatMap(ThingifierApiScopedSessionPolicy::definition)
+                .filter(ThingifierApiScopedSessionDefinition::hasCredentialSource)
+                .filter(
+                        definition ->
+                                definition.credentialSourceType()
+                                        == ThingifierApiScopedSessionCredentialSourceType.HEADER)
+                .ifPresent(
+                        definition -> {
+                            securitySpec.apiKey(
+                                    definition.name(), definition.credentialSourceName());
+                            route.secureWithApiKey(definition.name());
+                        });
     }
 
     /**
