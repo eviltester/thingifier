@@ -661,6 +661,20 @@ public final class ThingifierApiSpec {
                                             definition, Mode.ALLOW_ANONYMOUS_CONFIGURED_SCOPE));
         }
         if (isWriteVerb(verb)) {
+            final Optional<ThingifierApiScopedSessionPolicy> anonymousWritePolicy =
+                    scopedSessions.values().stream()
+                            .filter(
+                                    ThingifierApiScopedSessionDefinition
+                                            ::allowsAnonymousScopeForWrites)
+                            .findFirst()
+                            .map(
+                                    definition ->
+                                            ThingifierApiScopedSessionPolicy.configured(
+                                                    definition,
+                                                    Mode.ALLOW_ANONYMOUS_CONFIGURED_WRITE_SCOPE));
+            if (anonymousWritePolicy.isPresent()) {
+                return anonymousWritePolicy;
+            }
             return scopedSessions.values().stream()
                     .filter(
                             ThingifierApiScopedSessionDefinition

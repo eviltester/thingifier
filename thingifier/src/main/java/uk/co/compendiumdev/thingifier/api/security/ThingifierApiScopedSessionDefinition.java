@@ -18,7 +18,9 @@ public final class ThingifierApiScopedSessionDefinition {
     private ThingifierApiScopedSessionAuthenticator authenticator;
     private boolean anonymousScopeForReads;
     private boolean anonymousDefaultScopeForReads;
-    private ThingifierApiAnonymousDataScopeResolver anonymousDataScopeResolver;
+    private ThingifierApiAnonymousDataScopeResolver anonymousReadDataScopeResolver;
+    private boolean anonymousScopeForWrites;
+    private ThingifierApiAnonymousDataScopeResolver anonymousWriteDataScopeResolver;
     private boolean authenticatedScopeForWrites;
     private int missingCredentialStatusCode;
     private String missingCredentialMessage;
@@ -104,7 +106,7 @@ public final class ThingifierApiScopedSessionDefinition {
     public ThingifierApiScopedSessionDefinition allowAnonymousDefaultScopeForReads() {
         this.anonymousScopeForReads = true;
         this.anonymousDefaultScopeForReads = true;
-        this.anonymousDataScopeResolver =
+        this.anonymousReadDataScopeResolver =
                 context -> ThingifierApiDataScopeSelection.defaultDataScope();
         return this;
     }
@@ -156,17 +158,73 @@ public final class ThingifierApiScopedSessionDefinition {
         }
         this.anonymousScopeForReads = true;
         this.anonymousDefaultScopeForReads = false;
-        this.anonymousDataScopeResolver = resolver;
+        this.anonymousReadDataScopeResolver = resolver;
+        return this;
+    }
+
+    /**
+     * Allows write-style generated routes to use a named data scope when no credential is supplied.
+     *
+     * <p>This is intentionally opt-in for applications that offer public, demo, or single-user
+     * mutable state. If a credential is supplied, Thingifier still validates it and invalid
+     * credentials reject rather than falling back to the anonymous write scope.
+     *
+     * @param dataScopeName anonymous write data scope
+     * @return this definition for fluent configuration
+     */
+    public ThingifierApiScopedSessionDefinition allowAnonymousWritesUsingDataScope(
+            final String dataScopeName) {
+        return allowAnonymousWritesUsingDataScope(
+                dataScopeName, DataScopeCreationPolicy.USE_EXISTING_ONLY);
+    }
+
+    /**
+     * Allows write-style generated routes to use a named data scope when no credential is supplied.
+     *
+     * @param dataScopeName anonymous write data scope
+     * @param creationPolicy policy used when the anonymous scope does not exist
+     * @return this definition for fluent configuration
+     */
+    public ThingifierApiScopedSessionDefinition allowAnonymousWritesUsingDataScope(
+            final String dataScopeName, final DataScopeCreationPolicy creationPolicy) {
+        final ThingifierApiDataScopeSelection selection =
+                ThingifierApiDataScopeSelection.useDataScope(dataScopeName, creationPolicy);
+        return allowAnonymousWritesUsingDataScope(context -> selection);
+    }
+
+    /**
+     * Allows write-style generated routes to resolve the anonymous data scope dynamically.
+     *
+     * <p>The resolver runs only when the scoped-session credential is missing and anonymous write
+     * access is allowed for the route. Configuring anonymous writes clears the authenticated-write
+     * requirement so fluent write policy calls have predictable last-call-wins behaviour.
+     *
+     * @param resolver trusted anonymous data-scope resolver
+     * @return this definition for fluent configuration
+     */
+    public ThingifierApiScopedSessionDefinition allowAnonymousWritesUsingDataScope(
+            final ThingifierApiAnonymousDataScopeResolver resolver) {
+        if (resolver == null) {
+            throw new IllegalArgumentException("anonymous write data-scope resolver is required");
+        }
+        this.anonymousScopeForWrites = true;
+        this.anonymousWriteDataScopeResolver = resolver;
+        this.authenticatedScopeForWrites = false;
         return this;
     }
 
     /**
      * Requires write-style generated routes to have a valid scoped-session credential.
      *
+     * <p>Configuring required writes clears any anonymous write scope so fluent write policy calls
+     * have predictable last-call-wins behaviour.
+     *
      * @return this definition for fluent configuration
      */
     public ThingifierApiScopedSessionDefinition requireAuthenticatedScopeForWrites() {
         this.authenticatedScopeForWrites = true;
+        this.anonymousScopeForWrites = false;
+        this.anonymousWriteDataScopeResolver = null;
         return this;
     }
 
@@ -247,7 +305,19 @@ public final class ThingifierApiScopedSessionDefinition {
      * @return resolver when anonymous reads are configured
      */
     public Optional<ThingifierApiAnonymousDataScopeResolver> anonymousDataScopeResolver() {
-        return Optional.ofNullable(anonymousDataScopeResolver);
+        return anonymousReadDataScopeResolver();
+    }
+
+    /**
+     * Returns the trusted resolver used for missing-credential anonymous reads.
+     *
+     * <p>This named read accessor keeps the read and write anonymous scope policies explicit while
+     * {@link #anonymousDataScopeResolver()} remains as the original read-scope alias.
+     *
+     * @return resolver when anonymous reads are configured
+     */
+    public Optional<ThingifierApiAnonymousDataScopeResolver> anonymousReadDataScopeResolver() {
+        return Optional.ofNullable(anonymousReadDataScopeResolver);
     }
 
     /**
@@ -258,10 +328,51 @@ public final class ThingifierApiScopedSessionDefinition {
      */
     public ThingifierApiDataScopeSelection anonymousDataScopeSelection(
             final ThingifierApiScopedSessionContext context) {
-        if (anonymousDataScopeResolver == null) {
+        return anonymousReadDataScopeSelection(context);
+    }
+
+    /**
+     * Selects the anonymous data scope for a missing-credential read request.
+     *
+     * @param context route and request context
+     * @return selected data scope, or null if the resolver is absent or returns null
+     */
+    public ThingifierApiDataScopeSelection anonymousReadDataScopeSelection(
+            final ThingifierApiScopedSessionContext context) {
+        if (anonymousReadDataScopeResolver == null) {
             return null;
         }
-        return anonymousDataScopeResolver.selectDataScope(context);
+        return anonymousReadDataScopeResolver.selectDataScope(context);
+    }
+
+    /**
+     * @return true when write-style routes may fall back to an anonymous scope
+     */
+    public boolean allowsAnonymousScopeForWrites() {
+        return anonymousScopeForWrites;
+    }
+
+    /**
+     * Returns the trusted resolver used for missing-credential anonymous writes.
+     *
+     * @return resolver when anonymous writes are configured
+     */
+    public Optional<ThingifierApiAnonymousDataScopeResolver> anonymousWriteDataScopeResolver() {
+        return Optional.ofNullable(anonymousWriteDataScopeResolver);
+    }
+
+    /**
+     * Selects the anonymous data scope for a missing-credential write request.
+     *
+     * @param context route and request context
+     * @return selected data scope, or null if the resolver is absent or returns null
+     */
+    public ThingifierApiDataScopeSelection anonymousWriteDataScopeSelection(
+            final ThingifierApiScopedSessionContext context) {
+        if (anonymousWriteDataScopeResolver == null) {
+            return null;
+        }
+        return anonymousWriteDataScopeResolver.selectDataScope(context);
     }
 
     /**

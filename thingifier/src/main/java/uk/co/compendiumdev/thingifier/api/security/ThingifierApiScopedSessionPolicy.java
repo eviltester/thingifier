@@ -17,9 +17,16 @@ public final class ThingifierApiScopedSessionPolicy {
         ALLOW_ANONYMOUS_DEFAULT_SCOPE,
 
         /**
-         * Missing credentials use the anonymous data-scope resolver configured on the definition.
+         * Missing credentials use the anonymous read data-scope resolver configured on the
+         * definition.
          */
         ALLOW_ANONYMOUS_CONFIGURED_SCOPE,
+
+        /**
+         * Missing credentials use the anonymous write data-scope resolver configured on the
+         * definition.
+         */
+        ALLOW_ANONYMOUS_CONFIGURED_WRITE_SCOPE,
 
         /** Missing or invalid credentials reject before validators and handlers run. */
         REQUIRE_AUTHENTICATED_SCOPE
@@ -108,10 +115,19 @@ public final class ThingifierApiScopedSessionPolicy {
     }
 
     /**
+     * @return true when missing credentials should use the definition's anonymous write resolver
+     */
+    public boolean allowsAnonymousConfiguredWriteScope() {
+        return mode == Mode.ALLOW_ANONYMOUS_CONFIGURED_WRITE_SCOPE;
+    }
+
+    /**
      * @return true when missing credentials should continue anonymously
      */
     public boolean allowsAnonymousScope() {
-        return allowsAnonymousDefaultScope() || allowsAnonymousConfiguredScope();
+        return allowsAnonymousDefaultScope()
+                || allowsAnonymousConfiguredScope()
+                || allowsAnonymousConfiguredWriteScope();
     }
 
     /**
