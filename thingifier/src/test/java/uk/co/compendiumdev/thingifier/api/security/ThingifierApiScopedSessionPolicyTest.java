@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.api.security;
 
 import static uk.co.compendiumdev.thingifier.api.security.DataScopeCreationPolicy.ENSURE_EXISTS;
+import static uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle.PARTIAL_JSON_UPDATE;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.SecurityScheme;
@@ -248,6 +249,193 @@ class ThingifierApiScopedSessionPolicyTest {
     }
 
     @Test
+    void missingCredentialOnAnonymousPostUsesConfiguredWriteScope() {
+        final Thingifier thingifier = todoModel();
+        scopedSession(thingifier)
+                .authenticateWith(this::validScopedSession)
+                .allowAnonymousWritesUsingDataScope("anonymous-scope", ENSURE_EXISTS);
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"anonymous post\"}"),
+                                new HttpHeadersBlock());
+
+        Assertions.assertEquals(201, response.getStatusCode());
+        Assertions.assertEquals(0, todoCount(thingifier, EntityRelModel.DEFAULT_DATABASE_NAME));
+        Assertions.assertEquals(1, todoCount(thingifier, "anonymous-scope"));
+    }
+
+    @Test
+    void missingCredentialOnAnonymousPutUsesConfiguredWriteScope() {
+        final Thingifier thingifier = stringIdTodoModel();
+        scopedSession(thingifier)
+                .authenticateWith(this::validScopedSession)
+                .allowAnonymousWritesUsingDataScope("anonymous-scope", ENSURE_EXISTS);
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .put(
+                                "todos/1",
+                                parser(thingifier, "{\"title\":\"anonymous put\"}"),
+                                new HttpHeadersBlock());
+
+        Assertions.assertEquals(201, response.getStatusCode());
+        Assertions.assertEquals(0, todoCount(thingifier, EntityRelModel.DEFAULT_DATABASE_NAME));
+        Assertions.assertEquals(1, todoCount(thingifier, "anonymous-scope"));
+        Assertions.assertEquals("anonymous put", todoTitle(thingifier, "anonymous-scope", "1"));
+    }
+
+    @Test
+    void missingCredentialOnAnonymousPatchUsesConfiguredWriteScope() {
+        final Thingifier thingifier = todoModel();
+        thingifier.apiConfig().writeMethods().entities().patchCan(PARTIAL_JSON_UPDATE);
+        createTodo(thingifier, "anonymous-scope", "before patch");
+        scopedSession(thingifier)
+                .authenticateWith(this::validScopedSession)
+                .allowAnonymousWritesUsingDataScope("anonymous-scope");
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .patch("todos/1", "{\"title\":\"anonymous patch\"}", patchHeaders());
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals(0, todoCount(thingifier, EntityRelModel.DEFAULT_DATABASE_NAME));
+        Assertions.assertEquals("anonymous patch", todoTitle(thingifier, "anonymous-scope", "1"));
+    }
+
+    @Test
+    void missingCredentialOnAnonymousDeleteUsesConfiguredWriteScope() {
+        final Thingifier thingifier = todoModel();
+        createTodo(thingifier, "anonymous-scope", "delete me");
+        scopedSession(thingifier)
+                .authenticateWith(this::validScopedSession)
+                .allowAnonymousWritesUsingDataScope("anonymous-scope");
+
+        final ApiResponse response = thingifier.api().delete("todos/1", new HttpHeadersBlock());
+
+        Assertions.assertEquals(204, response.getStatusCode());
+        Assertions.assertEquals(0, todoCount(thingifier, EntityRelModel.DEFAULT_DATABASE_NAME));
+        Assertions.assertEquals(0, todoCount(thingifier, "anonymous-scope"));
+    }
+
+    @Test
+    void anonymousWriteResolverChoosesDataScope() {
+        final Thingifier thingifier = todoModel();
+        final AtomicReference<String> seenPath = new AtomicReference<>();
+        scopedSession(thingifier)
+                .authenticateWith(this::validScopedSession)
+                .allowAnonymousWritesUsingDataScope(
+                        context -> {
+                            seenPath.set(context.path());
+                            return ThingifierApiDataScopeSelection.useDataScope(
+                                    "anonymous-scope", ENSURE_EXISTS);
+                        });
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"anonymous resolver\"}"),
+                                new HttpHeadersBlock());
+
+        Assertions.assertEquals(201, response.getStatusCode());
+        Assertions.assertEquals("todos", seenPath.get());
+        Assertions.assertEquals(1, todoCount(thingifier, "anonymous-scope"));
+    }
+
+    @Test
+    void validCredentialOverridesAnonymousWriteScope() {
+        final Thingifier thingifier = todoModel();
+        scopedSession(thingifier)
+                .authenticateWith(this::validScopedSession)
+                .allowAnonymousWritesUsingDataScope("anonymous-scope", ENSURE_EXISTS);
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"tenant write\"}"),
+                                headersWithScopedCredential("valid-session"));
+
+        Assertions.assertEquals(201, response.getStatusCode());
+        Assertions.assertEquals(0, todoCount(thingifier, "anonymous-scope"));
+        Assertions.assertEquals(1, todoCount(thingifier, "tenant-one"));
+    }
+
+    @Test
+    void invalidCredentialOnAnonymousWriteRejects() {
+        final Thingifier thingifier = todoModel();
+        scopedSession(thingifier)
+                .authenticateWith(this::validScopedSession)
+                .allowAnonymousWritesUsingDataScope("anonymous-scope", ENSURE_EXISTS)
+                .onInvalidCredential(403, "Invalid scoped session");
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"blocked\"}"),
+                                headersWithScopedCredential("bad-session"));
+
+        Assertions.assertEquals(403, response.getStatusCode());
+        Assertions.assertEquals(
+                "Invalid scoped session", response.getErrorMessages().iterator().next());
+        Assertions.assertEquals(0, todoCount(thingifier, "anonymous-scope"));
+    }
+
+    @Test
+    void requireAuthenticatedScopeForWritesOverridesEarlierAnonymousWriteScope() {
+        final Thingifier thingifier = todoModel();
+        scopedSession(thingifier)
+                .authenticateWith(this::validScopedSession)
+                .allowAnonymousWritesUsingDataScope("anonymous-scope", ENSURE_EXISTS)
+                .requireAuthenticatedScopeForWrites()
+                .onMissingRequiredCredential(401, "Missing scoped session");
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"blocked\"}"),
+                                new HttpHeadersBlock());
+
+        Assertions.assertEquals(401, response.getStatusCode());
+        Assertions.assertEquals(
+                "Missing scoped session", response.getErrorMessages().iterator().next());
+        Assertions.assertEquals(0, todoCount(thingifier, "anonymous-scope"));
+    }
+
+    @Test
+    void routeLevelDisableBypassesAnonymousWriteScope() {
+        final Thingifier thingifier = todoModel();
+        scopedSession(thingifier)
+                .authenticateWith(this::validScopedSession)
+                .allowAnonymousWritesUsingDataScope("anonymous-scope", ENSURE_EXISTS);
+        thingifier.apiSpec().route(RoutingVerb.POST, "/todos").disableScopedSession();
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"legacy session write\"}"),
+                                headersWithSession("tenant-one"));
+
+        Assertions.assertEquals(201, response.getStatusCode());
+        Assertions.assertEquals(0, todoCount(thingifier, "anonymous-scope"));
+        Assertions.assertEquals(1, todoCount(thingifier, "tenant-one"));
+    }
+
+    @Test
     void routeLevelRequireOverridesAnonymousReadDefault() {
         final Thingifier thingifier = todoModel();
         createTodo(thingifier, EntityRelModel.DEFAULT_DATABASE_NAME, "default todo");
@@ -403,6 +591,37 @@ class ThingifierApiScopedSessionPolicyTest {
     }
 
     @Test
+    void authorizerReceivesAnonymousWriteDataScope() {
+        final Thingifier thingifier = todoModel();
+        final AtomicReference<String> seenDataScope = new AtomicReference<>();
+        final AtomicReference<Object> seenPrincipal = new AtomicReference<>();
+        scopedSession(thingifier)
+                .authenticateWith(this::validScopedSession)
+                .allowAnonymousWritesUsingDataScope("anonymous-scope", ENSURE_EXISTS);
+        thingifier
+                .apiSpec()
+                .route(RoutingVerb.POST, "/todos")
+                .authorizeWith(
+                        context -> {
+                            seenDataScope.set(context.dataScopeName());
+                            seenPrincipal.set(context.principal());
+                            return ThingifierApiAuthorizationResult.authorized();
+                        });
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"anonymous authorized\"}"),
+                                new HttpHeadersBlock());
+
+        Assertions.assertEquals(201, response.getStatusCode());
+        Assertions.assertEquals("anonymous-scope", seenDataScope.get());
+        Assertions.assertNull(seenPrincipal.get());
+    }
+
+    @Test
     void fixedRouteUsesAnonymousDataScope() {
         final Thingifier thingifier = todoModel();
         createTodo(thingifier, EntityRelModel.DEFAULT_DATABASE_NAME, "default todo");
@@ -423,6 +642,28 @@ class ThingifierApiScopedSessionPolicyTest {
         Assertions.assertEquals(
                 "anonymous fixed todo",
                 response.apiResponse().getReturnedInstance().getFieldValue("title").asString());
+    }
+
+    @Test
+    void fixedRoutePostUsesAnonymousWriteDataScope() {
+        final Thingifier thingifier = todoModel();
+        createTodo(thingifier, "anonymous-scope", "before fixed write");
+        scopedSession(thingifier)
+                .authenticateWith(this::validScopedSession)
+                .allowAnonymousWritesUsingDataScope("anonymous-scope");
+        thingifier
+                .apiSpec()
+                .route(RoutingVerb.POST, "/fixed/todo")
+                .mapsToEntity("todo")
+                .withFixedIdentifier("1");
+
+        final HttpApiResponse response =
+                new ThingifierHttpApi(thingifier)
+                        .post(jsonPost("/fixed/todo", "{\"title\":\"after fixed write\"}"));
+
+        Assertions.assertEquals(200, response.getStatusCode());
+        Assertions.assertEquals("after fixed write", todoTitle(thingifier, "anonymous-scope", "1"));
+        Assertions.assertEquals(0, todoCount(thingifier, EntityRelModel.DEFAULT_DATABASE_NAME));
     }
 
     @Test
@@ -506,6 +747,33 @@ class ThingifierApiScopedSessionPolicyTest {
 
         Assertions.assertEquals(201, response.getStatusCode());
         Assertions.assertSame(thingifier.getStore("tenant-one"), seenStore.get());
+    }
+
+    @Test
+    void validatorReceivesAnonymousWriteSelectedStore() {
+        final Thingifier thingifier = todoModel();
+        final AtomicReference<ThingStore> seenStore = new AtomicReference<>();
+        thingifier
+                .getDefinitionNamed("todo")
+                .withDomainValidation(
+                        context -> {
+                            seenStore.set(context.store());
+                            return new ValidationReport();
+                        });
+        scopedSession(thingifier)
+                .authenticateWith(this::validScopedSession)
+                .allowAnonymousWritesUsingDataScope("anonymous-scope", ENSURE_EXISTS);
+
+        final ApiResponse response =
+                thingifier
+                        .api()
+                        .post(
+                                "todos",
+                                parser(thingifier, "{\"title\":\"anonymous validated\"}"),
+                                new HttpHeadersBlock());
+
+        Assertions.assertEquals(201, response.getStatusCode());
+        Assertions.assertSame(thingifier.getStore("anonymous-scope"), seenStore.get());
     }
 
     @Test
@@ -632,6 +900,14 @@ class ThingifierApiScopedSessionPolicyTest {
         return thingifier;
     }
 
+    private Thingifier stringIdTodoModel() {
+        final Thingifier thingifier = new Thingifier();
+        final EntityDefinition todo = thingifier.defineThing("todo", "todos", 5);
+        todo.addAsPrimaryKeyField(Field.is("id", FieldType.STRING).makeMandatory());
+        todo.addField(Field.is("title", FieldType.STRING).makeMandatory());
+        return thingifier;
+    }
+
     private EntityInstance createTodo(
             final Thingifier thingifier, final String dataScopeName, final String title) {
         thingifier.getERmodel().createInstanceDatabaseIfNotExisting(dataScopeName);
@@ -644,6 +920,14 @@ class ThingifierApiScopedSessionPolicyTest {
 
     private int todoCount(final Thingifier thingifier, final String dataScopeName) {
         return thingifier.listThingInstancesNamed("todos", dataScopeName).size();
+    }
+
+    private String todoTitle(
+            final Thingifier thingifier, final String dataScopeName, final String id) {
+        return thingifier
+                .findThingInstanceByFieldNameAndValue("todo", "id", id, dataScopeName)
+                .getFieldValue("title")
+                .asString();
     }
 
     private String firstReturnedTodoTitle(final ApiResponse response) {
@@ -660,6 +944,12 @@ class ThingifierApiScopedSessionPolicyTest {
 
     private HttpApiRequest jsonPost(final String path, final String body) {
         return new HttpApiRequest(path).addHeader("Content-Type", "application/json").setBody(body);
+    }
+
+    private HttpHeadersBlock patchHeaders() {
+        HttpHeadersBlock headers = new HttpHeadersBlock();
+        headers.put("Content-Type", PARTIAL_JSON_UPDATE.mediaType());
+        return headers;
     }
 
     private HttpHeadersBlock headersWithScopedCredential(final String credential) {

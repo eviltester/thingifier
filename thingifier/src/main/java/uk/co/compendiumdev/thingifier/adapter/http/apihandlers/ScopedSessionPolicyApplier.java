@@ -207,8 +207,12 @@ public final class ScopedSessionPolicyApplier {
         if (policy.allowsAnonymousDefaultScope()) {
             return ThingifierApiDataScopeSelection.defaultDataScope();
         }
-        return definition.anonymousDataScopeSelection(
-                scopedSessionContext(definition, "", verb, path, context, route, queryParams));
+        final ThingifierApiScopedSessionContext scopedSessionContext =
+                scopedSessionContext(definition, "", verb, path, context, route, queryParams);
+        if (policy.allowsAnonymousConfiguredWriteScope()) {
+            return definition.anonymousWriteDataScopeSelection(scopedSessionContext);
+        }
+        return definition.anonymousReadDataScopeSelection(scopedSessionContext);
     }
 
     private ApiResponse scopedSessionRejected(
