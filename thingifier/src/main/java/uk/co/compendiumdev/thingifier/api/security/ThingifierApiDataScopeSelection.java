@@ -41,6 +41,31 @@ public final class ThingifierApiDataScopeSelection {
     }
 
     /**
+     * Creates an explicit selection for the named data scope using the safest missing-scope policy.
+     *
+     * <p>This reads naturally in callback code where the application is choosing the active scope
+     * after validating or resolving request state.
+     *
+     * @param dataScopeName data scope chosen by trusted application code
+     * @return immutable data-scope selection
+     */
+    public static ThingifierApiDataScopeSelection useDataScope(final String dataScopeName) {
+        return named(dataScopeName, DataScopeCreationPolicy.USE_EXISTING_ONLY);
+    }
+
+    /**
+     * Creates an explicit selection for the named data scope.
+     *
+     * @param dataScopeName data scope chosen by trusted application code
+     * @param creationPolicy missing-scope handling policy
+     * @return immutable data-scope selection
+     */
+    public static ThingifierApiDataScopeSelection useDataScope(
+            final String dataScopeName, final DataScopeCreationPolicy creationPolicy) {
+        return named(dataScopeName, creationPolicy);
+    }
+
+    /**
      * Creates an explicit selection for the model's default data scope.
      *
      * <p>This intentionally overrides any request header or session-selected scope.
@@ -52,6 +77,15 @@ public final class ThingifierApiDataScopeSelection {
                 EntityRelModel.DEFAULT_DATABASE_NAME,
                 DataScopeCreationPolicy.USE_EXISTING_ONLY,
                 true);
+    }
+
+    /**
+     * Creates an explicit selection for the model's default data scope.
+     *
+     * @return immutable default data-scope selection
+     */
+    public static ThingifierApiDataScopeSelection useDefaultDataScope() {
+        return defaultDataScope();
     }
 
     /**

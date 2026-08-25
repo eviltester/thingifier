@@ -107,8 +107,15 @@ public final class ScopedSessionPolicyApplier {
             if (policy.requiresAuthenticatedScope()) {
                 return definition.missingRequiredCredentialResponse();
             }
-            return dataScopeSelectionApplier.apply(
-                    context, ThingifierApiDataScopeSelection.defaultDataScope());
+            return applyAnonymousScope(
+                    policy,
+                    definition,
+                    verb,
+                    path,
+                    context,
+                    resolvedRoute,
+                    matchingRule,
+                    safeQueryParams(queryParams));
         }
 
         if (definition.authenticator() == null) {
@@ -151,9 +158,57 @@ public final class ScopedSessionPolicyApplier {
                             context,
                             resolvedRoute,
                             matchingRule.get()),
-                    result);
+                    result.principal());
         }
         return null;
+    }
+
+    private ApiResponse applyAnonymousScope(
+            final ThingifierApiScopedSessionPolicy policy,
+            final ThingifierApiScopedSessionDefinition definition,
+            final RoutingVerb verb,
+            final String path,
+            final ThingifierRequestContext context,
+            final ThingRoute route,
+            final Optional<ThingifierApiRouteRule> matchingRule,
+            final QueryFilterParams queryParams) {
+        final ThingifierApiDataScopeSelection selection =
+                anonymousDataScopeSelection(
+                        policy, definition, verb, path, context, route, queryParams);
+        if (selection == null) {
+            return ApiResponse.error(
+                    500,
+                    "No anonymous data scope selected for scoped-session " + definition.name());
+        }
+
+        final ApiResponse dataScopeResponse = dataScopeSelectionApplier.apply(context, selection);
+        if (dataScopeResponse != null) {
+            return dataScopeResponse;
+        }
+
+        if (matchingRule.isPresent() && !matchingRule.get().hasAuthEnforcement()) {
+            return rejectIfUnauthorizedByAuthorizer(
+                    matchingRule.get(),
+                    scopedSessionAuthContext(
+                            definition, "", verb, path, context, route, matchingRule.get()),
+                    null);
+        }
+        return null;
+    }
+
+    private ThingifierApiDataScopeSelection anonymousDataScopeSelection(
+            final ThingifierApiScopedSessionPolicy policy,
+            final ThingifierApiScopedSessionDefinition definition,
+            final RoutingVerb verb,
+            final String path,
+            final ThingifierRequestContext context,
+            final ThingRoute route,
+            final QueryFilterParams queryParams) {
+        if (policy.allowsAnonymousDefaultScope()) {
+            return ThingifierApiDataScopeSelection.defaultDataScope();
+        }
+        return definition.anonymousDataScopeSelection(
+                scopedSessionContext(definition, "", verb, path, context, route, queryParams));
     }
 
     private ApiResponse scopedSessionRejected(
@@ -238,12 +293,12 @@ public final class ScopedSessionPolicyApplier {
     private ApiResponse rejectIfUnauthorizedByAuthorizer(
             final ThingifierApiRouteRule rule,
             final ThingifierApiAuthenticationContext authenticationContext,
-            final ThingifierApiScopedSessionResult authentication) {
+            final Object principal) {
         for (ThingifierApiAuthorizer authorizer : rule.authorizers()) {
             final ThingifierApiAuthorizationResult authorization =
                     authorizer.authorize(
                             new ThingifierApiAuthorizationContext(
-                                    authenticationContext, authentication.principal()));
+                                    authenticationContext, principal));
             if (authorization == null || !authorization.isAuthorized()) {
                 return authorizationRejected(authorization);
             }
