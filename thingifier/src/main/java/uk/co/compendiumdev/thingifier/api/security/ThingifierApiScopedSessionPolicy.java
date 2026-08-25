@@ -6,8 +6,8 @@ import java.util.Optional;
  * Resolved scoped-session policy for one request route.
  *
  * <p>Route rules and contract-level read/write shortcuts are stored separately in the API spec.
- * This object gives runtime handling one simple decision: optional anonymous default scope or
- * required authenticated scoped session, plus the definition that should resolve credentials.
+ * This object gives runtime handling one simple decision: optional anonymous scope or required
+ * authenticated scoped session, plus the definition that should resolve credentials.
  */
 public final class ThingifierApiScopedSessionPolicy {
 
@@ -15,6 +15,11 @@ public final class ThingifierApiScopedSessionPolicy {
     public enum Mode {
         /** Missing credentials use the default scope, while invalid supplied credentials reject. */
         ALLOW_ANONYMOUS_DEFAULT_SCOPE,
+
+        /**
+         * Missing credentials use the anonymous data-scope resolver configured on the definition.
+         */
+        ALLOW_ANONYMOUS_CONFIGURED_SCOPE,
 
         /** Missing or invalid credentials reject before validators and handlers run. */
         REQUIRE_AUTHENTICATED_SCOPE
@@ -93,6 +98,20 @@ public final class ThingifierApiScopedSessionPolicy {
      */
     public boolean allowsAnonymousDefaultScope() {
         return mode == Mode.ALLOW_ANONYMOUS_DEFAULT_SCOPE;
+    }
+
+    /**
+     * @return true when missing credentials should use the definition's anonymous scope resolver
+     */
+    public boolean allowsAnonymousConfiguredScope() {
+        return mode == Mode.ALLOW_ANONYMOUS_CONFIGURED_SCOPE;
+    }
+
+    /**
+     * @return true when missing credentials should continue anonymously
+     */
+    public boolean allowsAnonymousScope() {
+        return allowsAnonymousDefaultScope() || allowsAnonymousConfiguredScope();
     }
 
     /**

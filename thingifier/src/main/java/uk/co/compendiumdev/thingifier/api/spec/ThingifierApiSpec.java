@@ -653,14 +653,12 @@ public final class ThingifierApiSpec {
             final RoutingVerb verb) {
         if (isReadVerb(verb)) {
             return scopedSessions.values().stream()
-                    .filter(
-                            ThingifierApiScopedSessionDefinition
-                                    ::allowsAnonymousDefaultScopeForReads)
+                    .filter(ThingifierApiScopedSessionDefinition::allowsAnonymousScopeForReads)
                     .findFirst()
                     .map(
                             definition ->
                                     ThingifierApiScopedSessionPolicy.configured(
-                                            definition, Mode.ALLOW_ANONYMOUS_DEFAULT_SCOPE));
+                                            definition, Mode.ALLOW_ANONYMOUS_CONFIGURED_SCOPE));
         }
         if (isWriteVerb(verb)) {
             return scopedSessions.values().stream()

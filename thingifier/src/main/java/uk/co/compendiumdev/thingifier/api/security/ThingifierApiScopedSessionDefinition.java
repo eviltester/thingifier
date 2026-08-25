@@ -1,5 +1,6 @@
 package uk.co.compendiumdev.thingifier.api.security;
 
+import java.util.Optional;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 
 /**
@@ -15,7 +16,9 @@ public final class ThingifierApiScopedSessionDefinition {
     private ThingifierApiScopedSessionCredentialSourceType credentialSourceType;
     private String credentialSourceName;
     private ThingifierApiScopedSessionAuthenticator authenticator;
+    private boolean anonymousScopeForReads;
     private boolean anonymousDefaultScopeForReads;
+    private ThingifierApiAnonymousDataScopeResolver anonymousDataScopeResolver;
     private boolean authenticatedScopeForWrites;
     private int missingCredentialStatusCode;
     private String missingCredentialMessage;
@@ -99,7 +102,61 @@ public final class ThingifierApiScopedSessionDefinition {
      * @return this definition for fluent configuration
      */
     public ThingifierApiScopedSessionDefinition allowAnonymousDefaultScopeForReads() {
+        this.anonymousScopeForReads = true;
         this.anonymousDefaultScopeForReads = true;
+        this.anonymousDataScopeResolver =
+                context -> ThingifierApiDataScopeSelection.defaultDataScope();
+        return this;
+    }
+
+    /**
+     * Allows read-style generated routes to use a named data scope when no credential is supplied.
+     *
+     * <p>The data scope is selected by trusted application configuration, not by the incoming
+     * request. If a credential is supplied, Thingifier still validates it and invalid credentials
+     * reject in v1.
+     *
+     * @param dataScopeName anonymous read data scope
+     * @return this definition for fluent configuration
+     */
+    public ThingifierApiScopedSessionDefinition allowAnonymousReadsUsingDataScope(
+            final String dataScopeName) {
+        return allowAnonymousReadsUsingDataScope(
+                dataScopeName, DataScopeCreationPolicy.USE_EXISTING_ONLY);
+    }
+
+    /**
+     * Allows read-style generated routes to use a named data scope when no credential is supplied.
+     *
+     * @param dataScopeName anonymous read data scope
+     * @param creationPolicy policy used when the anonymous scope does not exist
+     * @return this definition for fluent configuration
+     */
+    public ThingifierApiScopedSessionDefinition allowAnonymousReadsUsingDataScope(
+            final String dataScopeName, final DataScopeCreationPolicy creationPolicy) {
+        final ThingifierApiDataScopeSelection selection =
+                ThingifierApiDataScopeSelection.useDataScope(dataScopeName, creationPolicy);
+        return allowAnonymousReadsUsingDataScope(context -> selection);
+    }
+
+    /**
+     * Allows read-style generated routes to resolve the anonymous data scope dynamically.
+     *
+     * <p>The resolver runs only when the scoped-session credential is missing and anonymous read
+     * access is allowed for the route. It is intended for application-owned decisions such as
+     * choosing a public tenant, demo workspace, or single-player data scope from server-side state.
+     *
+     * @param resolver trusted anonymous data-scope resolver
+     * @return this definition for fluent configuration
+     */
+    public ThingifierApiScopedSessionDefinition allowAnonymousReadsUsingDataScope(
+            final ThingifierApiAnonymousDataScopeResolver resolver) {
+        if (resolver == null) {
+            throw new IllegalArgumentException("anonymous data-scope resolver is required");
+        }
+        this.anonymousScopeForReads = true;
+        this.anonymousDefaultScopeForReads = false;
+        this.anonymousDataScopeResolver = resolver;
         return this;
     }
 
@@ -171,10 +228,40 @@ public final class ThingifierApiScopedSessionDefinition {
     }
 
     /**
-     * @return true when read-style routes may fall back to the default scope
+     * @return true when read-style routes may fall back to an anonymous scope
+     */
+    public boolean allowsAnonymousScopeForReads() {
+        return anonymousScopeForReads;
+    }
+
+    /**
+     * @return true when read-style routes may fall back specifically to the default scope
      */
     public boolean allowsAnonymousDefaultScopeForReads() {
         return anonymousDefaultScopeForReads;
+    }
+
+    /**
+     * Returns the trusted resolver used for missing-credential anonymous reads.
+     *
+     * @return resolver when anonymous reads are configured
+     */
+    public Optional<ThingifierApiAnonymousDataScopeResolver> anonymousDataScopeResolver() {
+        return Optional.ofNullable(anonymousDataScopeResolver);
+    }
+
+    /**
+     * Selects the anonymous data scope for a missing-credential read request.
+     *
+     * @param context route and request context
+     * @return selected data scope, or null if the resolver is absent or returns null
+     */
+    public ThingifierApiDataScopeSelection anonymousDataScopeSelection(
+            final ThingifierApiScopedSessionContext context) {
+        if (anonymousDataScopeResolver == null) {
+            return null;
+        }
+        return anonymousDataScopeResolver.selectDataScope(context);
     }
 
     /**
