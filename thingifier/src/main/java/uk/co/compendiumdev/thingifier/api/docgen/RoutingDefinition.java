@@ -145,6 +145,64 @@ public class RoutingDefinition {
     }
 
     /**
+     * Creates a metadata-equivalent copy with a different public URL.
+     *
+     * <p>Mounted API documentation uses this to expose a canonical generated route through one or
+     * more public prefixes without losing route-specific auth declarations, response policies,
+     * request/response views, fixed-resource metadata, or path parameters.
+     *
+     * @param newUrl replacement route URL
+     * @return independent route definition copy
+     */
+    public RoutingDefinition copyWithUrl(final String newUrl) {
+        return copyWithUrlAndDocumentation(newUrl, documentation);
+    }
+
+    /**
+     * Creates a metadata-equivalent copy with a different public URL and documentation text.
+     *
+     * <p>Mounted API documentation uses this when generated route text mentions the route path. The
+     * public mounted route should then be visible in both the OpenAPI path key and the operation
+     * summary/description.
+     *
+     * @param newUrl replacement route URL
+     * @param newDocumentation replacement documentation text
+     * @return independent route definition copy
+     */
+    public RoutingDefinition copyWithUrlAndDocumentation(
+            final String newUrl, final String newDocumentation) {
+        final RoutingDefinition copy = new RoutingDefinition(verb, newUrl, routingStatus, header);
+        copy.documentation = newDocumentation == null ? "" : newDocumentation;
+        copy.isFilterable = isFilterable;
+        copy.filterableEntityDefn = filterableEntityDefn;
+        copy.possibleStatusResponses = new ArrayList<>(possibleStatusResponses);
+        copy.returnPayload = new HashMap<>(returnPayload);
+        copy.requestPayload = requestPayload;
+        copy.requestContentTypes = new ArrayList<>(requestContentTypes);
+        copy.requestUrlParams = new ArrayList<>(requestUrlParams);
+        copy.customHeaders = new HashMap<>(customHeaders);
+        copy.responseHeaders = new HashMap<>(responseHeaders);
+        copy.usesBasicAuth = usesBasicAuth;
+        copy.basicAuthSchemeName = basicAuthSchemeName;
+        copy.usesBearerAuth = usesBearerAuth;
+        copy.bearerAuthSchemeName = bearerAuthSchemeName;
+        copy.usesApiKeyAuth = usesApiKeyAuth;
+        copy.apiKeyAuthSchemeName = apiKeyAuthSchemeName;
+        copy.apiKeyHeaderName = apiKeyHeaderName;
+        copy.apiKeyHeaderNameConfigured = apiKeyHeaderNameConfigured;
+        copy.authSchemeNames = new ArrayList<>(authSchemeNames);
+        copy.hiddenFromDocumentation = hiddenFromDocumentation;
+        copy.disabled = disabled;
+        copy.requestEntityViewName = requestEntityViewName;
+        copy.responseEntityViewNames = new HashMap<>(responseEntityViewNames);
+        copy.responseShape = responseShape;
+        copy.fixedEntityName = fixedEntityName;
+        copy.fixedIdentifier = fixedIdentifier;
+        copy.fixedResourcePolicy = fixedResourcePolicy;
+        return copy;
+    }
+
+    /**
      * Returns the legacy response header name attached to the route.
      *
      * @return header name, or an empty string when none is configured

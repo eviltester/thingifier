@@ -6,6 +6,7 @@ import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.InstanceRou
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.RelationshipCollectionRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.RelationshipInstanceRoute;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.route.ThingRoute;
+import uk.co.compendiumdev.thingifier.adapter.http.lifecycle.ThingifierApiLifecycleContext;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierRequestContext;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
@@ -64,6 +65,45 @@ public final class ApiOperationValidationPolicy {
             final String rawBody,
             final QueryFilterParams queryParams,
             final String operationType) {
+        return rejectIfInvalid(
+                verb,
+                publicPath,
+                route,
+                context,
+                bodyFields,
+                rawBody,
+                queryParams,
+                operationType,
+                null);
+    }
+
+    /**
+     * Rejects a request when one of the route's operation validators rejects it.
+     *
+     * <p>The lifecycle context is supplied for HTTP requests so mounted public paths and internal
+     * route paths can both be exposed to validators.
+     *
+     * @param verb routing verb being processed
+     * @param publicPath public API path requested by the caller
+     * @param route resolved Thingifier route target
+     * @param context active request context after auth and data-scope selection
+     * @param bodyFields parsed request body fields
+     * @param rawBody raw request body text
+     * @param queryParams parsed query parameters
+     * @param operationType resolved operation type label
+     * @param lifecycle lifecycle context when processing an HTTP request, otherwise null
+     * @return rejection response, or null when validation accepts the operation
+     */
+    public ApiResponse rejectIfInvalid(
+            final RoutingVerb verb,
+            final String publicPath,
+            final ThingRoute route,
+            final ThingifierRequestContext context,
+            final ApiBodyFields bodyFields,
+            final String rawBody,
+            final QueryFilterParams queryParams,
+            final String operationType,
+            final ThingifierApiLifecycleContext lifecycle) {
         Optional<ThingifierApiRouteRule> routeRule = routeRuleFor(verb, route, publicPath);
         if (routeRule.isEmpty() || !routeRule.get().hasApiOperationValidators()) {
             return null;
@@ -78,7 +118,8 @@ public final class ApiOperationValidationPolicy {
                         bodyFields,
                         rawBody,
                         queryParams,
-                        operationType);
+                        operationType,
+                        lifecycle);
 
         for (ApiOperationValidatorDefinition definition :
                 routeRule.get().apiOperationValidators()) {
@@ -105,7 +146,8 @@ public final class ApiOperationValidationPolicy {
             final ApiBodyFields bodyFields,
             final String rawBody,
             final QueryFilterParams queryParams,
-            final String operationType) {
+            final String operationType,
+            final ThingifierApiLifecycleContext lifecycle) {
         EntityDefinition targetEntity = targetEntityFor(route);
         String targetEntityName = targetEntity == null ? null : targetEntity.getName();
         String targetIdentifier = targetIdentifierFor(route);
@@ -114,7 +156,11 @@ public final class ApiOperationValidationPolicy {
 
         return new ApiOperationValidationContext(
                 verb,
-                publicPath,
+                lifecycle == null ? publicPath : lifecycle.requestPath(),
+                lifecycle == null ? publicPath : lifecycle.mountedPath(),
+                lifecycle == null ? publicPath : lifecycle.internalPath(),
+                lifecycle == null ? null : lifecycle.mountName(),
+                lifecycle == null ? "" : lifecycle.mountPrefix(),
                 route,
                 targetEntityName,
                 targetIdentifier,

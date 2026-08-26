@@ -46,6 +46,7 @@ public final class ThingifierApiSpec {
     private final ThingifierApiSecuritySpec securitySpec;
     private final Map<String, ThingifierApiAuthenticator> authenticators;
     private final Map<String, ThingifierApiScopedSessionDefinition> scopedSessions;
+    private final List<ThingifierApiMountDefinition> mounts;
 
     public ThingifierApiSpec() {
         routeRules = new ArrayList<>();
@@ -56,6 +57,7 @@ public final class ThingifierApiSpec {
         securitySpec = new ThingifierApiSecuritySpec();
         authenticators = new HashMap<>();
         scopedSessions = new LinkedHashMap<>();
+        mounts = new ArrayList<>();
     }
 
     /**
@@ -100,6 +102,103 @@ public final class ThingifierApiSpec {
      */
     public ThingifierApiPathRule route(final String pathPattern) {
         return new ThingifierApiPathRule(this, pathPattern);
+    }
+
+    /**
+     * Creates or returns a named public mount for the generated Thingifier API.
+     *
+     * <p>Routes configured in the API spec remain canonical, e.g. {@code /todos}. A mount exposes
+     * those canonical routes under a public prefix such as {@code /api}, while runtime handling
+     * strips the prefix before generated command/query mapping. Named mounts are code-only API
+     * surface configuration and are intentionally not represented in model YAML.
+     *
+     * @param mountName stable mount name used in request/callback context
+     * @return mutable mount definition
+     */
+    public ThingifierApiMountDefinition mount(final String mountName) {
+        final String normalizedName = mountName == null ? "" : mountName.trim();
+        if (normalizedName.isEmpty()) {
+            throw new IllegalArgumentException("mount name is required");
+        }
+        return mounts.stream()
+                .filter(mount -> mount.name().equals(normalizedName))
+                .findFirst()
+                .orElseGet(
+                        () -> {
+                            final ThingifierApiMountDefinition mount =
+                                    new ThingifierApiMountDefinition(normalizedName);
+                            mounts.add(mount);
+                            return mount;
+                        });
+    }
+
+    /**
+     * Returns configured public mounts in declaration order.
+     *
+     * @return immutable mount definitions
+     */
+    public List<ThingifierApiMountDefinition> mounts() {
+        return List.copyOf(mounts);
+    }
+
+    /**
+     * Reports whether any named public mounts are configured.
+     *
+     * @return true when runtime mount resolution should be attempted
+     */
+    public boolean hasMounts() {
+        return !mounts.isEmpty();
+    }
+
+    /**
+     * Reports whether any configured mounts should be shown in generated documentation.
+     *
+     * @return true when documentation should be projected through visible mounts
+     */
+    public boolean hasDocumentedMounts() {
+        return mounts.stream().anyMatch(mount -> !mount.isHiddenFromDocs());
+    }
+
+    /**
+     * Resolves the public request path to the canonical Thingifier route path for this request.
+     *
+     * <p>Named mounts take precedence over the legacy single API endpoint prefix. When more than
+     * one mount could match, the most specific prefix wins and the root mount is considered last.
+     *
+     * @param requestPath public request path, with or without a leading slash
+     * @param legacyApiPathPrefix existing global API endpoint prefix
+     * @return mount selection describing public and internal paths
+     */
+    public ThingifierApiMountSelection resolveMountFor(
+            final String requestPath, final String legacyApiPathPrefix) {
+        final Optional<ThingifierApiMountDefinition> selectedMount =
+                mounts.stream()
+                        .filter(mount -> mount.matchesRequestPath(requestPath))
+                        .filter(mount -> mount.includesRoute(mount.internalPathFor(requestPath)))
+                        .max(
+                                (left, right) ->
+                                        Integer.compare(left.prefixLength(), right.prefixLength()));
+
+        if (selectedMount.isPresent()) {
+            final ThingifierApiMountDefinition mount = selectedMount.get();
+            return ThingifierApiMountSelection.forMount(
+                    mount, requestPath, mount.internalPathFor(requestPath));
+        }
+
+        final String normalizedRequestPath = normalize(requestPath);
+        final String normalizedLegacyPrefix = normalize(legacyApiPathPrefix);
+        if (!normalizedLegacyPrefix.isEmpty()
+                && (normalizedRequestPath.equals(normalizedLegacyPrefix)
+                        || normalizedRequestPath.startsWith(normalizedLegacyPrefix + "/"))) {
+            final String internalPath =
+                    normalizedRequestPath.equals(normalizedLegacyPrefix)
+                            ? ""
+                            : normalizedRequestPath.substring(normalizedLegacyPrefix.length() + 1);
+            return ThingifierApiMountSelection.forLegacyPrefix(
+                    "/" + normalizedLegacyPrefix, requestPath, internalPath);
+        }
+
+        return ThingifierApiMountSelection.none(requestPath);
     }
 
     /**
@@ -324,6 +423,59 @@ public final class ThingifierApiSpec {
             applyEntityDefaultsTo(route, routingDefinition);
         }
         routingDefinition.updateOptionsAllowHeaders();
+    }
+
+    /**
+     * Projects canonical generated route metadata through visible public mounts.
+     *
+     * <p>This is deliberately a documentation/server-registration transformation only. Runtime
+     * route rules, validators, and handlers continue to work against canonical paths; the HTTP
+     * adapter resolves the active mount before those phases run.
+     *
+     * @param routingDefinition canonical generated route definitions
+     * @return mounted public route definitions when visible mounts exist, otherwise the original
+     *     definitions
+     */
+    public ApiRoutingDefinition projectMountedDocumentation(
+            final ApiRoutingDefinition routingDefinition) {
+        if (!hasDocumentedMounts()) {
+            return routingDefinition;
+        }
+
+        final ApiRoutingDefinition projected = new ApiRoutingDefinition();
+        for (EntityDefinition schema : routingDefinition.getObjectSchemas()) {
+            projected.addObjectSchema(schema);
+        }
+
+        for (RoutingDefinition route : routingDefinition.definitions()) {
+            for (ThingifierApiMountDefinition mount : mounts) {
+                if (mount.isHiddenFromDocs() || !mount.includesRoute(route.url())) {
+                    continue;
+                }
+                final String publicRouteUrl = mount.publicRouteUrlFor(route.url());
+                projected.addRouting(
+                        route.copyWithUrlAndDocumentation(
+                                publicRouteUrl, mountedDocumentationFor(route, publicRouteUrl)));
+            }
+        }
+        projected.updateOptionsAllowHeaders();
+        return projected;
+    }
+
+    private String mountedDocumentationFor(
+            final RoutingDefinition route, final String publicRouteUrl) {
+        final String documentation = route.getDocumentation();
+        final String publicPath = "/" + normalize(publicRouteUrl);
+
+        if (documentation.startsWith("show all Options for endpoint of ")) {
+            return "show all Options for endpoint of " + publicPath;
+        }
+        if (documentation.startsWith("return supported verbs for fixed route ")) {
+            return "return supported verbs for fixed route " + publicPath;
+        }
+
+        final String canonicalPath = "/" + normalize(route.url());
+        return documentation.replace(canonicalPath, publicPath);
     }
 
     /**

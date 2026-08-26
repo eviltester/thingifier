@@ -141,7 +141,8 @@ public class RestApiDeleteHandler {
                                 "",
                                 queryParams,
                                 writePolicy.operationTypeFor(
-                                        RoutingVerb.DELETE, route, ApiBodyFields.empty(), context));
+                                        RoutingVerb.DELETE, route, ApiBodyFields.empty(), context),
+                                lifecycle);
         if (operationValidationResponse != null) {
             return operationValidationResponse;
         }

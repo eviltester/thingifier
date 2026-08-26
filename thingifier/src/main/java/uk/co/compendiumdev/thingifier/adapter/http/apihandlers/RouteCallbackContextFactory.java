@@ -91,7 +91,11 @@ final class RouteCallbackContextFactory {
                         : (lifecycle == null ? null : lifecycle.requestContext());
         return new ThingifierApiOperationContext(
                 verb,
-                publicPath,
+                publicPathFor(publicPath, lifecycle),
+                mountedPathFor(publicPath, lifecycle),
+                internalPathFor(publicPath, lifecycle),
+                lifecycle == null ? null : lifecycle.mountName(),
+                lifecycle == null ? "" : lifecycle.mountPrefix(),
                 route,
                 routeRule,
                 targetEntityName(route, lifecycle),
@@ -110,6 +114,21 @@ final class RouteCallbackContextFactory {
                 bodyFields(lifecycle, request),
                 rawBody(lifecycle, request),
                 runtime.apiConfig());
+    }
+
+    private String publicPathFor(
+            final String publicPath, final ThingifierApiLifecycleContext lifecycle) {
+        return lifecycle == null ? publicPath : lifecycle.requestPath();
+    }
+
+    private String mountedPathFor(
+            final String publicPath, final ThingifierApiLifecycleContext lifecycle) {
+        return lifecycle == null ? publicPath : lifecycle.mountedPath();
+    }
+
+    private String internalPathFor(
+            final String publicPath, final ThingifierApiLifecycleContext lifecycle) {
+        return lifecycle == null ? publicPath : lifecycle.internalPath();
     }
 
     /**

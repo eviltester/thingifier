@@ -34,6 +34,7 @@ import uk.co.compendiumdev.thingifier.api.http.bodyparser.ApiBodyFields;
 import uk.co.compendiumdev.thingifier.api.http.bodyparser.JsonBodyValueConverter;
 import uk.co.compendiumdev.thingifier.api.response.ApiResponse;
 import uk.co.compendiumdev.thingifier.api.response.EntityResponseViewResolver;
+import uk.co.compendiumdev.thingifier.api.spec.ThingifierApiMountSelection;
 import uk.co.compendiumdev.thingifier.api.spec.ThingifierApiRouteRule;
 import uk.co.compendiumdev.thingifier.apiconfig.EntityPatchUpdateStyle;
 import uk.co.compendiumdev.thingifier.application.schema.RelationshipSpec;
@@ -206,16 +207,7 @@ public final class ThingifierHttpApi {
      */
     private HttpApiResponse handleRequest(final HttpApiRequest request, HttpVerb verb) {
 
-        // if the request.url has the 'prefix' then remove the prefix and process the request
-        // if(request.getPath())
-
-        String prefix = thingifier.apiConfig().getApiEndPointPrefix();
-        if (prefix != null && !prefix.isEmpty()) {
-            if (prefix.startsWith("/")) {
-                prefix = prefix.substring(1);
-            }
-            request.removePrefixFromPath(prefix);
-        }
+        resolveMountedPath(request);
 
         final HttpVerb effectiveVerb = MethodOverrideParser.getEffectiveVerb(request, verb);
 
@@ -321,7 +313,40 @@ public final class ThingifierHttpApi {
                 effectiveVerb,
                 routingVerbFor(effectiveVerb),
                 route,
-                thingifier.apiConfig().getApiEndPointPrefix());
+                activeApiPathPrefix(request));
+    }
+
+    /**
+     * Resolves the active public mount or legacy API prefix for this request.
+     *
+     * <p>Generated handlers always see the canonical internal path through {@link
+     * HttpApiRequest#getPath()}, while callback and hook contexts can still inspect the public
+     * mounted path.
+     *
+     * @param request HTTP API request to update
+     */
+    private void resolveMountedPath(final HttpApiRequest request) {
+        final ThingifierApiMountSelection mountSelection =
+                thingifier
+                        .apiSpec()
+                        .resolveMountFor(
+                                request.getPath(), thingifier.apiConfig().getApiEndPointPrefix());
+        request.applyMountSelection(mountSelection);
+    }
+
+    /**
+     * Returns the prefix that scoped hooks and API spec matching should ignore for this request.
+     *
+     * @param request HTTP API request
+     * @return active mount prefix, or the legacy configured prefix
+     */
+    private String activeApiPathPrefix(final HttpApiRequest request) {
+        if (request != null
+                && request.getMountPrefix() != null
+                && !request.getMountPrefix().isEmpty()) {
+            return request.getMountPrefix();
+        }
+        return thingifier.apiConfig().getApiEndPointPrefix();
     }
 
     /**
@@ -366,6 +391,7 @@ public final class ThingifierHttpApi {
                                 request.getHeaders(),
                                 response ->
                                         applyResponseEntityView(request, effectiveVerb, response));
+        applyMountedLocationHeader(request, policyResponse);
 
         HttpApiResponse httpResponse =
                 new HttpApiResponse(
@@ -388,6 +414,58 @@ public final class ThingifierHttpApi {
                             xmlEntityNamesFor(request.getPath(), effectiveVerb));
         }
         return httpResponse;
+    }
+
+    /**
+     * Rewrites relative Thingifier Location headers to the active public mount prefix.
+     *
+     * <p>The rewrite happens after route response policies so explicit policies can still remove or
+     * replace the header. Absolute URLs are preserved because they are already public by
+     * definition.
+     *
+     * @param request HTTP API request
+     * @param response structured API response to amend
+     */
+    private void applyMountedLocationHeader(
+            final HttpApiRequest request, final ApiResponse response) {
+        if (request == null || response == null || !request.shouldRewriteLocationHeadersToMount()) {
+            return;
+        }
+
+        final String location = response.getHeaderValue("Location");
+        if (location == null || location.trim().isEmpty() || isAbsoluteLocation(location)) {
+            return;
+        }
+
+        final String normalizedLocation = normalizeRelativeLocation(location);
+        final String normalizedPrefix = normalizeRelativeLocation(request.getMountPrefix());
+        if (normalizedPrefix.isEmpty()
+                || normalizedLocation.equals(normalizedPrefix)
+                || normalizedLocation.startsWith(normalizedPrefix + "/")) {
+            return;
+        }
+
+        final String rewritten =
+                "/"
+                        + normalizedPrefix
+                        + (normalizedLocation.isEmpty() ? "" : "/" + normalizedLocation);
+        response.setLocationHeader(rewritten);
+    }
+
+    private boolean isAbsoluteLocation(final String location) {
+        final String trimmedLocation = location.trim();
+        return trimmedLocation.contains("://") || trimmedLocation.startsWith("//");
+    }
+
+    private String normalizeRelativeLocation(final String location) {
+        String normalized = location == null ? "" : location.trim();
+        while (normalized.startsWith("/")) {
+            normalized = normalized.substring(1);
+        }
+        while (normalized.endsWith("/") && normalized.length() > 0) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+        return normalized;
     }
 
     /**
@@ -446,7 +524,7 @@ public final class ThingifierHttpApi {
                     .ruleFor(
                             RoutingVerb.valueOf(verb.name()),
                             request.getPath(),
-                            thingifier.apiConfig().getApiEndPointPrefix());
+                            activeApiPathPrefix(request));
         } catch (IllegalArgumentException e) {
             return Optional.empty();
         }
@@ -613,7 +691,7 @@ public final class ThingifierHttpApi {
                         .requestEntityViewFor(
                                 routingVerbFor(verb),
                                 request.getPath(),
-                                thingifier.apiConfig().getApiEndPointPrefix(),
+                                activeApiPathPrefix(request),
                                 entity);
         if (configuredViewName.isEmpty()) {
             return null;
@@ -1139,6 +1217,7 @@ public final class ThingifierHttpApi {
      * @return HTTP API response
      */
     public HttpApiResponse query(final HttpApiRequest request, final String query) {
+        resolveMountedPath(request);
 
         HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request, HttpVerb.GET);
 
@@ -1167,9 +1246,7 @@ public final class ThingifierHttpApi {
             final RoutingVerb routingVerb = routingVerbFor(verb);
             for (ScopedHook<HttpApiResponseHook> scopedHook : apiHookRegistry.responseHooks()) {
                 if (!scopedHook.matches(
-                        request.getPath(),
-                        routingVerb,
-                        thingifier.apiConfig().getApiEndPointPrefix())) {
+                        request.getPath(), routingVerb, activeApiPathPrefix(request))) {
                     continue;
                 }
                 HttpApiResponse returnImmediately =
@@ -1203,9 +1280,7 @@ public final class ThingifierHttpApi {
             final RoutingVerb routingVerb = routingVerbFor(verb);
             for (ScopedHook<HttpApiRequestHook> scopedHook : apiHookRegistry.requestHooks()) {
                 if (!scopedHook.matches(
-                        request.getPath(),
-                        routingVerb,
-                        thingifier.apiConfig().getApiEndPointPrefix())) {
+                        request.getPath(), routingVerb, activeApiPathPrefix(request))) {
                     continue;
                 }
                 HttpApiResponse response = scopedHook.hook().run(request, thingifier.apiConfig());

@@ -81,6 +81,21 @@ public final class ApiRoutingDefinition {
     }
 
     /**
+     * Adds an already-built route definition.
+     *
+     * <p>This is used when documentation is projected through public API mounts. The canonical
+     * generated route is copied first so mounted routes keep the same security, payload, view,
+     * response-shape, fixed-resource, and header metadata.
+     *
+     * @param routingDefinition route definition to add
+     */
+    public void addRouting(final RoutingDefinition routingDefinition) {
+        if (routingDefinition != null) {
+            routings.add(routingDefinition);
+        }
+    }
+
+    /**
      * Registers the model entity under the schema names generated routes may reference.
      *
      * <p>View names and create payload names are mapped back to the owning entity so API spec

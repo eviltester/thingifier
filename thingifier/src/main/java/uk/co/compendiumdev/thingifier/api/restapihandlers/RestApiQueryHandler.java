@@ -150,7 +150,8 @@ public final class RestApiQueryHandler {
                                 ApiBodyFields.empty(),
                                 queryBody,
                                 mapping.queryParams,
-                                "QUERY");
+                                "QUERY",
+                                lifecycle);
         if (operationValidationResponse != null) {
             return operationValidationResponse;
         }

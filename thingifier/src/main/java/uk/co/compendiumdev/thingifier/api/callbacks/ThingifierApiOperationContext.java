@@ -23,6 +23,10 @@ public final class ThingifierApiOperationContext {
 
     private final RoutingVerb verb;
     private final String publicPath;
+    private final String mountedPath;
+    private final String internalPath;
+    private final String mountName;
+    private final String mountPrefix;
     private final ThingRoute route;
     private final ThingifierApiRouteRule routeRule;
     private final String targetEntityName;
@@ -81,8 +85,90 @@ public final class ThingifierApiOperationContext {
             final ApiBodyFields parsedRequestBody,
             final String rawRequestBody,
             final ThingifierApiConfig apiConfig) {
+        this(
+                verb,
+                publicPath,
+                publicPath,
+                publicPath,
+                null,
+                "",
+                route,
+                routeRule,
+                targetEntityName,
+                targetIdentifier,
+                parentEntityName,
+                parentIdentifier,
+                relationshipName,
+                childIdentifier,
+                dataScopeName,
+                store,
+                authenticatedPrincipals,
+                requestHeaders,
+                queryParams,
+                parsedRequestBody,
+                rawRequestBody,
+                apiConfig);
+    }
+
+    /**
+     * Creates a callback context with explicit mounted route details.
+     *
+     * <p>Mounted requests expose both the public path requested by the caller and the canonical
+     * internal path processed by Thingifier. Keeping both values here lets application callbacks
+     * make route-aware decisions without guessing which prefix was stripped.
+     *
+     * @param verb route verb being processed
+     * @param publicPath public request path
+     * @param mountedPath active mounted path
+     * @param internalPath canonical Thingifier route path
+     * @param mountName active mount name, or null
+     * @param mountPrefix active mount prefix, or empty
+     * @param route resolved generated route
+     * @param routeRule matched route rule that owns the callback
+     * @param targetEntityName target entity name, or null
+     * @param targetIdentifier target identifier, or null
+     * @param parentEntityName relationship parent entity name, or null
+     * @param parentIdentifier relationship parent identifier, or null
+     * @param relationshipName relationship route name, or null
+     * @param childIdentifier relationship child identifier, or null
+     * @param dataScopeName active data-scope name
+     * @param store active store
+     * @param authenticatedPrincipals authenticated principals by scheme name
+     * @param requestHeaders request headers
+     * @param queryParams parsed query parameters
+     * @param parsedRequestBody parsed body fields
+     * @param rawRequestBody raw request body text
+     * @param apiConfig active API configuration
+     */
+    public ThingifierApiOperationContext(
+            final RoutingVerb verb,
+            final String publicPath,
+            final String mountedPath,
+            final String internalPath,
+            final String mountName,
+            final String mountPrefix,
+            final ThingRoute route,
+            final ThingifierApiRouteRule routeRule,
+            final String targetEntityName,
+            final String targetIdentifier,
+            final String parentEntityName,
+            final String parentIdentifier,
+            final String relationshipName,
+            final String childIdentifier,
+            final String dataScopeName,
+            final ThingStore store,
+            final Map<String, Object> authenticatedPrincipals,
+            final HttpHeadersBlock requestHeaders,
+            final QueryFilterParams queryParams,
+            final ApiBodyFields parsedRequestBody,
+            final String rawRequestBody,
+            final ThingifierApiConfig apiConfig) {
         this.verb = verb;
         this.publicPath = normalizedPublicPath(publicPath);
+        this.mountedPath = normalizedPublicPath(mountedPath);
+        this.internalPath = normalizedPublicPath(internalPath);
+        this.mountName = mountName;
+        this.mountPrefix = normalizedMountPrefix(mountPrefix);
         this.route = route;
         this.routeRule = routeRule;
         this.targetEntityName = targetEntityName;
@@ -118,6 +204,42 @@ public final class ThingifierApiOperationContext {
      */
     public String publicPath() {
         return publicPath;
+    }
+
+    /**
+     * Returns the active mounted path requested by the caller.
+     *
+     * @return mounted path with a leading slash
+     */
+    public String mountedPath() {
+        return mountedPath;
+    }
+
+    /**
+     * Returns the canonical Thingifier path processed by generated handlers.
+     *
+     * @return internal route path with a leading slash
+     */
+    public String internalPath() {
+        return internalPath;
+    }
+
+    /**
+     * Returns the active public mount name.
+     *
+     * @return mount name when a named mount matched, otherwise empty
+     */
+    public Optional<String> mountName() {
+        return Optional.ofNullable(mountName);
+    }
+
+    /**
+     * Returns the active public mount prefix.
+     *
+     * @return mount prefix with a leading slash, or empty when no prefix applies
+     */
+    public String mountPrefix() {
+        return mountPrefix;
     }
 
     /**
@@ -282,5 +404,12 @@ public final class ThingifierApiOperationContext {
             return "";
         }
         return path.startsWith("/") ? path : "/" + path;
+    }
+
+    private String normalizedMountPrefix(final String prefix) {
+        if (prefix == null || prefix.isEmpty() || "/".equals(prefix)) {
+            return prefix == null ? "" : prefix;
+        }
+        return prefix.startsWith("/") ? prefix : "/" + prefix;
     }
 }

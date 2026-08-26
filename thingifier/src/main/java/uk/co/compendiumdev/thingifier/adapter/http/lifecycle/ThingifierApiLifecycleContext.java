@@ -144,6 +144,31 @@ public final class ThingifierApiLifecycleContext
         return request.getPath();
     }
 
+    @Override
+    public String requestPath() {
+        return request.getRequestPath();
+    }
+
+    @Override
+    public String mountedPath() {
+        return request.getMountedPath();
+    }
+
+    @Override
+    public String internalPath() {
+        return request.getPath();
+    }
+
+    @Override
+    public String mountName() {
+        return request.getMountName();
+    }
+
+    @Override
+    public String mountPrefix() {
+        return request.getMountPrefix();
+    }
+
     /**
      * Returns the API path prefix used when matching scoped hooks and API spec rules.
      *
