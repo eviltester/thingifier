@@ -11,6 +11,7 @@ import java.util.Optional;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.adapter.hooks.ScopedHook;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.DefaultThingifierApiRuntime;
+import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.RouteAfterResponseCallbackApplier;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.RouteApiResponsePolicyApplier;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.RouteAuthPolicy;
 import uk.co.compendiumdev.thingifier.adapter.http.apihandlers.ScopedSessionPolicyApplier;
@@ -222,6 +223,7 @@ public final class ThingifierHttpApi {
         HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request, effectiveVerb);
 
         ThingifierApiLifecycleContext lifecycle = null;
+        ApiRequestEnvelope parsedEnvelope = null;
         if (httpResponse == null && supportsLifecycle(effectiveVerb)) {
             lifecycle = lifecycleContextFor(request, effectiveVerb);
             lifecycleHooks.runRouteMatchedHooks(lifecycle);
@@ -275,7 +277,7 @@ public final class ThingifierHttpApi {
         // no httpResponse generated after validation so it is not in error
         if (httpResponse == null) {
             if (lifecycle != null) {
-                ApiRequestEnvelope parsedEnvelope =
+                parsedEnvelope =
                         ApiRequestEnvelope.from(
                                 request,
                                 effectiveVerb,
@@ -293,6 +295,10 @@ public final class ThingifierHttpApi {
                 httpResponse = httpResponseFor(request, effectiveVerb, apiResponse);
             }
         }
+
+        httpResponse =
+                runRouteAfterResponseCallbacksOn(
+                        request, httpResponse, effectiveVerb, lifecycle, parsedEnvelope);
 
         // run any post processing response hooks
         return runTheHttpApiResponseHooksOn(request, httpResponse, effectiveVerb);
@@ -382,6 +388,36 @@ public final class ThingifierHttpApi {
                             xmlEntityNamesFor(request.getPath(), effectiveVerb));
         }
         return httpResponse;
+    }
+
+    /**
+     * Runs route-level final-response callbacks after HTTP rendering and before legacy hooks.
+     *
+     * @param request HTTP API request
+     * @param response rendered HTTP API response
+     * @param effectiveVerb verb after method override handling
+     * @param lifecycle lifecycle context for matched generated routes
+     * @param parsedEnvelope parsed request envelope when parsing reached that phase
+     * @return original rendered response
+     */
+    private HttpApiResponse runRouteAfterResponseCallbacksOn(
+            final HttpApiRequest request,
+            final HttpApiResponse response,
+            final HttpVerb effectiveVerb,
+            final ThingifierApiLifecycleContext lifecycle,
+            final ApiRequestEnvelope parsedEnvelope) {
+        if (response == null || lifecycle == null) {
+            return response;
+        }
+        return new RouteAfterResponseCallbackApplier(new DefaultThingifierApiRuntime(thingifier))
+                .apply(
+                        routingVerbFor(effectiveVerb),
+                        request.getPath(),
+                        response,
+                        null,
+                        lifecycle,
+                        parsedEnvelope,
+                        effectiveVerb != HttpVerb.HEAD);
     }
 
     /**
