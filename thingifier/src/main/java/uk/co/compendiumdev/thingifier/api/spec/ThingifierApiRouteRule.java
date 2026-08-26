@@ -10,6 +10,8 @@ import java.util.Set;
 import uk.co.compendiumdev.thingifier.api.callbacks.ThingifierApiOperationCallback;
 import uk.co.compendiumdev.thingifier.api.callbacks.ThingifierApiOperationCallbackDefinition;
 import uk.co.compendiumdev.thingifier.api.callbacks.ThingifierApiOperationCallbackDefinition.Outcome;
+import uk.co.compendiumdev.thingifier.api.callbacks.ThingifierApiResponseCallback;
+import uk.co.compendiumdev.thingifier.api.callbacks.ThingifierApiResponseCallbackDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
@@ -51,6 +53,7 @@ public final class ThingifierApiRouteRule {
     private final List<ThingifierApiAuthorizer> authorizers;
     private final List<ApiOperationValidatorDefinition> apiOperationValidators;
     private final List<ThingifierApiOperationCallbackDefinition> operationCallbacks;
+    private final List<ThingifierApiResponseCallbackDefinition> responseCallbacks;
     private RouteApiResponsePolicy successResponsePolicy;
     private final Map<Integer, RouteApiResponsePolicy> errorResponsePolicies;
     private final Map<Integer, List<RouteApiResponsePolicy>> conditionalErrorResponsePolicies;
@@ -89,6 +92,7 @@ public final class ThingifierApiRouteRule {
         this.authorizers = new java.util.ArrayList<>();
         this.apiOperationValidators = new java.util.ArrayList<>();
         this.operationCallbacks = new java.util.ArrayList<>();
+        this.responseCallbacks = new java.util.ArrayList<>();
         this.successResponsePolicy = null;
         this.errorResponsePolicies = new HashMap<>();
         this.conditionalErrorResponsePolicies = new HashMap<>();
@@ -966,6 +970,54 @@ public final class ThingifierApiRouteRule {
     }
 
     /**
+     * Registers a read-only callback that runs after the final HTTP response has been rendered.
+     *
+     * <p>Final-response callbacks run after route response policies, response views, and content
+     * negotiation have produced the outbound HTTP response. They are intended for observational
+     * application side effects that need final status, headers, body availability, and negotiated
+     * content type. If the callback throws, Thingifier logs the exception and preserves the already
+     * produced response.
+     *
+     * @param callback callback to run
+     * @return this route rule for continued route configuration
+     */
+    public ThingifierApiRouteRule afterResponse(final ThingifierApiResponseCallback callback) {
+        return afterResponse(defaultResponseCallbackName("after-response"), callback);
+    }
+
+    /**
+     * Registers a named read-only callback that runs after the final HTTP response has been
+     * rendered.
+     *
+     * @param name stable callback name used in diagnostics
+     * @param callback callback to run
+     * @return this route rule for continued route configuration
+     */
+    public ThingifierApiRouteRule afterResponse(
+            final String name, final ThingifierApiResponseCallback callback) {
+        responseCallbacks.add(new ThingifierApiResponseCallbackDefinition(name, callback));
+        return this;
+    }
+
+    /**
+     * Reports whether this route has final-response callbacks.
+     *
+     * @return true when callbacks are registered
+     */
+    public boolean hasResponseCallbacks() {
+        return !responseCallbacks.isEmpty();
+    }
+
+    /**
+     * Returns final-response callbacks in declaration order.
+     *
+     * @return immutable callback registrations
+     */
+    public List<ThingifierApiResponseCallbackDefinition> responseCallbacks() {
+        return Collections.unmodifiableList(responseCallbacks);
+    }
+
+    /**
      * Configures response shaping for non-error responses returned by this route.
      *
      * <p>Route response policies let endpoint contracts adjust status codes, headers, bodies, and
@@ -1441,6 +1493,10 @@ public final class ThingifierApiRouteRule {
 
     private String defaultCallbackName(final String prefix) {
         return prefix + "-" + (operationCallbacks.size() + 1);
+    }
+
+    private String defaultResponseCallbackName(final String prefix) {
+        return prefix + "-" + (responseCallbacks.size() + 1);
     }
 
     private String requireText(final String value, final String label) {

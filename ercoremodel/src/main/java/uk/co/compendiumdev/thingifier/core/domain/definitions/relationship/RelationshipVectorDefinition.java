@@ -9,7 +9,7 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
  * A relationshipVector is the definition of the variant of relationship from one thing to another
  * e.g. a specific a -> b relationship might have a different name from the main relationships
  *
- * <p>task <- estimates /estimate of-> estimate
+ * <p>{@code task <- estimates /estimate of-> estimate}
  *
  * <p>task to estimate would be called 'estimates' and would be 1(o):M i.e. 1 task can have 0 to
  * many estimates estimate to task would be called 'estimate-of' and would be 1:1 an estimate must
