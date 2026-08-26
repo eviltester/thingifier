@@ -39,6 +39,41 @@ public interface ThingifierApiLifecycleContextView {
     String path();
 
     /**
+     * Returns the public request path received by Thingifier before mount or prefix stripping.
+     *
+     * @return public request path without a leading slash
+     */
+    String requestPath();
+
+    /**
+     * Returns the public mounted path for this request.
+     *
+     * @return mounted path without a leading slash
+     */
+    String mountedPath();
+
+    /**
+     * Returns the canonical Thingifier path used by generated handlers.
+     *
+     * @return internal route path without a leading slash
+     */
+    String internalPath();
+
+    /**
+     * Returns the active named mount.
+     *
+     * @return mount name, or null when no named mount matched
+     */
+    String mountName();
+
+    /**
+     * Returns the active public mount prefix.
+     *
+     * @return mount prefix with a leading slash, or empty when no prefix applies
+     */
+    String mountPrefix();
+
+    /**
      * Returns the mapped Thingifier route.
      *
      * @return matched route abstraction

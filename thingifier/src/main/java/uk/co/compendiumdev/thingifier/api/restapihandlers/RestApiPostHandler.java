@@ -180,7 +180,8 @@ public class RestApiPostHandler {
                                 rawBody,
                                 queryParams,
                                 writePolicy.operationTypeFor(
-                                        RoutingVerb.POST, route, bodyFields, context));
+                                        RoutingVerb.POST, route, bodyFields, context),
+                                lifecycle);
         if (operationValidationResponse != null) {
             return operationValidationResponse;
         }

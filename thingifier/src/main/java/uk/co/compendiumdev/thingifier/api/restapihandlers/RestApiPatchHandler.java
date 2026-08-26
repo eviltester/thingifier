@@ -161,7 +161,8 @@ public class RestApiPatchHandler {
                                 rawBody,
                                 queryParams,
                                 policy.operationTypeFor(
-                                        RoutingVerb.PATCH, route, bodyFields, context));
+                                        RoutingVerb.PATCH, route, bodyFields, context),
+                                lifecycle);
         if (operationValidationResponse != null) {
             return operationValidationResponse;
         }

@@ -165,7 +165,8 @@ public class RestApiGetHandler {
                                 ApiBodyFields.empty(),
                                 "",
                                 effectiveQueryParams.queryParams(),
-                                readOperationType(verb));
+                                readOperationType(verb),
+                                lifecycle);
         if (operationValidationResponse != null) {
             return operationValidationResponse;
         }

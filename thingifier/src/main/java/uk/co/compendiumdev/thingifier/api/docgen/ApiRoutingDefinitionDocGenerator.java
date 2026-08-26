@@ -58,10 +58,12 @@ public class ApiRoutingDefinitionDocGenerator {
     // TODO: have the ability to override these from config and define from config rather than code
     public ApiRoutingDefinition generate(String apiPathPrefix) {
         ApiRoutingDefinition defn = new ApiRoutingDefinition();
+        final String generationPathPrefix =
+                thingifier.apiSpec().hasDocumentedMounts() ? "" : apiPathPrefix;
 
         String endPointPrefix = "";
-        if (apiPathPrefix != null && !apiPathPrefix.isEmpty()) {
-            endPointPrefix = apiPathPrefix + "/";
+        if (generationPathPrefix != null && !generationPathPrefix.isEmpty()) {
+            endPointPrefix = generationPathPrefix + "/";
         }
 
         for (EntityDefinition entityDefn : thingifier.getERmodel().getEntityDefinitions()) {
@@ -377,10 +379,10 @@ public class ApiRoutingDefinitionDocGenerator {
             }
         }
 
-        thingifier.apiSpec().addFixedRouteDefinitionsTo(defn, apiPathPrefix);
-        new WriteMethodRoutePolicy(thingifier).applyTo(defn, apiPathPrefix);
-        thingifier.apiSpec().applyTo(defn, apiPathPrefix);
-        return defn;
+        thingifier.apiSpec().addFixedRouteDefinitionsTo(defn, generationPathPrefix);
+        new WriteMethodRoutePolicy(thingifier).applyTo(defn, generationPathPrefix);
+        thingifier.apiSpec().applyTo(defn, generationPathPrefix);
+        return thingifier.apiSpec().projectMountedDocumentation(defn);
     }
 
     private Field getUniqueIdField(final EntityDefinition thingDefn) {

@@ -21,6 +21,10 @@ public final class ApiOperationValidationContext {
 
     private final RoutingVerb verb;
     private final String publicPath;
+    private final String mountedPath;
+    private final String internalPath;
+    private final String mountName;
+    private final String mountPrefix;
     private final ThingRoute route;
     private final String targetEntityName;
     private final String targetIdentifier;
@@ -65,8 +69,76 @@ public final class ApiOperationValidationContext {
             final String rawBody,
             final String requestEntityView,
             final String responseEntityView) {
+        this(
+                verb,
+                publicPath,
+                publicPath,
+                publicPath,
+                null,
+                "",
+                route,
+                targetEntityName,
+                targetIdentifier,
+                operationType,
+                requestContext,
+                headers,
+                queryParameters,
+                requestBody,
+                rawBody,
+                requestEntityView,
+                responseEntityView);
+    }
+
+    /**
+     * Creates an operation validation context with explicit mounted route details.
+     *
+     * <p>Mounted requests expose both the public route requested by the caller and the canonical
+     * internal route Thingifier will process. Validators can use those facts without treating a
+     * prefix such as {@code /api} as part of the model route.
+     *
+     * @param verb route verb being processed
+     * @param publicPath public API path requested by the caller
+     * @param mountedPath active mounted public path
+     * @param internalPath canonical Thingifier route path
+     * @param mountName active mount name, or null
+     * @param mountPrefix active mount prefix, or empty
+     * @param route resolved Thingifier route target
+     * @param targetEntityName target entity name, or null when the route is not entity-backed
+     * @param targetIdentifier target instance identifier, or null for collection routes
+     * @param operationType read/write operation label such as CREATE, UPDATE, DELETE, or QUERY
+     * @param requestContext active request context after authentication and data-scope selection
+     * @param headers request headers
+     * @param queryParameters parsed query parameters
+     * @param requestBody parsed request body fields
+     * @param rawBody raw request body text
+     * @param requestEntityView request entity view selected for this route, or null
+     * @param responseEntityView response entity view selected for the expected success status, or
+     *     null
+     */
+    public ApiOperationValidationContext(
+            final RoutingVerb verb,
+            final String publicPath,
+            final String mountedPath,
+            final String internalPath,
+            final String mountName,
+            final String mountPrefix,
+            final ThingRoute route,
+            final String targetEntityName,
+            final String targetIdentifier,
+            final String operationType,
+            final ThingifierRequestContext requestContext,
+            final HttpHeadersBlock headers,
+            final QueryFilterParams queryParameters,
+            final ApiBodyFields requestBody,
+            final String rawBody,
+            final String requestEntityView,
+            final String responseEntityView) {
         this.verb = verb;
         this.publicPath = publicPath == null ? "" : publicPath;
+        this.mountedPath = mountedPath == null ? "" : mountedPath;
+        this.internalPath = internalPath == null ? "" : internalPath;
+        this.mountName = mountName;
+        this.mountPrefix = mountPrefix == null ? "" : mountPrefix;
         this.route = route;
         this.targetEntityName = targetEntityName;
         this.targetIdentifier = targetIdentifier;
@@ -96,6 +168,42 @@ public final class ApiOperationValidationContext {
      */
     public String publicPath() {
         return publicPath;
+    }
+
+    /**
+     * Returns the active mounted public path.
+     *
+     * @return mounted path without a leading slash
+     */
+    public String mountedPath() {
+        return mountedPath;
+    }
+
+    /**
+     * Returns the canonical Thingifier route path.
+     *
+     * @return internal route path without a leading slash
+     */
+    public String internalPath() {
+        return internalPath;
+    }
+
+    /**
+     * Returns the active public mount name.
+     *
+     * @return mount name, or null when no named mount matched
+     */
+    public String mountName() {
+        return mountName;
+    }
+
+    /**
+     * Returns the active public mount prefix.
+     *
+     * @return mount prefix with a leading slash, or empty when no prefix applies
+     */
+    public String mountPrefix() {
+        return mountPrefix;
     }
 
     /**

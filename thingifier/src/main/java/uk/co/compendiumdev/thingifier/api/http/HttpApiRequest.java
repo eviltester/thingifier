@@ -3,11 +3,17 @@ package uk.co.compendiumdev.thingifier.api.http;
 import java.util.*;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeaderPair;
 import uk.co.compendiumdev.thingifier.api.http.headers.HttpHeadersBlock;
+import uk.co.compendiumdev.thingifier.api.spec.ThingifierApiMountSelection;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 
 public final class HttpApiRequest {
 
     private String path = "";
+    private String requestPath = "";
+    private String mountedPath = "";
+    private String mountName;
+    private String mountPrefix = "";
+    private boolean rewriteLocationHeadersToMount;
     private HttpHeadersBlock headers;
     private String body = "";
     private Map<String, String> queryParams; // only contains the first query param value
@@ -30,6 +36,27 @@ public final class HttpApiRequest {
         }
     }
 
+    /**
+     * Applies the public mount selected for this request.
+     *
+     * <p>The HTTP adapter uses {@link #getPath()} as the canonical Thingifier route path. The
+     * original public path and mount metadata remain available to callbacks and hooks that need to
+     * report what the client actually requested.
+     *
+     * @param mountSelection resolved mount selection
+     */
+    public void applyMountSelection(final ThingifierApiMountSelection mountSelection) {
+        if (mountSelection == null) {
+            return;
+        }
+        requestPath = justThePath(mountSelection.requestPath());
+        mountedPath = justThePath(mountSelection.mountedPath());
+        path = justThePath(mountSelection.internalPath());
+        mountName = mountSelection.mountName();
+        mountPrefix = mountSelection.mountPrefix();
+        rewriteLocationHeadersToMount = mountSelection.shouldRewriteLocationHeaders();
+    }
+
     public enum VERB {
         GET,
         HEAD,
@@ -45,6 +72,8 @@ public final class HttpApiRequest {
 
     public HttpApiRequest(final String pathInfo) {
         path = justThePath(pathInfo);
+        requestPath = path;
+        mountedPath = path;
         headers = new HttpHeadersBlock();
         queryParams = new HashMap<>();
         filterableQueryParams = new QueryFilterParams();
@@ -129,6 +158,60 @@ public final class HttpApiRequest {
 
     public String getPath() {
         return this.path;
+    }
+
+    /**
+     * Returns the public request path as supplied to Thingifier before mount stripping.
+     *
+     * @return request path without a leading slash
+     */
+    public String getRequestPath() {
+        return requestPath;
+    }
+
+    /**
+     * Returns the public mounted path for this request.
+     *
+     * @return mounted path without a leading slash
+     */
+    public String getMountedPath() {
+        return mountedPath;
+    }
+
+    /**
+     * Returns the active mount name.
+     *
+     * @return mount name, or null when no named mount matched
+     */
+    public String getMountName() {
+        return mountName;
+    }
+
+    /**
+     * Returns the active public mount prefix.
+     *
+     * @return mount prefix with a leading slash, or empty when no prefix applies
+     */
+    public String getMountPrefix() {
+        return mountPrefix;
+    }
+
+    /**
+     * Reports whether this request matched a named mount.
+     *
+     * @return true when a named mount matched
+     */
+    public boolean hasActiveMount() {
+        return mountName != null;
+    }
+
+    /**
+     * Reports whether final relative Location headers should be rewritten to the active mount.
+     *
+     * @return true when the active mount requested Location rewriting
+     */
+    public boolean shouldRewriteLocationHeadersToMount() {
+        return rewriteLocationHeadersToMount;
     }
 
     public HttpHeadersBlock getHeaders() {

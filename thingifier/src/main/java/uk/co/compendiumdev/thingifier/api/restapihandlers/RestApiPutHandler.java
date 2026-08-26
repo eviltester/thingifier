@@ -177,7 +177,8 @@ public class RestApiPutHandler {
                                 rawBody,
                                 queryParams,
                                 writePolicy.operationTypeFor(
-                                        RoutingVerb.PUT, route, bodyFields, context));
+                                        RoutingVerb.PUT, route, bodyFields, context),
+                                lifecycle);
         if (operationValidationResponse != null) {
             return operationValidationResponse;
         }
