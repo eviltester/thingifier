@@ -10,6 +10,7 @@ import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.DefaultGUIHTML;
 import uk.co.compendiumdev.thingifier.htmlgui.htmlgen.RestApiDocumentationGenerator;
 import uk.co.compendiumdev.thingifier.swaggerizer.OpenApiSpecificationVersion;
 import uk.co.compendiumdev.thingifier.swaggerizer.ScalarUiPage;
+import uk.co.compendiumdev.thingifier.swaggerizer.SwaggerGenerationConfig;
 import uk.co.compendiumdev.thingifier.swaggerizer.SwaggerUiPage;
 import uk.co.compendiumdev.thingifier.swaggerizer.Swaggerizer;
 
@@ -107,7 +108,9 @@ public class ThingifierAutoDocGenRouting {
         get(
                 swaggerDownloadPath,
                 (request, response) -> {
-                    String permissive = request.queryParam("permissive");
+                    final SwaggerGenerationConfig config =
+                            swaggerGenerationConfig(
+                                    OpenApiSpecificationVersion.OPENAPI_3_1, request);
 
                     response.type("text/html");
                     response.status(200);
@@ -119,7 +122,7 @@ public class ThingifierAutoDocGenRouting {
                         System.out.println(
                                 "Possibly incomplete swagger generation, api not defined from model");
                     }
-                    if (permissive != null) {
+                    if (config.includeMethodNotAllowedEndpoints && !config.includeFieldValidation) {
                         nameprefix = nameprefix + "permissive-";
                     }
                     response.header("Content-Type", "application/octet-stream");
@@ -130,8 +133,7 @@ public class ThingifierAutoDocGenRouting {
                     // TODO: the swaggerizer could be stored at a class level and allow caching to
                     // be used for the output
                     return new Swaggerizer(apiDefn)
-                            .asJsonWithPreferredServer(
-                                    permissive != null, HttpRequestOrigin.from(request));
+                            .asJsonWithPreferredServer(config, HttpRequestOrigin.from(request));
                 });
     }
 
@@ -144,17 +146,50 @@ public class ThingifierAutoDocGenRouting {
                 (request, response) -> {
                     response.type("application/json");
                     response.status(200);
-                    final boolean permissive = request.queryParam("permissive") != null;
+                    final SwaggerGenerationConfig config =
+                            swaggerGenerationConfig(version, request);
                     if (request.queryParam("download") != null) {
                         response.header(
                                 "Content-Disposition",
                                 "attachment; filename=\"%s\""
-                                        .formatted(openApiDownloadFilename(path, permissive)));
+                                        .formatted(
+                                                openApiDownloadFilename(
+                                                        path,
+                                                        config.includeMethodNotAllowedEndpoints
+                                                                && !config.includeFieldValidation)));
                     }
                     return new Swaggerizer(apiDefn)
-                            .asJsonWithPreferredServer(
-                                    version, permissive, HttpRequestOrigin.from(request));
+                            .asJsonWithPreferredServer(config, HttpRequestOrigin.from(request));
                 });
+    }
+
+    private SwaggerGenerationConfig swaggerGenerationConfig(
+            final OpenApiSpecificationVersion version, final HttpServerRequest request) {
+        final boolean permissive = request.queryParam("permissive") != null;
+        final boolean strongSchemas = truthyQueryParam(request.queryParam("strongschema"));
+
+        final SwaggerGenerationConfig config = new SwaggerGenerationConfig();
+        config.openApiSpecificationVersion = version;
+        config.includeMethodNotAllowedEndpoints = permissive;
+        config.includeFieldValidation = !permissive || strongSchemas;
+        config.strongSchemas = strongSchemas;
+        config.pathParameterPlacement = pathParameterPlacement(request.queryParam("pathparams"));
+        return config;
+    }
+
+    private boolean truthyQueryParam(final String value) {
+        if (value == null) {
+            return false;
+        }
+        return !"false".equalsIgnoreCase(value.trim()) && !"0".equals(value.trim());
+    }
+
+    private SwaggerGenerationConfig.PathParameterPlacement pathParameterPlacement(
+            final String placement) {
+        if ("operation".equalsIgnoreCase(placement)) {
+            return SwaggerGenerationConfig.PathParameterPlacement.OPERATION;
+        }
+        return SwaggerGenerationConfig.PathParameterPlacement.PATH;
     }
 
     private String openApiDownloadFilename(final String path, final boolean permissive) {

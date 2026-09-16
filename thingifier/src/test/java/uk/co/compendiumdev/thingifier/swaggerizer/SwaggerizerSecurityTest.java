@@ -116,6 +116,34 @@ class SwaggerizerSecurityTest {
     }
 
     @Test
+    void securedRoutesDocumentDefaultUnauthorizedErrorResponse() {
+        final ThingifierApiDocumentationDefn apiDefn = new ThingifierApiDocumentationDefn();
+        apiDefn.addRouteToDocumentation(
+                new RoutingDefinition(
+                                RoutingVerb.GET,
+                                "/secret/token",
+                                RoutingStatus.returnedFromCall(),
+                                null)
+                        .addDocumentation("read a token")
+                        .addPossibleStatuses(200)
+                        .secureWithApiKey("authToken", "X-AUTH-TOKEN"));
+
+        final OpenAPI openApi = new Swaggerizer(apiDefn).swagger();
+
+        Assertions.assertEquals(
+                "#/components/schemas/" + Swaggerizer.THINGIFIER_ERROR_SCHEMA_NAME,
+                openApi.getPaths()
+                        .get("/secret/token")
+                        .getGet()
+                        .getResponses()
+                        .get("401")
+                        .getContent()
+                        .get("application/json")
+                        .getSchema()
+                        .get$ref());
+    }
+
+    @Test
     void alternativeAuthRendersOpenApiSecurityRequirementsInDeclarationOrder() {
         final Thingifier thingifier = relationshipModel();
         thingifier.apiSpec().security().bearer("secretBearer");

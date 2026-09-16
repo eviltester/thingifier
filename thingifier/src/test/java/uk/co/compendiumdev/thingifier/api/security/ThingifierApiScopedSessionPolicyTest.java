@@ -29,6 +29,7 @@ import uk.co.compendiumdev.thingifier.core.domain.instances.EntityInstanceDraft;
 import uk.co.compendiumdev.thingifier.core.query.QueryFilterParams;
 import uk.co.compendiumdev.thingifier.core.reporting.ValidationReport;
 import uk.co.compendiumdev.thingifier.core.repository.ThingStore;
+import uk.co.compendiumdev.thingifier.swaggerizer.Swaggerizer;
 
 class ThingifierApiScopedSessionPolicyTest {
 
@@ -858,8 +859,7 @@ class ThingifierApiScopedSessionPolicyTest {
         final ThingifierApiDocumentationDefn apiDefn = new ThingifierApiDocumentationDefn();
         apiDefn.setThingifier(thingifier);
 
-        final OpenAPI openApi =
-                new uk.co.compendiumdev.thingifier.swaggerizer.Swaggerizer(apiDefn).swagger();
+        final OpenAPI openApi = new Swaggerizer(apiDefn).swagger();
 
         final SecurityScheme scheme =
                 openApi.getComponents().getSecuritySchemes().get("challenger");
@@ -877,6 +877,43 @@ class ThingifierApiScopedSessionPolicyTest {
                         .keySet()
                         .iterator()
                         .next());
+    }
+
+    @Test
+    void requiredScopedSessionDocumentsConfiguredCredentialFailureStatuses() {
+        final Thingifier thingifier = todoModel();
+        scopedSession(thingifier)
+                .authenticateWith(this::validScopedSession)
+                .onMissingRequiredCredential(401, "Missing scoped session")
+                .onInvalidCredential(403, "Invalid scoped session")
+                .requireAuthenticatedScopeForWrites();
+        final ThingifierApiDocumentationDefn apiDefn = new ThingifierApiDocumentationDefn();
+        apiDefn.setThingifier(thingifier);
+
+        final OpenAPI openApi = new Swaggerizer(apiDefn).swagger();
+
+        Assertions.assertEquals(
+                "#/components/schemas/" + Swaggerizer.THINGIFIER_ERROR_SCHEMA_NAME,
+                openApi.getPaths()
+                        .get("/todos")
+                        .getPost()
+                        .getResponses()
+                        .get("401")
+                        .getContent()
+                        .get("application/json")
+                        .getSchema()
+                        .get$ref());
+        Assertions.assertEquals(
+                "#/components/schemas/" + Swaggerizer.THINGIFIER_ERROR_SCHEMA_NAME,
+                openApi.getPaths()
+                        .get("/todos")
+                        .getPost()
+                        .getResponses()
+                        .get("403")
+                        .getContent()
+                        .get("application/json")
+                        .getSchema()
+                        .get$ref());
     }
 
     private ThingifierApiScopedSessionDefinition scopedSession(final Thingifier thingifier) {

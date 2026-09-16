@@ -383,6 +383,20 @@ public final class ThingifierApiScopedSessionDefinition {
     }
 
     /**
+     * @return configured missing-credential response status code
+     */
+    public int missingRequiredCredentialStatusCode() {
+        return missingCredentialStatusCode;
+    }
+
+    /**
+     * @return configured invalid-credential response status code
+     */
+    public int invalidCredentialStatusCode() {
+        return invalidCredentialStatusCode;
+    }
+
+    /**
      * @return configured missing-credential response
      */
     public ApiResponse missingRequiredCredentialResponse() {
