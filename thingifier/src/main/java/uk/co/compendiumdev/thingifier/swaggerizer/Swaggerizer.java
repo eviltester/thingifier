@@ -32,11 +32,20 @@ import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.EntityViewDefinition;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.Field;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.field.definition.FieldType;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.FloatValidationRule;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.IntegerValidationRule;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.MatchesRegexValidationRule;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.MaximumLengthValidationRule;
+import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.NotEmptyValidationRule;
 import uk.co.compendiumdev.thingifier.core.domain.definitions.validation.ValidationRule;
 import uk.co.compendiumdev.thingifier.core.query.PaginationParams;
 import uk.co.compendiumdev.thingifier.core.query.SortByFieldName;
 
 public class Swaggerizer {
+
+    public static final String THINGIFIER_ERROR_SCHEMA_NAME = "ThingifierError";
+    private static final String THINGIFIER_ERROR_SCHEMA_REF =
+            "#/components/schemas/" + THINGIFIER_ERROR_SCHEMA_NAME;
 
     private final ThingifierApiDocumentationDefn apiDefn;
     OpenAPI apiNormal;
@@ -67,7 +76,7 @@ public class Swaggerizer {
 
         config.includeMethodNotAllowedEndpoints = false;
         config.includeFieldValidation = true;
-        config.openApiSpecificationVersion = version.swaggerCoreGenerationVersion();
+        config.openApiSpecificationVersion = version;
 
         return swagger(config);
     }
@@ -84,7 +93,7 @@ public class Swaggerizer {
 
         config.includeMethodNotAllowedEndpoints = true;
         config.includeFieldValidation = false;
-        config.openApiSpecificationVersion = version.swaggerCoreGenerationVersion();
+        config.openApiSpecificationVersion = version;
 
         return swagger(config);
     }
@@ -132,7 +141,7 @@ public class Swaggerizer {
 
         List<String> processedAdditionalRoutes = new ArrayList<>();
 
-        Components components = convertEntityDefinitionsToComponents(routingDefinitions);
+        Components components = convertEntityDefinitionsToComponents(routingDefinitions, config);
 
         api.components(components);
         for (String bearerSchemeName : thingifier.apiSpec().security().bearerSchemes()) {
@@ -187,6 +196,8 @@ public class Swaggerizer {
                                         new ApiResponse()
                                                 .description(subroute.status().description());
                                 addRouteResponseHeaders(subroute, response);
+                                addThingifierErrorContentIfNeeded(
+                                        components, response, subroute.status().value());
                                 operation.setResponses(
                                         new ApiResponses()
                                                 .addApiResponse(
@@ -220,6 +231,9 @@ public class Swaggerizer {
                                                                     routingDefinitions,
                                                                     payloadName)));
                                         }
+                                    } else {
+                                        addThingifierErrorContentIfNeeded(
+                                                components, response, possibleStatus.value());
                                     }
 
                                     responses.addApiResponse(
@@ -256,6 +270,7 @@ public class Swaggerizer {
                             }
 
                             addRouteSecuritySchemes(subroute, components, operation);
+                            addDefaultAuthErrorResponseIfNeeded(subroute, components, operation);
 
                             if (shouldDocumentSortParameter(thingifier, subroute)) {
                                 operationParameters.add(
@@ -292,17 +307,20 @@ public class Swaggerizer {
                                         param.setAllowEmptyValue(true);
                                     }
 
-                                    Schema<String> schema = new Schema<>();
-
-                                    if (config.includeFieldValidation) {
-                                        addParamSchemeValidationFromField(schema, aField);
-                                    }
-
-                                    param.setSchema(schema);
+                                    param.setSchema(
+                                            config.includeFieldValidation
+                                                    ? schemaForField(aField)
+                                                    : new Schema<>());
                                     urlParameters.add(param);
                                 }
 
-                                addUrlParametersAtEndpointLevel(path, urlParameters);
+                                if (config.pathParameterPlacement
+                                        == SwaggerGenerationConfig.PathParameterPlacement
+                                                .OPERATION) {
+                                    operationParameters.addAll(urlParameters);
+                                } else {
+                                    addUrlParametersAtEndpointLevel(path, urlParameters);
+                                }
                             }
 
                             addRouteCustomHeaders(subroute, operationParameters);
@@ -344,16 +362,18 @@ public class Swaggerizer {
     }
 
     private Components convertEntityDefinitionsToComponents(
-            ApiRoutingDefinition routingDefinitions) {
+            ApiRoutingDefinition routingDefinitions, final SwaggerGenerationConfig config) {
         Components components = new Components();
         for (EntityDefinition objectSchemaDefinition : routingDefinitions.getObjectSchemas()) {
 
             // add individual entity schema
-            ObjectSchema object = asObjectSchema(objectSchemaDefinition);
+            ObjectSchema object =
+                    asObjectSchema(objectSchemaDefinition, false, config.strongSchemas);
             components.addSchemas(objectSchemaDefinition.getName(), object);
 
             // add create schema with ID removed for auto added ids
-            ObjectSchema createObject = asCreateObjectSchema(objectSchemaDefinition);
+            ObjectSchema createObject =
+                    asCreateObjectSchema(objectSchemaDefinition, config.strongSchemas);
             createObject.title("create " + createObject.getTitle());
             components.addSchemas("create_" + objectSchemaDefinition.getName(), createObject);
 
@@ -362,10 +382,11 @@ public class Swaggerizer {
             components.addSchemas(objectSchemaDefinition.getPlural(), collectionObject);
 
             for (EntityViewDefinition view : objectSchemaDefinition.getViews()) {
-                ObjectSchema viewObject = asResponseViewObjectSchema(view);
+                ObjectSchema viewObject = asResponseViewObjectSchema(view, config.strongSchemas);
                 components.addSchemas(view.getName(), viewObject);
 
-                ObjectSchema createViewObject = asRequestViewObjectSchema(view);
+                ObjectSchema createViewObject =
+                        asRequestViewObjectSchema(view, config.strongSchemas);
                 createViewObject.title("create " + createViewObject.getTitle());
                 components.addSchemas("create_" + view.getName(), createViewObject);
             }
@@ -381,32 +402,6 @@ public class Swaggerizer {
             }
         }
         return refSchemaFor("#/components/schemas/" + payloadName);
-    }
-
-    private void addParamSchemeValidationFromField(Schema<String> schema, Field aField) {
-        switch (aField.getType()) {
-            case AUTO_INCREMENT:
-            case INTEGER:
-                schema.addType("integer");
-                break;
-
-            case FLOAT:
-                schema.addType("number");
-                break;
-            case BOOLEAN:
-                schema.addType("boolean");
-                break;
-            case AUTO_GUID:
-            case STRING:
-            case DATE:
-            case ENUM: // TODO: properly do Enums
-                schema.addType("string");
-                break;
-            default:
-                schema.addType("string");
-        }
-
-        // TODO: add min max etc.
     }
 
     private void addUrlParametersAtEndpointLevel(PathItem path, List<Parameter> urlParameters) {
@@ -551,19 +546,26 @@ public class Swaggerizer {
                     Parameter param = new Parameter();
                     param.in("header").name(headerName).required(true);
 
-                    Schema<String> schema = new Schema<>();
-
-                    switch (headerType) {
-                        case "guid":
-                            break;
-                        default:
-                            schema.addType(headerType);
-                    }
-
-                    param.setSchema(schema);
+                    param.setSchema(headerSchemaFor(headerType));
                     operationParameters.add(param);
                 }
             }
+        }
+    }
+
+    private Schema<?> headerSchemaFor(final String headerType) {
+        switch (headerType) {
+            case "guid":
+                return new StringSchema().format("uuid");
+            case "integer":
+                return new IntegerSchema();
+            case "number":
+                return new NumberSchema();
+            case "boolean":
+                return new BooleanSchema();
+            case "string":
+            default:
+                return new StringSchema();
         }
     }
 
@@ -593,6 +595,32 @@ public class Swaggerizer {
         }
 
         addLegacyRouteSecuritySchemes(subroute, components, operation);
+    }
+
+    private void addDefaultAuthErrorResponseIfNeeded(
+            final RoutingDefinition subroute,
+            final Components components,
+            final Operation operation) {
+        if (!routeHasSecurity(subroute)) {
+            return;
+        }
+        if (operation.getResponses() == null) {
+            operation.setResponses(new ApiResponses());
+        }
+        if (operation.getResponses().containsKey("401")) {
+            return;
+        }
+
+        final ApiResponse response = new ApiResponse().description("Unauthorized");
+        addThingifierErrorContentIfNeeded(components, response, 401);
+        operation.getResponses().addApiResponse("401", response);
+    }
+
+    private boolean routeHasSecurity(final RoutingDefinition subroute) {
+        return subroute.hasAuthSchemeNames()
+                || subroute.isSecuredByBasicAuth()
+                || subroute.isSecuredByBearerAuth()
+                || subroute.isSecuredByApiKeyAuth();
     }
 
     private void addLegacyRouteSecuritySchemes(
@@ -678,6 +706,39 @@ public class Swaggerizer {
             }
         }
         return content;
+    }
+
+    private void addThingifierErrorContentIfNeeded(
+            final Components components, final ApiResponse response, final int statusCode) {
+        if (!isThingifierErrorStatus(statusCode) || response.getContent() != null) {
+            return;
+        }
+        ensureThingifierErrorSchema(components);
+        response.setContent(
+                responseContentWith(
+                        THINGIFIER_ERROR_SCHEMA_REF, refSchemaFor(THINGIFIER_ERROR_SCHEMA_REF)));
+    }
+
+    private boolean isThingifierErrorStatus(final int statusCode) {
+        return statusCode >= 400 && statusCode < 600;
+    }
+
+    private void ensureThingifierErrorSchema(final Components components) {
+        if (components.getSchemas() != null
+                && components.getSchemas().containsKey(THINGIFIER_ERROR_SCHEMA_NAME)) {
+            return;
+        }
+
+        final ObjectSchema errorSchema = new ObjectSchema();
+        errorSchema.setTitle(THINGIFIER_ERROR_SCHEMA_NAME);
+        errorSchema.setDescription("Standard Thingifier error response");
+
+        final ArraySchema messages = new ArraySchema();
+        messages.setItems(new StringSchema());
+        errorSchema.addProperties("errorMessages", messages);
+        errorSchema.addRequiredItem("errorMessages");
+
+        components.addSchemas(THINGIFIER_ERROR_SCHEMA_NAME, errorSchema);
     }
 
     private Schema<?> refSchemaFor(final String ref) {
@@ -783,32 +844,38 @@ public class Swaggerizer {
     }
 
     private static ObjectSchema asObjectSchema(EntityDefinition objectSchemaDefinition) {
-        return asObjectSchema(objectSchemaDefinition, false);
+        return asObjectSchema(objectSchemaDefinition, false, false);
     }
 
-    private static ObjectSchema asCreateObjectSchema(EntityDefinition objectSchemaDefinition) {
-        return asObjectSchema(objectSchemaDefinition, true);
+    private static ObjectSchema asCreateObjectSchema(
+            EntityDefinition objectSchemaDefinition, final boolean strongSchemas) {
+        return asObjectSchema(objectSchemaDefinition, true, null, true, strongSchemas);
     }
 
-    private static ObjectSchema asRequestViewObjectSchema(final EntityViewDefinition view) {
-        return asObjectSchema(view.getEntity(), true, view, true);
+    private static ObjectSchema asRequestViewObjectSchema(
+            final EntityViewDefinition view, final boolean strongSchemas) {
+        return asObjectSchema(view.getEntity(), true, view, true, strongSchemas);
     }
 
-    private static ObjectSchema asResponseViewObjectSchema(final EntityViewDefinition view) {
-        return asObjectSchema(view.getEntity(), false, view, false);
+    private static ObjectSchema asResponseViewObjectSchema(
+            final EntityViewDefinition view, final boolean strongSchemas) {
+        return asObjectSchema(view.getEntity(), false, view, false, strongSchemas);
     }
 
     // no auto fields in create
     private static ObjectSchema asObjectSchema(
-            EntityDefinition objectSchemaDefinition, Boolean skipAutos) {
-        return asObjectSchema(objectSchemaDefinition, skipAutos, null, false);
+            EntityDefinition objectSchemaDefinition,
+            Boolean skipAutos,
+            final boolean strongSchemas) {
+        return asObjectSchema(objectSchemaDefinition, skipAutos, null, false, strongSchemas);
     }
 
     private static ObjectSchema asObjectSchema(
             EntityDefinition objectSchemaDefinition,
             Boolean skipAutos,
             EntityViewDefinition view,
-            Boolean requestSchema) {
+            Boolean requestSchema,
+            final boolean strongSchemas) {
         ObjectSchema object = new ObjectSchema();
         object.setDescription(schemaDescriptionFor(objectSchemaDefinition));
         object.setTitle(view == null ? objectSchemaDefinition.getName() : view.getName());
@@ -828,7 +895,7 @@ public class Swaggerizer {
                     && (propertyDefinition.getType() == FieldType.AUTO_GUID
                             || propertyDefinition.getType() == FieldType.AUTO_INCREMENT)) {
             } else {
-                Schema<String> propertyItem = new Schema<>();
+                Schema<?> propertyItem = schemaForField(propertyDefinition);
                 final List<String> examples = propertyDefinition.getExamples();
                 if (!examples.isEmpty()) {
                     propertyItem.setExample(
@@ -844,27 +911,11 @@ public class Swaggerizer {
                     description.add(validationRule.getExplanation());
                 }
 
-                switch (propertyDefinition.getType()) {
-                    case AUTO_INCREMENT:
-                    case INTEGER:
-                        propertyItem.addType("integer");
-
-                        break;
-
-                    case FLOAT:
-                        propertyItem.addType("number");
-                        break;
-                    case BOOLEAN:
-                        propertyItem.addType("boolean");
-                        break;
-                    case AUTO_GUID:
-                    case STRING:
-                    case DATE:
-                    case ENUM: // TODO: properly do Enums
-                        propertyItem.addType("string");
-                        break;
-                    default:
-                        propertyItem.addType("string");
+                if (strongSchemas) {
+                    addOpenApiValidationFromField(propertyItem, propertyDefinition);
+                    if (requestSchema && propertyDefinition.isMandatory()) {
+                        object.addRequiredItem(propertyName);
+                    }
                 }
 
                 propertyItem.setDescription(joinStrings(description, "."));
@@ -879,6 +930,58 @@ public class Swaggerizer {
 
         object.setXml(xml);
         return object;
+    }
+
+    private static Schema<?> schemaForField(final Field field) {
+        switch (field.getType()) {
+            case AUTO_INCREMENT:
+            case INTEGER:
+                return new IntegerSchema();
+            case FLOAT:
+                return new NumberSchema();
+            case BOOLEAN:
+                return new BooleanSchema();
+            case AUTO_GUID:
+                return new StringSchema().format("uuid");
+            case DATE:
+                return new StringSchema().format("date");
+            case STRING:
+            case ENUM:
+            default:
+                return new StringSchema();
+        }
+    }
+
+    private static void addOpenApiValidationFromField(final Schema<?> schema, final Field field) {
+        for (ValidationRule rule : field.getAllValidationRules()) {
+            if (rule instanceof NotEmptyValidationRule) {
+                schema.setMinLength(1);
+            }
+            if (rule instanceof MaximumLengthValidationRule) {
+                schema.setMaxLength(((MaximumLengthValidationRule) rule).getMaximumLength());
+            }
+            if (rule instanceof MatchesRegexValidationRule) {
+                schema.setPattern(((MatchesRegexValidationRule) rule).getRegexToMatch());
+            }
+            if (rule instanceof IntegerValidationRule) {
+                final IntegerValidationRule integerRule = (IntegerValidationRule) rule;
+                if (integerRule.getMinimumIntegerValue() != null) {
+                    schema.setMinimum(BigDecimal.valueOf(integerRule.getMinimumIntegerValue()));
+                }
+                if (integerRule.getMaximumIntegerValue() != null) {
+                    schema.setMaximum(BigDecimal.valueOf(integerRule.getMaximumIntegerValue()));
+                }
+            }
+            if (rule instanceof FloatValidationRule) {
+                final FloatValidationRule floatRule = (FloatValidationRule) rule;
+                if (floatRule.getMinimumFloatValue() != null) {
+                    schema.setMinimum(BigDecimal.valueOf(floatRule.getMinimumFloatValue()));
+                }
+                if (floatRule.getMaximumFloatValue() != null) {
+                    schema.setMaximum(BigDecimal.valueOf(floatRule.getMaximumFloatValue()));
+                }
+            }
+        }
     }
 
     private static Object openApiExampleValueFor(final Field field, final String example) {
@@ -948,16 +1051,22 @@ public class Swaggerizer {
             final OpenApiSpecificationVersion version,
             final boolean permissive,
             final String preferredServerUrl) {
+        final SwaggerGenerationConfig config = configFor(version, permissive);
+        return asJsonWithPreferredServer(config, preferredServerUrl);
+    }
+
+    public String asJsonWithPreferredServer(
+            final SwaggerGenerationConfig config, final String preferredServerUrl) {
+        final OpenApiSpecificationVersion version = config.openApiSpecificationVersion;
         if (version.requiresOpenApi32Finalization()) {
             return new OpenApi32Finalizer()
                     .finalizeJson(
                             asJsonWithPreferredServer(
-                                    OpenApiSpecificationVersion.OPENAPI_3_1,
-                                    permissive,
+                                    config.copyFor(OpenApiSpecificationVersion.OPENAPI_3_1),
                                     preferredServerUrl));
         }
 
-        final OpenAPI api = permissive ? swaggerPermissive(version) : swagger(version);
+        final OpenAPI api = swagger(config);
         preferServer(api, preferredServerUrl);
         return pretty(api, version);
     }
@@ -971,13 +1080,28 @@ public class Swaggerizer {
     }
 
     public String asJson(final OpenApiSpecificationVersion version, boolean permissive) {
+        return asJson(configFor(version, permissive));
+    }
+
+    public String asJson(final SwaggerGenerationConfig config) {
+        final OpenApiSpecificationVersion version = config.openApiSpecificationVersion;
         if (version.requiresOpenApi32Finalization()) {
             return new OpenApi32Finalizer()
-                    .finalizeJson(asJson(OpenApiSpecificationVersion.OPENAPI_3_1, permissive));
+                    .finalizeJson(asJson(config.copyFor(OpenApiSpecificationVersion.OPENAPI_3_1)));
         }
 
         if (version != OpenApiSpecificationVersion.OPENAPI_3_1) {
-            return pretty(permissive ? swaggerPermissive(version) : swagger(version), version);
+            return pretty(swagger(config), version);
+        }
+
+        final boolean cacheable =
+                !config.strongSchemas
+                        && config.pathParameterPlacement
+                                == SwaggerGenerationConfig.PathParameterPlacement.PATH
+                        && (!config.includeMethodNotAllowedEndpoints
+                                || !config.includeFieldValidation);
+        if (!cacheable) {
+            return pretty(swagger(config), version);
         }
 
         if (apiNormal == null) {
@@ -986,11 +1110,20 @@ public class Swaggerizer {
         if (apiPermissive == null) {
             apiPermissive = swaggerPermissive();
         }
-        if (permissive) {
+        if (config.includeMethodNotAllowedEndpoints && !config.includeFieldValidation) {
             return pretty(apiPermissive, version);
         } else {
             return pretty(apiNormal, version);
         }
+    }
+
+    private SwaggerGenerationConfig configFor(
+            final OpenApiSpecificationVersion version, final boolean permissive) {
+        final SwaggerGenerationConfig config = new SwaggerGenerationConfig();
+        config.includeMethodNotAllowedEndpoints = permissive;
+        config.includeFieldValidation = !permissive;
+        config.openApiSpecificationVersion = version;
+        return config;
     }
 
     private String pretty(final OpenAPI api, final OpenApiSpecificationVersion version) {

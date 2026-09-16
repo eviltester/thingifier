@@ -1104,6 +1104,12 @@ public final class ThingifierApiSpec {
                             securitySpec.apiKey(
                                     definition.name(), definition.credentialSourceName());
                             route.secureWithApiKey(definition.name());
+                            route.addPossibleStatus(
+                                    RoutingStatus.returnValue(
+                                            definition.missingRequiredCredentialStatusCode()));
+                            route.addPossibleStatus(
+                                    RoutingStatus.returnValue(
+                                            definition.invalidCredentialStatusCode()));
                         });
     }
 
