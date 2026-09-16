@@ -659,7 +659,7 @@ public class WriteMethodPolicyTest {
         Assertions.assertTrue(
                 route(definition, RoutingVerb.PUT, "notes/:id").status().isReturnedFromCall());
         Assertions.assertEquals(
-                Set.of(200, 404, 422, 409, 415),
+                Set.of(200, 400, 404, 422, 409, 415),
                 statusCodes(route(definition, RoutingVerb.PUT, "notes/:id")));
         Assertions.assertEquals(
                 "OPTIONS, GET, HEAD, POST, QUERY",
@@ -724,14 +724,14 @@ public class WriteMethodPolicyTest {
         unsupported.apiConfig().writeMethods().entities().putCan();
 
         Assertions.assertEquals(
-                Set.of(201, 422, 409, 415),
+                Set.of(201, 400, 422, 409, 415),
                 statusCodes(
                         route(
                                 new ApiRoutingDefinitionDocGenerator(createOnly).generate(""),
                                 RoutingVerb.PUT,
                                 "notes/:id")));
         Assertions.assertEquals(
-                Set.of(201, 200, 404, 422, 409, 415),
+                Set.of(201, 200, 400, 404, 422, 409, 415),
                 statusCodes(
                         route(
                                 new ApiRoutingDefinitionDocGenerator(createAndUpdate).generate(""),
@@ -760,7 +760,7 @@ public class WriteMethodPolicyTest {
                         .status()
                         .isReturnedFromCall());
         Assertions.assertEquals(
-                Set.of(201, 200, 404, 422, 409, 415),
+                Set.of(201, 200, 400, 404, 422, 409, 415),
                 statusCodes(route(collectionPutDefinition, RoutingVerb.PUT, "notes")));
         Assertions.assertEquals(
                 "OPTIONS, GET, HEAD, POST, QUERY, PUT",

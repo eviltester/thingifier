@@ -127,12 +127,14 @@ public final class WriteMethodRoutePolicy {
         route.replaceStatus(RoutingStatus.returnedFromCall());
         if (createRoute) {
             ensureStatus(route, 201);
+            ensureStatus(route, 400);
             ensureStatus(route, 415);
             route.returnPayload(201, entityName);
             route.requestPayload("create_" + entityName);
             return;
         }
         ensureStatus(route, 200);
+        ensureStatus(route, 400);
         ensureStatus(route, 404);
         ensureStatus(route, 415);
         ensureStatus(route, 422);
@@ -153,6 +155,7 @@ public final class WriteMethodRoutePolicy {
         route.replaceStatus(RoutingStatus.returnedFromCall());
         route.clearPossibleStatuses();
         route.clearReturnPayloads();
+        ensureStatus(route, 400);
         if (operations.contains(EntityWriteOperation.CREATE)) {
             ensureStatus(route, 201);
             route.returnPayload(201, entityName);

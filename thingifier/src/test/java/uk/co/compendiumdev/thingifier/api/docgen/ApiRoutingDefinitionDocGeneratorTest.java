@@ -47,10 +47,10 @@ public class ApiRoutingDefinitionDocGeneratorTest {
 
         Assertions.assertTrue(
                 statuses(route(definition, RoutingVerb.POST, "todos/:id"))
-                        .containsAll(Set.of(200, 404, 415, 422, 409)));
+                        .containsAll(Set.of(200, 400, 404, 415, 422, 409)));
         Assertions.assertTrue(
                 statuses(route(definition, RoutingVerb.PUT, "todos/:id"))
-                        .containsAll(Set.of(200, 404, 415, 422, 409)));
+                        .containsAll(Set.of(200, 400, 404, 415, 422, 409)));
         Assertions.assertTrue(
                 statuses(route(definition, RoutingVerb.DELETE, "todos/:id"))
                         .containsAll(Set.of(204, 404)));
