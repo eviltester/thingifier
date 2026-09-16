@@ -237,6 +237,32 @@ class JavalinHttpServerTest {
                 });
     }
 
+    @Test
+    void headResponseCanAdvertiseWouldBeContentLengthWithoutWritingBody() throws Exception {
+        withStartedServer(
+                registry ->
+                        registry.add(
+                                HttpRouteVerb.HEAD,
+                                "/head-not-found",
+                                (request, response) -> {
+                                    response.type("application/json");
+                                    response.status(404);
+                                    response.body("");
+                                    response.header("Content-Length", "62");
+                                    return "";
+                                }),
+                port -> {
+                    String response = rawHttp("HEAD", "/head-not-found", port);
+                    String responseLowerCase = response.toLowerCase();
+
+                    Assertions.assertTrue(response.startsWith("HTTP/1.1 404 Not Found"), response);
+                    Assertions.assertTrue(
+                            responseLowerCase.contains("content-length: 62"), response);
+                    Assertions.assertFalse(response.contains("500 Server Error"), response);
+                    Assertions.assertTrue(response.endsWith("\r\n\r\n"), response);
+                });
+    }
+
     private HttpResponse<String> get(final String url) throws Exception {
         return HttpClient.newHttpClient()
                 .send(

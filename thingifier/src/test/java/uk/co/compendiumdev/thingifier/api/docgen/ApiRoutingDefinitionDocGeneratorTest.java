@@ -21,7 +21,7 @@ public class ApiRoutingDefinitionDocGeneratorTest {
 
         RoutingDefinition route = route(definition, RoutingVerb.POST, "todos");
 
-        Assertions.assertTrue(statuses(route).containsAll(Set.of(201, 400, 422, 409)));
+        Assertions.assertTrue(statuses(route).containsAll(Set.of(201, 400, 415, 422, 409)));
     }
 
     @Test
@@ -37,6 +37,7 @@ public class ApiRoutingDefinitionDocGeneratorTest {
         Assertions.assertTrue(
                 query.getDocumentation().contains("application/vnd.thingifier.query+json"));
         Assertions.assertEquals("OPTIONS, GET, HEAD, POST, QUERY", options.headerValue());
+        Assertions.assertEquals(200, options.status().value());
     }
 
     @Test
@@ -46,10 +47,10 @@ public class ApiRoutingDefinitionDocGeneratorTest {
 
         Assertions.assertTrue(
                 statuses(route(definition, RoutingVerb.POST, "todos/:id"))
-                        .containsAll(Set.of(200, 404, 422, 409)));
+                        .containsAll(Set.of(200, 404, 415, 422, 409)));
         Assertions.assertTrue(
                 statuses(route(definition, RoutingVerb.PUT, "todos/:id"))
-                        .containsAll(Set.of(200, 404, 422, 409)));
+                        .containsAll(Set.of(200, 404, 415, 422, 409)));
         Assertions.assertTrue(
                 statuses(route(definition, RoutingVerb.DELETE, "todos/:id"))
                         .containsAll(Set.of(204, 404)));

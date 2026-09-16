@@ -712,13 +712,34 @@ public class RestApiDocumentationGenerator {
     }
 
     private String openApiVersionLink(final String version, final String specUrl) {
-        return "<li>OpenAPI v %s JSON %s %s - %s %s</li>%n"
+        return """
+            <li>OpenAPI v %s JSON
+            <ul>
+            <li>%s (%s)</li>
+            <li>%s (%s)</li>
+            <li>%s (%s)</li>
+            <li>%s (%s)</li>
+            <li>%s (%s)</li>
+            </ul>
+            </li>
+            """
                 .formatted(
                         version,
-                        href("[standard validation]", specUrl),
-                        href("[download]", specUrl + "?download"),
-                        href("[less validation]", specUrl + "?permissive"),
-                        href("[download]", specUrl + "?permissive&amp;download"));
+                        href("standard validation", specUrl),
+                        href("download JSON file", specUrl + "?download"),
+                        href("strong schemas", specUrl + "?strongschema=true"),
+                        href("download JSON file", specUrl + "?strongschema=true&amp;download"),
+                        href("operation parameters", specUrl + "?pathparams=operation"),
+                        href("download JSON file", specUrl + "?pathparams=operation&amp;download"),
+                        href(
+                                "strong schemas + operation parameters",
+                                specUrl + "?strongschema=true&amp;pathparams=operation"),
+                        href(
+                                "download JSON file",
+                                specUrl
+                                        + "?strongschema=true&amp;pathparams=operation&amp;download"),
+                        href("less validation", specUrl + "?permissive"),
+                        href("download JSON file", specUrl + "?permissive&amp;download"));
     }
 
     private String resolveDocsTitle(final ThingifierApiDocumentationDefn apiDocDefn) {

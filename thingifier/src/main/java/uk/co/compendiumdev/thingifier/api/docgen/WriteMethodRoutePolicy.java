@@ -127,12 +127,14 @@ public final class WriteMethodRoutePolicy {
         route.replaceStatus(RoutingStatus.returnedFromCall());
         if (createRoute) {
             ensureStatus(route, 201);
+            ensureStatus(route, 415);
             route.returnPayload(201, entityName);
             route.requestPayload("create_" + entityName);
             return;
         }
         ensureStatus(route, 200);
         ensureStatus(route, 404);
+        ensureStatus(route, 415);
         ensureStatus(route, 422);
         ensureStatus(route, 409);
         route.returnPayload(200, entityName);
@@ -160,6 +162,7 @@ public final class WriteMethodRoutePolicy {
             ensureStatus(route, 404);
             route.returnPayload(200, entityName);
         }
+        ensureStatus(route, 415);
         ensureStatus(route, 422);
         ensureStatus(route, 409);
         route.requestPayload(entityName);
@@ -176,6 +179,7 @@ public final class WriteMethodRoutePolicy {
                     || operations.contains(RelationshipWriteOperation.CONNECT_EXISTING)
                     || operations.contains(RelationshipWriteOperation.UPDATE_CONNECTED)) {
                 route.replaceStatus(RoutingStatus.returnedFromCall());
+                ensureStatus(route, 415);
             } else {
                 methodNotAllowed(route);
             }

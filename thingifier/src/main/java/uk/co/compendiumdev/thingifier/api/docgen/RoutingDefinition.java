@@ -1,9 +1,15 @@
 package uk.co.compendiumdev.thingifier.api.docgen;
 
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import uk.co.compendiumdev.thingifier.api.http.headers.headerparser.ContentTypeHeaderParser;
 import uk.co.compendiumdev.thingifier.api.response.ResponseHeader;
 import uk.co.compendiumdev.thingifier.api.security.SecuritySchemeNames;
@@ -33,6 +39,9 @@ public class RoutingDefinition {
     private String requestPayload;
     private List<String> requestContentTypes;
     private List<RequestUrlParameter> requestUrlParams;
+    private List<RequestQueryParameter> requestQueryParams;
+    private Set<Integer> responseStatusesWithSuppressedBodies;
+    private Map<Integer, Map<String, ResponseContentDefinition>> customResponseContent;
     private HashMap<String, String> customHeaders;
     private HashMap<String, String> responseHeaders;
     private boolean usesBasicAuth = false;
@@ -77,6 +86,9 @@ public class RoutingDefinition {
         filterableEntityDefn = null;
         possibleStatusResponses = new ArrayList<>();
         requestUrlParams = new ArrayList<>();
+        requestQueryParams = new ArrayList<>();
+        responseStatusesWithSuppressedBodies = new HashSet<>();
+        customResponseContent = new LinkedHashMap<>();
         returnPayload = new HashMap<>();
         requestPayload = null;
         requestContentTypes = new ArrayList<>();
@@ -180,6 +192,10 @@ public class RoutingDefinition {
         copy.requestPayload = requestPayload;
         copy.requestContentTypes = new ArrayList<>(requestContentTypes);
         copy.requestUrlParams = new ArrayList<>(requestUrlParams);
+        copy.requestQueryParams = new ArrayList<>(requestQueryParams);
+        copy.responseStatusesWithSuppressedBodies =
+                new HashSet<>(responseStatusesWithSuppressedBodies);
+        copy.customResponseContent = copyCustomResponseContent();
         copy.customHeaders = new HashMap<>(customHeaders);
         copy.responseHeaders = new HashMap<>(responseHeaders);
         copy.usesBasicAuth = usesBasicAuth;
@@ -401,6 +417,91 @@ public class RoutingDefinition {
     public RoutingDefinition clearReturnPayloads() {
         returnPayload.clear();
         return this;
+    }
+
+    /**
+     * Adds response content schema metadata for a specific status and media type.
+     *
+     * @param statusCode response status code
+     * @param mediaType response media type
+     * @param schema OpenAPI schema to document for the response content
+     * @return this definition so route metadata can be chained
+     */
+    public RoutingDefinition responseSchema(
+            final int statusCode, final String mediaType, final Schema<?> schema) {
+        if (schema == null || isBlank(mediaType)) {
+            return this;
+        }
+        responseContentFor(statusCode, mediaType).schema = schema;
+        return this;
+    }
+
+    /**
+     * Adds response content schema-ref metadata for a specific status and media type.
+     *
+     * @param statusCode response status code
+     * @param mediaType response media type
+     * @param schemaRef OpenAPI schema reference
+     * @return this definition so route metadata can be chained
+     */
+    public RoutingDefinition responseSchemaRef(
+            final int statusCode, final String mediaType, final String schemaRef) {
+        if (isBlank(schemaRef)) {
+            return this;
+        }
+        final Schema<String> schema = new Schema<>();
+        schema.set$ref(schemaRef.trim());
+        return responseSchema(statusCode, mediaType, schema);
+    }
+
+    /**
+     * Adds string response content schema metadata for a specific status and media type.
+     *
+     * @param statusCode response status code
+     * @param mediaType response media type
+     * @return this definition so route metadata can be chained
+     */
+    public RoutingDefinition responseStringSchema(final int statusCode, final String mediaType) {
+        return responseSchema(statusCode, mediaType, new StringSchema());
+    }
+
+    /**
+     * Adds a response example for a specific status and media type.
+     *
+     * @param statusCode response status code
+     * @param mediaType response media type
+     * @param example example object to serialize in OpenAPI
+     * @return this definition so route metadata can be chained
+     */
+    public RoutingDefinition responseExample(
+            final int statusCode, final String mediaType, final Object example) {
+        if (isBlank(mediaType)) {
+            return this;
+        }
+        responseContentFor(statusCode, mediaType).example = example;
+        return this;
+    }
+
+    /**
+     * Reports whether explicit response content exists for a status.
+     *
+     * @param statusCode response status code
+     * @return true when content metadata exists
+     */
+    public boolean hasResponseContentFor(final int statusCode) {
+        return customResponseContent.containsKey(statusCode)
+                && !customResponseContent.get(statusCode).isEmpty();
+    }
+
+    /**
+     * Returns explicit response content metadata for a status.
+     *
+     * @param statusCode response status code
+     * @return media-type keyed response content metadata
+     */
+    public Map<String, ResponseContentDefinition> responseContentFor(final int statusCode) {
+        return new LinkedHashMap<>(
+                customResponseContent.getOrDefault(statusCode, new LinkedHashMap<>()));
     }
 
     /**
@@ -647,6 +748,34 @@ public class RoutingDefinition {
         return new ArrayList<>(returnPayload.keySet());
     }
 
+    private ResponseContentDefinition responseContentFor(
+            final int statusCode, final String mediaType) {
+        customResponseContent.putIfAbsent(statusCode, new LinkedHashMap<>());
+        final Map<String, ResponseContentDefinition> contentByMediaType =
+                customResponseContent.get(statusCode);
+        final String normalizedMediaType = mediaType.trim();
+        contentByMediaType.putIfAbsent(normalizedMediaType, new ResponseContentDefinition());
+        return contentByMediaType.get(normalizedMediaType);
+    }
+
+    private Map<Integer, Map<String, ResponseContentDefinition>> copyCustomResponseContent() {
+        final Map<Integer, Map<String, ResponseContentDefinition>> copy = new LinkedHashMap<>();
+        for (Map.Entry<Integer, Map<String, ResponseContentDefinition>> statusEntry :
+                customResponseContent.entrySet()) {
+            final Map<String, ResponseContentDefinition> contentByMediaType = new LinkedHashMap<>();
+            for (Map.Entry<String, ResponseContentDefinition> contentEntry :
+                    statusEntry.getValue().entrySet()) {
+                contentByMediaType.put(contentEntry.getKey(), contentEntry.getValue().copy());
+            }
+            copy.put(statusEntry.getKey(), contentByMediaType);
+        }
+        return copy;
+    }
+
+    private boolean isBlank(final String value) {
+        return value == null || value.trim().isEmpty();
+    }
+
     /**
      * Adds a request path parameter using the field name.
      *
@@ -705,6 +834,87 @@ public class RoutingDefinition {
      */
     public List<RequestUrlParameter> getRequestUrlParameters() {
         return new ArrayList<>(requestUrlParams);
+    }
+
+    /**
+     * Adds a request query parameter using the field name.
+     *
+     * @param aField field metadata for the query parameter
+     * @return this definition so route metadata can be chained
+     */
+    public RoutingDefinition addRequestQueryParam(Field aField) {
+        if (aField == null) {
+            return this;
+        }
+        requestQueryParams.add(new RequestQueryParameter(aField.getName(), aField));
+        return this;
+    }
+
+    /**
+     * Adds a request query parameter with an explicit parameter name.
+     *
+     * @param parameterName query parameter name
+     * @param field field metadata for the query parameter
+     * @return this definition so route metadata can be chained
+     */
+    public RoutingDefinition addRequestQueryParam(final String parameterName, final Field field) {
+        if (parameterName == null || field == null) {
+            return this;
+        }
+        requestQueryParams.add(new RequestQueryParameter(parameterName, field));
+        return this;
+    }
+
+    /**
+     * Reports whether the route defines request query parameters.
+     *
+     * @return true when query parameter metadata is present
+     */
+    public Boolean hasRequestQueryParams() {
+        return !requestQueryParams.isEmpty();
+    }
+
+    /**
+     * Returns field metadata for request query parameters.
+     *
+     * @return list of query parameter fields
+     */
+    public List<Field> getRequestQueryParams() {
+        List<Field> fields = new ArrayList<>();
+        for (RequestQueryParameter parameter : requestQueryParams) {
+            fields.add(parameter.field());
+        }
+        return fields;
+    }
+
+    /**
+     * Returns full request query parameter metadata.
+     *
+     * @return query parameter metadata
+     */
+    public List<RequestQueryParameter> getRequestQueryParameters() {
+        return new ArrayList<>(requestQueryParams);
+    }
+
+    /**
+     * Marks one response status as intentionally bodyless for documentation.
+     *
+     * @param statusCode response status code
+     * @return this definition so route metadata can be chained
+     */
+    public RoutingDefinition suppressResponseBodyFor(final int statusCode) {
+        responseStatusesWithSuppressedBodies.add(statusCode);
+        return this;
+    }
+
+    /**
+     * Reports whether one response status should be documented without content.
+     *
+     * @param statusCode response status code
+     * @return true when response body content should be omitted
+     */
+    public boolean hasSuppressedResponseBodyFor(final int statusCode) {
+        return responseStatusesWithSuppressedBodies.contains(statusCode);
     }
 
     /**
@@ -1043,6 +1253,74 @@ public class RoutingDefinition {
          */
         public Field field() {
             return field;
+        }
+    }
+
+    public static final class RequestQueryParameter {
+
+        private final String name;
+        private final Field field;
+
+        /**
+         * Creates request query parameter metadata.
+         *
+         * @param name query parameter name
+         * @param field field metadata for documentation
+         */
+        public RequestQueryParameter(final String name, final Field field) {
+            this.name = name;
+            this.field = field;
+        }
+
+        /**
+         * Returns the query parameter name.
+         *
+         * @return query parameter name
+         */
+        public String name() {
+            return name;
+        }
+
+        /**
+         * Returns the field metadata for the query parameter.
+         *
+         * @return field metadata
+         */
+        public Field field() {
+            return field;
+        }
+    }
+
+    public static final class ResponseContentDefinition {
+
+        private Schema<?> schema;
+        private Object example;
+
+        private ResponseContentDefinition() {}
+
+        /**
+         * Returns the OpenAPI schema configured for the response content.
+         *
+         * @return response content schema, or null when only an example is configured
+         */
+        public Schema<?> schema() {
+            return schema;
+        }
+
+        /**
+         * Returns the response example configured for the response content.
+         *
+         * @return response example, or null when absent
+         */
+        public Object example() {
+            return example;
+        }
+
+        private ResponseContentDefinition copy() {
+            final ResponseContentDefinition copy = new ResponseContentDefinition();
+            copy.schema = schema;
+            copy.example = example;
+            return copy;
         }
     }
 }

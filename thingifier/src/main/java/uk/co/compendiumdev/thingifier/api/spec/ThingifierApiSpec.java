@@ -1216,7 +1216,7 @@ public final class ThingifierApiSpec {
                     fixedOptionsRouteDocumentation(routeUrl),
                     RoutingVerb.OPTIONS,
                     routeUrl,
-                    RoutingStatus.returnValue(204, "the fixed endpoint verb options"),
+                    RoutingStatus.returnValue(200, "the fixed endpoint verb options"),
                     new ResponseHeader("Allow", "OPTIONS"));
         }
     }
@@ -1286,6 +1286,7 @@ public final class ThingifierApiSpec {
                         .returnPayload(200, entity.getName())
                         .requestPayload(entity.getName())
                         .addPossibleStatus(RoutingStatus.returnValue(404))
+                        .addPossibleStatus(RoutingStatus.returnValue(415))
                         .addPossibleStatus(RoutingStatus.returnValue(422))
                         .addPossibleStatus(RoutingStatus.returnValue(409));
                 break;
@@ -1296,6 +1297,7 @@ public final class ThingifierApiSpec {
                         .returnPayload(201, entity.getName())
                         .requestPayload(entity.getName())
                         .addPossibleStatus(RoutingStatus.returnValue(404))
+                        .addPossibleStatus(RoutingStatus.returnValue(415))
                         .addPossibleStatus(RoutingStatus.returnValue(422))
                         .addPossibleStatus(RoutingStatus.returnValue(409));
                 break;

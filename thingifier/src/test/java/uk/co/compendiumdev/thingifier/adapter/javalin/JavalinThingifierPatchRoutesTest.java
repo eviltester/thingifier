@@ -85,7 +85,7 @@ class JavalinThingifierPatchRoutesTest {
                         "",
                         null);
 
-        Assertions.assertEquals(204, options.statusCode());
+        Assertions.assertEquals(200, options.statusCode());
         Assertions.assertEquals(
                 "OPTIONS, GET, HEAD, POST, PUT, PATCH, DELETE",
                 options.headers().firstValue("Allow").orElse(""));
