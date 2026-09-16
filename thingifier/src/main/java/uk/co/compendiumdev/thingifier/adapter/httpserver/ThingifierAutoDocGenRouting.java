@@ -122,9 +122,7 @@ public class ThingifierAutoDocGenRouting {
                         System.out.println(
                                 "Possibly incomplete swagger generation, api not defined from model");
                     }
-                    if (config.includeMethodNotAllowedEndpoints && !config.includeFieldValidation) {
-                        nameprefix = nameprefix + "permissive-";
-                    }
+                    nameprefix = nameprefix + variantFilenamePrefix(config);
                     response.header("Content-Type", "application/octet-stream");
                     response.header(
                             "Content-Disposition",
@@ -152,11 +150,7 @@ public class ThingifierAutoDocGenRouting {
                         response.header(
                                 "Content-Disposition",
                                 "attachment; filename=\"%s\""
-                                        .formatted(
-                                                openApiDownloadFilename(
-                                                        path,
-                                                        config.includeMethodNotAllowedEndpoints
-                                                                && !config.includeFieldValidation)));
+                                        .formatted(openApiDownloadFilename(path, config)));
                     }
                     return new Swaggerizer(apiDefn)
                             .asJsonWithPreferredServer(config, HttpRequestOrigin.from(request));
@@ -192,11 +186,26 @@ public class ThingifierAutoDocGenRouting {
         return SwaggerGenerationConfig.PathParameterPlacement.PATH;
     }
 
-    private String openApiDownloadFilename(final String path, final boolean permissive) {
+    private String openApiDownloadFilename(
+            final String path, final SwaggerGenerationConfig config) {
         final String filename = path.substring(path.lastIndexOf("/") + 1);
-        if (permissive) {
-            return "permissive-" + filename;
+        return variantFilenamePrefix(config) + filename;
+    }
+
+    private String variantFilenamePrefix(final SwaggerGenerationConfig config) {
+        final StringBuilder prefix = new StringBuilder();
+
+        if (config.includeMethodNotAllowedEndpoints) {
+            prefix.append("permissive-");
         }
-        return filename;
+        if (config.strongSchemas) {
+            prefix.append("strong-");
+        }
+        if (config.pathParameterPlacement
+                == SwaggerGenerationConfig.PathParameterPlacement.OPERATION) {
+            prefix.append("operational-");
+        }
+
+        return prefix.toString();
     }
 }

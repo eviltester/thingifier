@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import uk.co.compendiumdev.thingifier.Thingifier;
 import uk.co.compendiumdev.thingifier.api.docgen.ApiRoutingDefinition;
@@ -196,8 +197,10 @@ public class Swaggerizer {
                                         new ApiResponse()
                                                 .description(subroute.status().description());
                                 addRouteResponseHeaders(subroute, response);
+                                addExplicitResponseContentIfPresent(
+                                        response, subroute, subroute.status().value());
                                 addThingifierErrorContentIfNeeded(
-                                        components, response, subroute.status().value());
+                                        components, response, subroute, subroute.status().value());
                                 operation.setResponses(
                                         new ApiResponses()
                                                 .addApiResponse(
@@ -214,26 +217,37 @@ public class Swaggerizer {
                                             new ApiResponse()
                                                     .description(possibleStatus.description());
                                     addRouteResponseHeaders(subroute, response);
-                                    if (subroute.hasReturnPayloadFor(possibleStatus.value())) {
-                                        // assume that all payloads are setup as components
-                                        if (routingDefinitions.hasObjectSchemaNamed(
-                                                subroute.getReturnPayloadFor(
-                                                        possibleStatus.value()))) {
-                                            String payloadName =
+                                    if (!shouldOmitResponseContent(
+                                            subroute, possibleStatus.value())) {
+                                        addExplicitResponseContentIfPresent(
+                                                response, subroute, possibleStatus.value());
+                                        if (response.getContent() != null) {
+                                            // Explicit route content takes precedence.
+                                        } else if (subroute.hasReturnPayloadFor(
+                                                possibleStatus.value())) {
+                                            // assume that all payloads are setup as components
+                                            if (routingDefinitions.hasObjectSchemaNamed(
                                                     subroute.getReturnPayloadFor(
-                                                            possibleStatus.value());
-                                            String ref = "#/components/schemas/" + payloadName;
+                                                            possibleStatus.value()))) {
+                                                String payloadName =
+                                                        subroute.getReturnPayloadFor(
+                                                                possibleStatus.value());
+                                                String ref = "#/components/schemas/" + payloadName;
 
-                                            response.setContent(
-                                                    responseContentWith(
-                                                            ref,
-                                                            xmlResponseSchemaFor(
-                                                                    routingDefinitions,
-                                                                    payloadName)));
+                                                response.setContent(
+                                                        responseContentWith(
+                                                                ref,
+                                                                xmlResponseSchemaFor(
+                                                                        routingDefinitions,
+                                                                        payloadName)));
+                                            }
+                                        } else {
+                                            addThingifierErrorContentIfNeeded(
+                                                    components,
+                                                    response,
+                                                    subroute,
+                                                    possibleStatus.value());
                                         }
-                                    } else {
-                                        addThingifierErrorContentIfNeeded(
-                                                components, response, possibleStatus.value());
                                     }
 
                                     responses.addApiResponse(
@@ -289,28 +303,13 @@ public class Swaggerizer {
                                 for (RoutingDefinition.RequestUrlParameter urlParameter :
                                         subroute.getRequestUrlParameters()) {
                                     Field aField = urlParameter.field();
-                                    Parameter param = new Parameter();
-                                    param.in("path")
-                                            .name(urlParameter.name())
-                                            .required(true)
-                                            .example(
-                                                    openApiExampleValueFor(
-                                                            aField,
-                                                            aField.getRandomExampleValue()));
-                                    if (aField.hasDescription()) {
-                                        param.setDescription(aField.getDescription());
-                                    }
-
-                                    // if it is in path it will always be required
-                                    // but we can remove the type validation
-                                    if (!config.includeFieldValidation) {
-                                        param.setAllowEmptyValue(true);
-                                    }
-
-                                    param.setSchema(
-                                            config.includeFieldValidation
-                                                    ? schemaForField(aField)
-                                                    : new Schema<>());
+                                    Parameter param =
+                                            fieldParameter(
+                                                    "path",
+                                                    urlParameter.name(),
+                                                    aField,
+                                                    true,
+                                                    config.includeFieldValidation);
                                     urlParameters.add(param);
                                 }
 
@@ -320,6 +319,19 @@ public class Swaggerizer {
                                     operationParameters.addAll(urlParameters);
                                 } else {
                                     addUrlParametersAtEndpointLevel(path, urlParameters);
+                                }
+                            }
+
+                            if (subroute.hasRequestQueryParams()) {
+                                for (RoutingDefinition.RequestQueryParameter queryParameter :
+                                        subroute.getRequestQueryParameters()) {
+                                    operationParameters.add(
+                                            fieldParameter(
+                                                    "query",
+                                                    queryParameter.name(),
+                                                    queryParameter.field(),
+                                                    false,
+                                                    config.includeFieldValidation));
                                 }
                             }
 
@@ -418,6 +430,35 @@ public class Swaggerizer {
                 path.addParametersItem(param);
             }
         }
+    }
+
+    private Parameter fieldParameter(
+            final String in,
+            final String name,
+            final Field field,
+            final boolean required,
+            final boolean includeFieldValidation) {
+        Parameter param = new Parameter();
+        param.in(in)
+                .name(name)
+                .required(required)
+                .example(openApiExampleValueFor(field, field.getRandomExampleValue()));
+        if (field.hasDescription()) {
+            param.setDescription(field.getDescription());
+        }
+
+        if (!includeFieldValidation) {
+            param.setAllowEmptyValue(true);
+        }
+
+        param.setSchema(includeFieldValidation ? schemaForField(field) : new Schema<>());
+        return param;
+    }
+
+    private boolean shouldOmitResponseContent(
+            final RoutingDefinition subroute, final int statusCode) {
+        return subroute.verb() == RoutingVerb.HEAD
+                || subroute.hasSuppressedResponseBodyFor(statusCode);
     }
 
     private boolean shouldDocumentSortParameter(
@@ -612,7 +653,7 @@ public class Swaggerizer {
         }
 
         final ApiResponse response = new ApiResponse().description("Unauthorized");
-        addThingifierErrorContentIfNeeded(components, response, 401);
+        addThingifierErrorContentIfNeeded(components, response, subroute, 401);
         operation.getResponses().addApiResponse("401", response);
     }
 
@@ -708,9 +749,38 @@ public class Swaggerizer {
         return content;
     }
 
+    private void addExplicitResponseContentIfPresent(
+            final ApiResponse response, final RoutingDefinition subroute, final int statusCode) {
+        if (shouldOmitResponseContent(subroute, statusCode)
+                || !subroute.hasResponseContentFor(statusCode)) {
+            return;
+        }
+
+        Content content = new Content();
+        for (Map.Entry<String, RoutingDefinition.ResponseContentDefinition> contentEntry :
+                subroute.responseContentFor(statusCode).entrySet()) {
+            final RoutingDefinition.ResponseContentDefinition contentDefinition =
+                    contentEntry.getValue();
+            final MediaType mediaType = new MediaType();
+            if (contentDefinition.schema() != null) {
+                mediaType.setSchema(contentDefinition.schema());
+            }
+            if (contentDefinition.example() != null) {
+                mediaType.setExample(contentDefinition.example());
+            }
+            content.addMediaType(contentEntry.getKey(), mediaType);
+        }
+        response.setContent(content);
+    }
+
     private void addThingifierErrorContentIfNeeded(
-            final Components components, final ApiResponse response, final int statusCode) {
-        if (!isThingifierErrorStatus(statusCode) || response.getContent() != null) {
+            final Components components,
+            final ApiResponse response,
+            final RoutingDefinition subroute,
+            final int statusCode) {
+        if (shouldOmitResponseContent(subroute, statusCode)
+                || !isThingifierErrorStatus(statusCode)
+                || response.getContent() != null) {
             return;
         }
         ensureThingifierErrorSchema(components);
@@ -735,7 +805,7 @@ public class Swaggerizer {
 
         final ArraySchema messages = new ArraySchema();
         messages.setItems(new StringSchema());
-        errorSchema.addProperties("errorMessages", messages);
+        errorSchema.addProperty("errorMessages", messages);
         errorSchema.addRequiredItem("errorMessages");
 
         components.addSchemas(THINGIFIER_ERROR_SCHEMA_NAME, errorSchema);
@@ -797,7 +867,7 @@ public class Swaggerizer {
         ArraySchema arrayObject = new ArraySchema();
         arrayObject.setItems(asRequiredResponseObjectSchema(objectSchemaDefinition));
 
-        collectionObject.addProperties(objectSchemaDefinition.getPlural(), arrayObject);
+        collectionObject.addProperty(objectSchemaDefinition.getPlural(), arrayObject);
         collectionObject.addRequiredItem(objectSchemaDefinition.getPlural());
 
         return collectionObject;
@@ -920,7 +990,7 @@ public class Swaggerizer {
 
                 propertyItem.setDescription(joinStrings(description, "."));
 
-                object.addProperties(propertyName, propertyItem);
+                object.addProperty(propertyName, propertyItem);
             }
         }
 

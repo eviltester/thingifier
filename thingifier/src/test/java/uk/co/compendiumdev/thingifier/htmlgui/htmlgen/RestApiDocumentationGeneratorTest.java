@@ -39,8 +39,25 @@ class RestApiDocumentationGeneratorTest {
         Assertions.assertTrue(docs.contains("<li>OpenAPI v 3.1 JSON"));
         Assertions.assertTrue(docs.contains("<li>OpenAPI v 3.2 JSON"));
         Assertions.assertTrue(
-                docs.contains("href='/mirror/docs/openapi-3.2.json'>[standard validation]</a>"));
+                docs.contains("href='/mirror/docs/openapi-3.2.json'>standard validation</a>"));
+        Assertions.assertTrue(docs.contains(">download JSON file</a>"));
         Assertions.assertTrue(docs.contains("href='/mirror/docs/openapi-3.2.json?download'"));
+        Assertions.assertTrue(
+                docs.contains("href='/mirror/docs/openapi-3.2.json?strongschema=true'"));
+        Assertions.assertTrue(
+                docs.contains(
+                        "href='/mirror/docs/openapi-3.2.json?strongschema=true&amp;download'"));
+        Assertions.assertTrue(
+                docs.contains("href='/mirror/docs/openapi-3.2.json?pathparams=operation'"));
+        Assertions.assertTrue(
+                docs.contains(
+                        "href='/mirror/docs/openapi-3.2.json?pathparams=operation&amp;download'"));
+        Assertions.assertTrue(
+                docs.contains(
+                        "href='/mirror/docs/openapi-3.2.json?strongschema=true&amp;pathparams=operation'"));
+        Assertions.assertTrue(
+                docs.contains(
+                        "href='/mirror/docs/openapi-3.2.json?strongschema=true&amp;pathparams=operation&amp;download'"));
         Assertions.assertTrue(docs.contains("href='/mirror/docs/openapi-3.2.json?permissive'"));
         Assertions.assertTrue(
                 docs.contains("href='/mirror/docs/openapi-3.2.json?permissive&amp;download'"));

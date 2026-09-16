@@ -440,6 +440,20 @@ class RouteApiResponsePolicyTest {
                 route.getResponseHeaderValue("X-Secret-Token"));
     }
 
+    @Test
+    void suppressedResponsePolicyBodiesAreAddedToGeneratedRouteDocumentation() {
+        final Thingifier thingifier = secretModel();
+        getSecretTokenRoute(thingifier).onError(401).suppressBody();
+
+        final RoutingDefinition route =
+                route(
+                        new ApiRoutingDefinitionDocGenerator(thingifier).generate(""),
+                        RoutingVerb.GET,
+                        "secret/token");
+
+        Assertions.assertTrue(route.hasSuppressedResponseBodyFor(401));
+    }
+
     private ThingifierApiRouteRule getSecretNoteRoute(final Thingifier thingifier) {
         return thingifier
                 .apiSpec()

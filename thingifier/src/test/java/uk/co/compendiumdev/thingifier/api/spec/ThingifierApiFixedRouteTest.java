@@ -99,6 +99,7 @@ class ThingifierApiFixedRouteTest {
 
         Assertions.assertEquals("Allow", route.header());
         Assertions.assertEquals("OPTIONS, GET, HEAD", route.headerValue());
+        Assertions.assertEquals(200, route.status().value());
     }
 
     @Test
@@ -202,6 +203,30 @@ class ThingifierApiFixedRouteTest {
                         .get$ref();
 
         Assertions.assertEquals("#/components/schemas/SecretNoteResponse", schemaRef);
+    }
+
+    @Test
+    void fixedWriteRouteDocumentsUnsupportedContentTypeError() {
+        final Thingifier thingifier = secretModel();
+        postSecretNoteRoute(thingifier);
+        final ThingifierApiDocumentationDefn apiDefn = new ThingifierApiDocumentationDefn();
+        apiDefn.setThingifier(thingifier);
+        apiDefn.setPathPrefix("/api");
+
+        final OpenAPI openApi = new Swaggerizer(apiDefn).swagger();
+        final String schemaRef =
+                openApi.getPaths()
+                        .get("/api/secret/note")
+                        .getPost()
+                        .getResponses()
+                        .get("415")
+                        .getContent()
+                        .get("application/json")
+                        .getSchema()
+                        .get$ref();
+
+        Assertions.assertEquals(
+                "#/components/schemas/" + Swaggerizer.THINGIFIER_ERROR_SCHEMA_NAME, schemaRef);
     }
 
     @Test

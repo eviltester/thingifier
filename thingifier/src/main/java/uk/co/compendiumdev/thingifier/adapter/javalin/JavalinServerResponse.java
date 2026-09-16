@@ -1,6 +1,7 @@
 package uk.co.compendiumdev.thingifier.adapter.javalin;
 
 import io.javalin.http.Context;
+import io.javalin.http.HandlerType;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -28,6 +29,9 @@ final class JavalinServerResponse implements HttpServerResponse {
     public void body(final String body) {
         bodySet = true;
         context.attribute(RESPONSE_BODY_ATTRIBUTE, body == null ? "" : body);
+        if (context.method() == HandlerType.HEAD) {
+            return;
+        }
         context.result((body == null ? "" : body).getBytes(StandardCharsets.UTF_8));
     }
 

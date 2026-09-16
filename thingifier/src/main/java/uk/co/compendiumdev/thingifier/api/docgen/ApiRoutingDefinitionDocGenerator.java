@@ -185,7 +185,7 @@ public class ApiRoutingDefinitionDocGenerator {
                     optionsDocumentationFor(pluralUrl),
                     RoutingVerb.OPTIONS,
                     pluralUrl,
-                    RoutingStatus.returnValue(204, "the endpoint verb options"),
+                    RoutingStatus.returnValue(200, "the endpoint verb options"),
                     new ResponseHeader("Allow", "OPTIONS, GET, HEAD, POST, QUERY"));
 
             // the following are not handled so return 405
@@ -357,7 +357,7 @@ public class ApiRoutingDefinitionDocGenerator {
                             optionsDocumentationFor(aUrlWGuid),
                             RoutingVerb.OPTIONS,
                             aUrlWGuid,
-                            RoutingStatus.returnValue(204),
+                            RoutingStatus.returnValue(200),
                             new ResponseHeader("Allow", "OPTIONS, GET, HEAD, POST, PUT, DELETE"))
                     .addRequestUrlParam(entityDefn.getField(uniqueIdFieldName));
 

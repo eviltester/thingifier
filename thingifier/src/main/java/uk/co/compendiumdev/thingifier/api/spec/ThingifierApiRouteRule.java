@@ -16,6 +16,7 @@ import uk.co.compendiumdev.thingifier.api.docgen.RoutingDefinition;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingStatus;
 import uk.co.compendiumdev.thingifier.api.docgen.RoutingVerb;
 import uk.co.compendiumdev.thingifier.api.response.RouteApiResponsePolicy;
+import uk.co.compendiumdev.thingifier.api.response.RouteApiResponsePolicy.BodyAction;
 import uk.co.compendiumdev.thingifier.api.security.SecuritySchemeNames;
 import uk.co.compendiumdev.thingifier.api.security.ThingifierApiAuthorizer;
 import uk.co.compendiumdev.thingifier.api.validation.ApiOperationValidator;
@@ -1377,30 +1378,47 @@ public final class ThingifierApiRouteRule {
     }
 
     private void applyResponsePolicyMetadataTo(final RoutingDefinition route) {
-        successResponsePolicy().ifPresent(policy -> applyPolicyMetadata(route, policy));
+        successResponsePolicy()
+                .ifPresent(policy -> applyPolicyMetadata(route, policy, policy.statusCode()));
         validationErrorResponsePolicy()
                 .ifPresent(
                         policy -> {
                             route.addPossibleStatus(RoutingStatus.returnValue(422));
-                            applyPolicyMetadata(route, policy);
+                            applyPolicyMetadata(
+                                    route,
+                                    policy,
+                                    policy.statusCode() == null ? 422 : policy.statusCode());
                         });
         for (Map.Entry<Integer, RouteApiResponsePolicy> entry : errorResponsePolicies.entrySet()) {
             route.addPossibleStatus(RoutingStatus.returnValue(entry.getKey()));
-            applyPolicyMetadata(route, entry.getValue());
+            applyPolicyMetadata(
+                    route,
+                    entry.getValue(),
+                    entry.getValue().statusCode() == null
+                            ? entry.getKey()
+                            : entry.getValue().statusCode());
         }
         for (Map.Entry<Integer, List<RouteApiResponsePolicy>> entry :
                 conditionalErrorResponsePolicies.entrySet()) {
             route.addPossibleStatus(RoutingStatus.returnValue(entry.getKey()));
             for (RouteApiResponsePolicy policy : entry.getValue()) {
-                applyPolicyMetadata(route, policy);
+                applyPolicyMetadata(
+                        route,
+                        policy,
+                        policy.statusCode() == null ? entry.getKey() : policy.statusCode());
             }
         }
     }
 
     private void applyPolicyMetadata(
-            final RoutingDefinition route, final RouteApiResponsePolicy policy) {
+            final RoutingDefinition route,
+            final RouteApiResponsePolicy policy,
+            final Integer defaultStatusCode) {
         if (policy.statusCode() != null) {
             route.addPossibleStatus(RoutingStatus.returnValue(policy.statusCode()));
+        }
+        if (policy.bodyAction() == BodyAction.SUPPRESS && defaultStatusCode != null) {
+            route.suppressResponseBodyFor(defaultStatusCode);
         }
         for (RouteApiResponsePolicy.HeaderValue header : policy.staticHeaders()) {
             route.addResponseHeader(header.name(), header.value());
