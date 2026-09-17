@@ -271,7 +271,10 @@ public class MainImplementation implements AutoCloseable {
         new DefaultGuiRoutings(thingifier, guiManagement).configureRoutes("/gui");
     }
 
-    public ThingifierHttpApiRoutings startRestServer() {
+    public ThingifierHttpApiRoutings configureRestServer() {
+        if (restServer != null) {
+            return restServer;
+        }
 
         if (thingifier == null) {
             throw new RuntimeException("No Thingifier Model Setup");
@@ -280,11 +283,28 @@ public class MainImplementation implements AutoCloseable {
         restServer =
                 new ThingifierServerBootstrap().startRestServer(thingifier, apiDefn, guiManagement);
 
+        return restServer;
+    }
+
+    public void startHttpServer() {
+        if (httpServer != null) {
+            return;
+        }
+
+        if (restServer == null) {
+            configureRestServer();
+        }
+
         httpServer = new JavalinHttpServer(proxyport, staticFilePath, routeRegistry);
         httpServer.start();
 
         System.out.println("Running on " + proxyport);
         System.out.println(" e.g. http://localhost:" + proxyport);
+    }
+
+    public ThingifierHttpApiRoutings startRestServer() {
+        configureRestServer();
+        startHttpServer();
 
         return restServer;
     }

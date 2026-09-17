@@ -1146,7 +1146,9 @@ public final class ThingifierHttpApi {
      * @return HTTP API response
      */
     public HttpApiResponse get(final HttpApiRequest request) {
-        return handleRequest(request, HttpVerb.GET);
+        synchronized (thingifier) {
+            return handleRequest(request, HttpVerb.GET);
+        }
     }
 
     /**
@@ -1156,7 +1158,9 @@ public final class ThingifierHttpApi {
      * @return HTTP API response
      */
     public HttpApiResponse head(final HttpApiRequest request) {
-        return handleRequest(request, HttpVerb.HEAD);
+        synchronized (thingifier) {
+            return handleRequest(request, HttpVerb.HEAD);
+        }
     }
 
     /**
@@ -1166,7 +1170,9 @@ public final class ThingifierHttpApi {
      * @return HTTP API response
      */
     public HttpApiResponse delete(final HttpApiRequest request) {
-        return handleRequest(request, HttpVerb.DELETE);
+        synchronized (thingifier) {
+            return handleRequest(request, HttpVerb.DELETE);
+        }
     }
 
     /**
@@ -1176,7 +1182,9 @@ public final class ThingifierHttpApi {
      * @return HTTP API response
      */
     public HttpApiResponse post(final HttpApiRequest request) {
-        return handleRequest(request, HttpVerb.POST);
+        synchronized (thingifier) {
+            return handleRequest(request, HttpVerb.POST);
+        }
     }
 
     /**
@@ -1186,7 +1194,9 @@ public final class ThingifierHttpApi {
      * @return HTTP API response
      */
     public HttpApiResponse put(final HttpApiRequest request) {
-        return handleRequest(request, HttpVerb.PUT);
+        synchronized (thingifier) {
+            return handleRequest(request, HttpVerb.PUT);
+        }
     }
 
     /**
@@ -1196,7 +1206,9 @@ public final class ThingifierHttpApi {
      * @return HTTP API response
      */
     public HttpApiResponse patch(final HttpApiRequest request) {
-        return handleRequest(request, HttpVerb.PATCH);
+        synchronized (thingifier) {
+            return handleRequest(request, HttpVerb.PATCH);
+        }
     }
 
     /**
@@ -1206,7 +1218,9 @@ public final class ThingifierHttpApi {
      * @return HTTP API response
      */
     public HttpApiResponse queryRequest(final HttpApiRequest request) {
-        return handleRequest(request, HttpVerb.QUERY);
+        synchronized (thingifier) {
+            return handleRequest(request, HttpVerb.QUERY);
+        }
     }
 
     /**
@@ -1217,19 +1231,24 @@ public final class ThingifierHttpApi {
      * @return HTTP API response
      */
     public HttpApiResponse query(final HttpApiRequest request, final String query) {
-        resolveMountedPath(request);
+        synchronized (thingifier) {
+            resolveMountedPath(request);
 
-        HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request, HttpVerb.GET);
+            HttpApiResponse httpResponse = runTheHttpApiRequestHooksOn(request, HttpVerb.GET);
 
-        if (httpResponse == null) {
-            ApiResponse apiResponse =
-                    thingifier
-                            .api()
-                            .get(query, request.getFilterableQueryParams(), request.getHeaders());
-            httpResponse = httpResponseFor(request, HttpVerb.GET, apiResponse);
+            if (httpResponse == null) {
+                ApiResponse apiResponse =
+                        thingifier
+                                .api()
+                                .get(
+                                        query,
+                                        request.getFilterableQueryParams(),
+                                        request.getHeaders());
+                httpResponse = httpResponseFor(request, HttpVerb.GET, apiResponse);
+            }
+
+            return runTheHttpApiResponseHooksOn(request, httpResponse, HttpVerb.GET);
         }
-
-        return runTheHttpApiResponseHooksOn(request, httpResponse, HttpVerb.GET);
     }
 
     /**
