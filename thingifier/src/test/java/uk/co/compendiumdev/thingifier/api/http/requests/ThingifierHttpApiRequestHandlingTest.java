@@ -1,10 +1,19 @@
 package uk.co.compendiumdev.thingifier.api.http.requests;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import uk.co.compendiumdev.thingifier.Thingifier;
+import uk.co.compendiumdev.thingifier.adapter.http.messagehooks.HttpApiRequestHook;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiRequest;
 import uk.co.compendiumdev.thingifier.api.http.HttpApiResponse;
 import uk.co.compendiumdev.thingifier.api.http.ThingifierHttpApi;
@@ -139,6 +148,73 @@ public class ThingifierHttpApiRequestHandlingTest {
                                         .getERmodel()
                                         .getSchema()
                                         .getDefinitionWithSingularOrPluralNamed("thing")));
+    }
+
+    @Test
+    public void generatedHttpApiRequestsAreSerializedOnTheThingifierModel() throws Exception {
+        // TODO: currently we synchronise at HttpAPI boundary to prevent GET happening before POST
+        // work is complete - this should only really be necessary for inmemory persistence - need
+        // to evaluate and push this lower when trying to scale because this might slow and impact
+        // the disk and database based persistence backed APIs
+        Thingifier thingifier = getTestThingifier();
+        CountDownLatch firstRequestEnteredHook = new CountDownLatch(1);
+        CountDownLatch releaseFirstRequest = new CountDownLatch(1);
+        CountDownLatch secondRequestEnteredHook = new CountDownLatch(1);
+        AtomicInteger hookCallCount = new AtomicInteger();
+        AtomicBoolean hooksRanInsideThingifierLock = new AtomicBoolean(true);
+
+        HttpApiRequestHook blockingHook =
+                (request, config) -> {
+                    if (!Thread.holdsLock(thingifier)) {
+                        hooksRanInsideThingifierLock.set(false);
+                    }
+
+                    int callNumber = hookCallCount.incrementAndGet();
+                    if (callNumber == 1) {
+                        firstRequestEnteredHook.countDown();
+                        waitForLatch(releaseFirstRequest, "Timed out waiting to release POST");
+                    } else if (callNumber == 2) {
+                        secondRequestEnteredHook.countDown();
+                    }
+
+                    return null;
+                };
+        ThingifierHttpApi api = new ThingifierHttpApi(thingifier, List.of(blockingHook), null);
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+
+        try {
+            Future<HttpApiResponse> postResponse =
+                    executor.submit(
+                            () -> api.post(jsonRequest("/things", "{\"title\":\"thing1\"}")));
+
+            Assertions.assertTrue(
+                    firstRequestEnteredHook.await(1, TimeUnit.SECONDS),
+                    "POST did not enter the HTTP API hook");
+
+            Future<HttpApiResponse> getResponse =
+                    executor.submit(() -> api.get(new HttpApiRequest("/things")));
+
+            Assertions.assertFalse(
+                    secondRequestEnteredHook.await(200, TimeUnit.MILLISECONDS),
+                    "GET entered generated API processing before POST completed");
+
+            releaseFirstRequest.countDown();
+
+            Assertions.assertEquals(201, postResponse.get(1, TimeUnit.SECONDS).getStatusCode());
+            HttpApiResponse actualGetResponse = getResponse.get(1, TimeUnit.SECONDS);
+
+            Assertions.assertTrue(
+                    secondRequestEnteredHook.await(1, TimeUnit.SECONDS),
+                    "GET did not enter generated API processing after POST completed");
+            Assertions.assertEquals(200, actualGetResponse.getStatusCode());
+            Assertions.assertTrue(actualGetResponse.getBody().contains("thing1"));
+            Assertions.assertTrue(
+                    hooksRanInsideThingifierLock.get(),
+                    "Generated API hook ran outside the Thingifier model lock");
+        } finally {
+            releaseFirstRequest.countDown();
+            executor.shutdownNow();
+        }
     }
 
     @Test
@@ -399,5 +475,16 @@ public class ThingifierHttpApiRequestHandlingTest {
         return new HttpApiRequest(path)
                 .setHeaders(Map.of("content-type", contentType))
                 .setBody(body);
+    }
+
+    private void waitForLatch(final CountDownLatch latch, final String timeoutMessage) {
+        try {
+            if (!latch.await(2, TimeUnit.SECONDS)) {
+                throw new AssertionError(timeoutMessage);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new AssertionError(timeoutMessage, e);
+        }
     }
 }
